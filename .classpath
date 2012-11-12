@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry excluding="edu/fsuj/csb/reactionnetworks/interaction/KeggSpeciesList.java|edu/fsuj/csb/reactionnetworks/interaction/KeggSubstanceList.java|edu/fsuj/csb/reactionnetworks/interaction/SpeciesProcessingTestTask.java|edu/fsuj/csb/reactionnetworks/interaction/SpeciesSelectionPane.java|edu/fsuj/csb/reactionnetworks/interaction/SubstanceSelectionPane.java|edu/fsuj/csb/reactionnetworks/interaction/TerminalCalculationTask.java|edu/fsuj/csb/reactionnetworks/interaction/NetworkLoader.java|edu/fsuj/csb/reactionnetworks/interaction/TestProgram.java" kind="src" path="src"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/XMLTools"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/GUI"/>
+	<classpathentry kind="src" path="/ToolsForDistributedComputing"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/LPSolverWrapper"/>
+	<classpathentry kind="src" path="/ProgramWrapper"/>
+	<classpathentry kind="src" path="/InteractionDb"/>
+	<classpathentry kind="src" path="/StringComparison"/>
+	<classpathentry kind="lib" path="/jgap/jgap.jar" sourcepath="/jgap/src"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/jgap"/>
+	<classpathentry kind="src" path="/DBComponents"/>
+	<classpathentry kind="src" path="/OrganismTools"/>
+	<classpathentry kind="src" path="/URN"/>
+	<classpathentry kind="src" path="/PageParser"/>
+	<classpathentry kind="lib" path="/batik-1.7/batik.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/batik-1.7"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

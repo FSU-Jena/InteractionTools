@@ -1,0 +1,10 @@
+#!/bin/bash
+cd ~/workspace/InteractionTools/data
+rm *.lp
+rm *.log
+rm cclient.e*
+rm cclient.o*
+rm -r ???
+rm *.task
+rm *~
+rm startscript
