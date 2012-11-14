@@ -14,6 +14,7 @@ import javax.naming.directory.NoSuchAttributeException;
 import edu.fsuj.csb.reactionnetworks.database.InteractionDB;
 import edu.fsuj.csb.reactionnetworks.organismtools.DbCompartment;
 import edu.fsuj.csb.tools.urn.miriam.BiomodelUrn;
+import edu.fsuj.csb.tools.xml.CachedXMLReader;
 import edu.fsuj.csb.tools.xml.NoTokenException;
 import edu.fsuj.csb.tools.xml.ObjectComparator;
 import edu.fsuj.csb.tools.xml.Tools;
@@ -88,7 +89,7 @@ public class Biomodels {
 	public static TreeSet<BiomodelUrn> urns() throws IOException, NoTokenException, DataFormatException {
 		URL url = new URL("http://www.ebi.ac.uk/biomodels-main/publ-models-plain.do?cmd=SET:COUNT&cou=3700");
 		//System.out.println("aquiring model list from "+url+".");
-		XMLReader xmlr=new XMLReader(url);
+		CachedXMLReader xmlr=new CachedXMLReader(url);
 		XmlToken token=xmlr.readToken();
 		while (token.getValue("class")==null) {
 			token=xmlr.readToken();
