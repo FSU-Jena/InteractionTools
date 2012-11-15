@@ -342,9 +342,6 @@ public class dbtool {
 		displayTimeStamp();
 		
 		if (!skipKeggSubstances && !skipKeggReactions) {
-			if (skipKeggSubstances){
-				
-			}
 			TreeMap<String, Integer> mappingFromKeggReactionIdsToDbIds = readKeggReactions(mappingFromKeggSubstanceIdsToDbIds);
 			displayTimeStamp();
 		}
