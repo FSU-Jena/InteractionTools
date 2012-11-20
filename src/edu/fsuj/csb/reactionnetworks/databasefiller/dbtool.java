@@ -50,6 +50,8 @@ public class dbtool {
 	private static int keggEukaryotes;
 	private static boolean skipClear,skipKegg,skipBiomodels,skipFiles,skipKeggPathways,skipKeggEnzymes,skipKeggCodes,skipKeggOrganisms,skipKeggCompounds,skipKeggSubstances,skipKeggReactions;
 	private static String directory;
+	private static boolean skipAsk;
+	private static boolean clearDecisions;
 
 	/**
 	 * start program by creating a new dbtool instance
@@ -65,27 +67,53 @@ public class dbtool {
 	 * @throws NoSuchAttributeException
 	 * @throws AlreadyBoundException 
 	 * @throws ClassNotFoundException 
+	 * @throws InterruptedException 
 	 */
-	public static void main(String[] args) throws IOException, NameNotFoundException, SQLException, NoSuchMethodException, NoTokenException, NoSuchAlgorithmException, DataFormatException, NoSuchAttributeException, AlreadyBoundException, ClassNotFoundException {
+	public static void main(String[] args) throws IOException, NameNotFoundException, SQLException, NoSuchMethodException, NoTokenException, NoSuchAlgorithmException, DataFormatException, NoSuchAttributeException, AlreadyBoundException, ClassNotFoundException, InterruptedException {
 		parseArgs(args);
 		new dbtool();
 	}
 
-	
+	public static void run(String args) throws NameNotFoundException, NoSuchAlgorithmException, NoSuchAttributeException, IOException, SQLException, NoSuchMethodException, NoTokenException, DataFormatException, AlreadyBoundException, ClassNotFoundException, InterruptedException{
+		main(args.split(" "));
+	}
 	
 	/**
 	 * set several variables by reading command line parameters
 	 * 
 	 * @param args the arguments passed to the main program
+	 * @throws InterruptedException 
 	 */
-	private static void parseArgs(String[] args) {
+	private static void parseArgs(String[] args) throws InterruptedException {
 		Tools.disableLogging();
+		skipClear=false;
+		skipKegg=false;
+		skipBiomodels=false;
+		skipFiles=false;
+		skipKeggOrganisms=false;
+		skipKeggPathways=false;
+		skipKeggSubstances=false;
+		skipKeggCodes=false;
+		skipKeggCompounds=false;
+		skipKeggReactions=false;
+		skipKeggEnzymes=false;
+		skipAsk=false;
+		clearDecisions=false;
 		for (int i = 0; i < args.length; i++) {
 			if (args[i].startsWith("--cachedir=")) PageFetcher.setCache(args[i].substring(11));
+			if (args[i].equals("--skip-question")) {
+				Tools.warn("Will not ask before deletion of database content! Cancel within 20 seconds to avoid!");
+				skipAsk=true;
+				Thread.sleep(20000);
+			}			
+			if (args[i].equals("--clear-all")) {
+				Tools.warn("Will also clear decision table.");
+				clearDecisions=true;
+			}
 			if (args[i].equals("--skip-clear")) {
 				Tools.note("Disabling deletion of database content.");
 				skipClear=true;
-			}
+			}			
 			if (args[i].equals("--skip-kegg")) {
 				Tools.note("Will skip all Kegg entries.");
 				skipKegg=true;
@@ -143,6 +171,7 @@ public class dbtool {
 		System.out.println("--cachedir=<directory>\tuse the given <directory>to store cached files");
 		System.out.println("--verbose\t\t\tshow verbose output");
 		System.out.println("--skip-clear\t\tdo not clear the database before reading in new data");
+		System.out.println("--clear-all\t\twill also clear the decisions table");
 		System.out.println("--skip-kegg\t\tdo not gather ANY data from kegg");
 		System.out.println("--skip-biomodels\tdo not read the biomodels database");
 		System.out.println("--skip-files\t\tdo not read sbml models from local files\n");
@@ -154,6 +183,7 @@ public class dbtool {
 		System.out.println("--skip-kegg-codes\tWith this option enabled, no codes monosaccarde codes will be downloaded, and thus, glycans will not be resolved to formulas.");
 		System.out.println("--skip-kegg-compounds\tWith this option enabled, no compounds will be read from kegg. This will render all Data from Kegg useless and is only for debuggin purposes.");
 		System.out.println("--skip-kegg-reactions\tWith this option, you can skip the reaction-parsing part. Makes the data quite useless.");
+		System.out.println("--skip-question\tWith this option, you can skip the confirmation question before erasing all database content.");
 		System.exit(0);
   }
 	/**
@@ -173,16 +203,20 @@ public class dbtool {
 	public dbtool() throws IOException, SQLException, NameNotFoundException, NoSuchMethodException, NoTokenException, NoSuchAlgorithmException, DataFormatException, NoSuchAttributeException, AlreadyBoundException, ClassNotFoundException {
 		Tools.startMethod("dbtool()");
 		displayTimeStamp();
+		String query="drop table abbrevations, compartment_pathways, compartments, dates, enzymes, enzymes_compartments, hierarchy, id_names, ids, names, products, reaction_directions, reaction_enzymes, reactions, substances, substrates,urls,urn_urls, urns";
 		try {			
 			if (!skipClear){
-				System.out.println("This will clear the database! Do you really want this?");
-				BufferedReader in=new BufferedReader(new InputStreamReader(System.in));
-				String answer=in.readLine();
-				if (!answer.toUpperCase().equals("YES")) System.exit(-1);
-				InteractionDB.createStatement().execute("drop table abbrevations, compartment_pathways, compartments, dates, enzymes, enzymes_compartments, hierarchy, id_names, ids, names, products, reaction_directions, reaction_enzymes, reactions, substances, substrates,urls,urn_urls, urns");
+				if (!skipAsk){
+					System.out.println("This will clear the database! Do you really want this?");
+					BufferedReader in=new BufferedReader(new InputStreamReader(System.in));
+					String answer=in.readLine();
+					if (!answer.toUpperCase().equals("YES")) System.exit(-1);
+				}
+			  if (clearDecisions) query=query+", decisions";
+				InteractionDB.createStatement().execute(query);
 			}
 		} catch (SQLException e){
-			Tools.warn("was not able to erase all tables: "+e.getMessage());
+			Tools.warn("was not able to erase all tables: "+e.getMessage()+"\n\nQuery was: "+query);
 		}
 		InteractionDB.checkTables(); // assure, that required tables exist
 		displayTimeStamp();		
