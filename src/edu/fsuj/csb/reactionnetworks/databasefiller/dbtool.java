@@ -48,7 +48,7 @@ public class dbtool {
 	private long startTime = 0;
 	private static int keggProkaryotes;
 	private static int keggEukaryotes;
-	private static boolean skipClear,skipKegg,skipBiomodels,skipFiles,skipKeggPathways,skipKeggEnzymes,skipKeggCodes,skipKeggOrganisms,skipKeggCompounds,skipKeggSubstances,skipKeggReactions;
+	private static boolean skipClear, skipKegg, skipBiomodels, skipFiles, skipKeggPathways, skipKeggEnzymes, skipKeggCodes, skipKeggOrganisms, skipKeggCompounds, skipKeggSubstances, skipKeggReactions;
 	private static String directory;
 	private static boolean skipAsk;
 	private static boolean clearDecisions;
@@ -65,104 +65,104 @@ public class dbtool {
 	 * @throws NoSuchAlgorithmException
 	 * @throws DataFormatException
 	 * @throws NoSuchAttributeException
-	 * @throws AlreadyBoundException 
-	 * @throws ClassNotFoundException 
-	 * @throws InterruptedException 
+	 * @throws AlreadyBoundException
+	 * @throws ClassNotFoundException
+	 * @throws InterruptedException
 	 */
 	public static void main(String[] args) throws IOException, NameNotFoundException, SQLException, NoSuchMethodException, NoTokenException, NoSuchAlgorithmException, DataFormatException, NoSuchAttributeException, AlreadyBoundException, ClassNotFoundException, InterruptedException {
 		parseArgs(args);
 		new dbtool();
 	}
 
-	public static void run(String args) throws NameNotFoundException, NoSuchAlgorithmException, NoSuchAttributeException, IOException, SQLException, NoSuchMethodException, NoTokenException, DataFormatException, AlreadyBoundException, ClassNotFoundException, InterruptedException{
+	public static void run(String args) throws NameNotFoundException, NoSuchAlgorithmException, NoSuchAttributeException, IOException, SQLException, NoSuchMethodException, NoTokenException, DataFormatException, AlreadyBoundException, ClassNotFoundException, InterruptedException {
 		main(args.split(" "));
 	}
-	
+
 	/**
 	 * set several variables by reading command line parameters
 	 * 
 	 * @param args the arguments passed to the main program
-	 * @throws InterruptedException 
+	 * @throws InterruptedException
 	 */
 	private static void parseArgs(String[] args) throws InterruptedException {
 		Tools.disableLogging();
-		skipClear=false;
-		skipKegg=false;
-		skipBiomodels=false;
-		skipFiles=false;
-		skipKeggOrganisms=false;
-		skipKeggPathways=false;
-		skipKeggSubstances=false;
-		skipKeggCodes=false;
-		skipKeggCompounds=false;
-		skipKeggReactions=false;
-		skipKeggEnzymes=false;
-		skipAsk=false;
-		clearDecisions=false;
+		skipClear = false;
+		skipKegg = false;
+		skipBiomodels = false;
+		skipFiles = false;
+		skipKeggOrganisms = false;
+		skipKeggPathways = false;
+		skipKeggSubstances = false;
+		skipKeggCodes = false;
+		skipKeggCompounds = false;
+		skipKeggReactions = false;
+		skipKeggEnzymes = false;
+		skipAsk = false;
+		clearDecisions = false;
 		for (int i = 0; i < args.length; i++) {
 			if (args[i].startsWith("--cachedir=")) PageFetcher.setCache(args[i].substring(11));
 			if (args[i].equals("--skip-question")) {
 				Tools.warn("Will not ask before deletion of database content! Cancel within 20 seconds to avoid!");
-				skipAsk=true;
+				skipAsk = true;
 				Thread.sleep(20000);
-			}			
+			}
 			if (args[i].equals("--clear-all")) {
 				Tools.warn("Will also clear decision table.");
-				clearDecisions=true;
+				clearDecisions = true;
 			}
 			if (args[i].equals("--skip-clear")) {
 				Tools.note("Disabling deletion of database content.");
-				skipClear=true;
-			}			
+				skipClear = true;
+			}
 			if (args[i].equals("--skip-kegg")) {
 				Tools.note("Will skip all Kegg entries.");
-				skipKegg=true;
+				skipKegg = true;
 			}
 			if (args[i].startsWith("--folder=")) {
-				directory=args[i].substring(9);
-				Tools.note("Reading sbml files from "+directory+".");
+				directory = args[i].substring(9);
+				Tools.note("Reading sbml files from " + directory + ".");
 			}
 			if (args[i].equals("--skip-biomodels")) {
 				Tools.note("Will skip biomodels.");
-				skipBiomodels=true;
+				skipBiomodels = true;
 			}
 			if (args[i].equals("--skip-files")) {
 				Tools.note("Will skip SBML files.");
-				skipFiles=true;
+				skipFiles = true;
 			}
 			if (args[i].equals("--skip-kegg-orgs")) {
 				Tools.note("Will skip Organism part of Kegg database.");
-				skipKeggOrganisms=true;
+				skipKeggOrganisms = true;
 			}
 			if (args[i].equals("--skip-kegg-paths")) {
 				Tools.note("Will skip pathway part of Kegg database.");
-				skipKeggPathways=true;
+				skipKeggPathways = true;
 			}
 			if (args[i].equals("--skip-kegg-substances")) {
 				Tools.note("Will skip subtance list of Kegg database.");
-				skipKeggSubstances=true;
+				skipKeggSubstances = true;
 			}
 			if (args[i].equals("--skip-kegg-codes")) {
 				Tools.note("Will skip monosaccaride codes list of Kegg database.");
-				skipKeggCodes=true;
+				skipKeggCodes = true;
 			}
 			if (args[i].equals("--skip-kegg-compounds")) {
 				Tools.note("Will skip compound list of Kegg database.");
-				skipKeggCompounds=true;
+				skipKeggCompounds = true;
 			}
 			if (args[i].equals("--skip-kegg-reactions")) {
 				Tools.note("Will skip reactions from Kegg database");
-				skipKeggReactions=true;
+				skipKeggReactions = true;
 			}
 			if (args[i].equals("--skip-kegg-enzymes")) {
 				Tools.note("Will skip enzyme entries of Kegg database.");
-				skipKeggEnzymes=true;
+				skipKeggEnzymes = true;
 			}
 			if (args[i].equals("--help")) displayCLIoptions();
 			if (args[i].equals("--verbose")) Tools.enableLogging();
 		}
 	}
-	
+
 	private static void displayCLIoptions() {
 		System.out.println("This is the database filling tool for the InteractionDB.");
 		System.out.println("This software is being developed by Stephan Richter.\n");
@@ -185,7 +185,8 @@ public class dbtool {
 		System.out.println("--skip-kegg-reactions\tWith this option, you can skip the reaction-parsing part. Makes the data quite useless.");
 		System.out.println("--skip-question\tWith this option, you can skip the confirmation question before erasing all database content.");
 		System.exit(0);
-  }
+	}
+
 	/**
 	 * creates a new program instance
 	 * 
@@ -197,34 +198,34 @@ public class dbtool {
 	 * @throws NoSuchAlgorithmException
 	 * @throws DataFormatException
 	 * @throws NoSuchAttributeException
-	 * @throws AlreadyBoundException 
-	 * @throws ClassNotFoundException 
+	 * @throws AlreadyBoundException
+	 * @throws ClassNotFoundException
 	 */
 	public dbtool() throws IOException, SQLException, NameNotFoundException, NoSuchMethodException, NoTokenException, NoSuchAlgorithmException, DataFormatException, NoSuchAttributeException, AlreadyBoundException, ClassNotFoundException {
 		Tools.startMethod("dbtool()");
 		displayTimeStamp();
-		String query="drop table abbrevations, compartment_pathways, compartments, dates, enzymes, enzymes_compartments, hierarchy, id_names, ids, names, products, reaction_directions, reaction_enzymes, reactions, substances, substrates,urls,urn_urls, urns";
-		try {			
-			if (!skipClear){
-				if (!skipAsk){
+		String query = "drop table abbrevations, compartment_pathways, compartments, dates, enzymes, enzymes_compartments, hierarchy, id_names, ids, names, products, reaction_directions, reaction_enzymes, reactions, substances, substrates,urls,urn_urls, urns";
+		try {
+			if (!skipClear) {
+				if (!skipAsk) {
 					System.out.println("This will clear the database! Do you really want this?");
-					BufferedReader in=new BufferedReader(new InputStreamReader(System.in));
-					String answer=in.readLine();
+					BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+					String answer = in.readLine();
 					if (!answer.toUpperCase().equals("YES")) System.exit(-1);
 				}
-			  if (clearDecisions) query=query+", decisions";
+				if (clearDecisions) query = query + ", decisions";
 				InteractionDB.createStatement().execute(query);
 			}
-		} catch (SQLException e){
-			Tools.warn("was not able to erase all tables: "+e.getMessage()+"\n\nQuery was: "+query);
+		} catch (SQLException e) {
+			Tools.warn("was not able to erase all tables: " + e.getMessage() + "\n\nQuery was: " + query);
 		}
 		InteractionDB.checkTables(); // assure, that required tables exist
-		displayTimeStamp();		
-		
+		displayTimeStamp();
+
 		if (!skipKegg) readKeggContent(); // read kegg data // disabled, so i can not accidentally overwrite
 		Integer lastKeggId = InteractionDB.getLastID();
 		System.out.println("last kegg id: " + lastKeggId);
-		
+
 		if (!skipBiomodels) Biomodels.parse();
 		Integer lastBiomodelsId = InteractionDB.getLastID();
 		System.out.println("last kegg id: " + lastKeggId);
@@ -305,7 +306,7 @@ public class dbtool {
 	private static TreeSet<File> getSbmlFileList(File f) {
 		TreeSet<File> result = new TreeSet<File>(ObjectComparator.get());
 		File[] files = f.listFiles();
-		if (files==null) return result;
+		if (files == null) return result;
 		for (int index = 0; index < files.length; index++) {
 			File file = files[index];
 			String name = file.getName().toLowerCase();
@@ -324,15 +325,9 @@ public class dbtool {
 		System.out.println("Elapsed time: " + (diff / 1000) + "." + (diff % 1000) + " secs");
 	}
 
-	
-	/*private static void getFormulaAndEvaluate(String code) throws SQLException, DataFormatException{
-		int id=InteractionDB.getOrCreateIdFor(new KeggCompoundUrn(code), InteractionDB.SUBSTANCE);
-		Substance s=DbSubstance.load(id);
-		Formula formula=s.formula();
-		System.out.println(replaceN(formula.toString()));		
-	}*/
-
-
+	/*
+	 * private static void getFormulaAndEvaluate(String code) throws SQLException, DataFormatException{ int id=InteractionDB.getOrCreateIdFor(new KeggCompoundUrn(code), InteractionDB.SUBSTANCE); Substance s=DbSubstance.load(id); Formula formula=s.formula(); System.out.println(replaceN(formula.toString())); }
+	 */
 
 	/**
 	 * reads various data from the kegg database
@@ -342,39 +337,40 @@ public class dbtool {
 	 * @throws NameNotFoundException
 	 * @throws NoSuchMethodException
 	 * @throws DataFormatException
-	 * @throws AlreadyBoundException 
-	 * @throws NoTokenException 
-	 * @throws ClassNotFoundException 
+	 * @throws AlreadyBoundException
+	 * @throws NoTokenException
+	 * @throws ClassNotFoundException
 	 */
 	@SuppressWarnings("unused")
 	private void readKeggContent() throws IOException, SQLException, NameNotFoundException, NoSuchMethodException, DataFormatException, AlreadyBoundException, NoTokenException, ClassNotFoundException {
 		Tools.startMethod("readKeggContent()");
 		addKeggGroups();
-		
+
 		TreeMap<String, Integer> mappingFromKeggSubstanceIdsToDbIds = new TreeMap<String, Integer>(ObjectComparator.get());
-		
+
 		if (!skipKeggCodes) {
 			InteractionDB.preprareAbbrevations(mappingFromKeggSubstanceIdsToDbIds);
-			displayTimeStamp(); 
+			displayTimeStamp();
 		}
-		
+
 		TreeMap<String, Integer> mappingFromKeggOrganismIdsToDbIds = null;
-	
-		if (!skipKeggOrganisms){
+
+		if (!skipKeggOrganisms) {
 			mappingFromKeggOrganismIdsToDbIds = readKeggOrganisms();
 			displayTimeStamp();
 			if (!skipKeggPathways) readKeggPathways(mappingFromKeggOrganismIdsToDbIds.keySet());
 			displayTimeStamp();
 		}
-		
+
 		if (!skipKeggSubstances) {
 			readKeggSubstances(mappingFromKeggSubstanceIdsToDbIds);
 			displayTimeStamp();
 		}
 		if (!skipKeggOrganisms && !skipKeggEnzymes) readKeggEnzymes(mappingFromKeggOrganismIdsToDbIds);
-		
+
 		displayTimeStamp();
-		
+
+		Tools.enableLogging();
 		if (!skipKeggSubstances && !skipKeggReactions) {
 			TreeMap<String, Integer> mappingFromKeggReactionIdsToDbIds = readKeggReactions(mappingFromKeggSubstanceIdsToDbIds);
 			displayTimeStamp();
@@ -383,10 +379,6 @@ public class dbtool {
 		displayTimeStamp();
 		Tools.endMethod();
 	}
-
-
-
-
 
 	/**
 	 * adds the basic Kegg Organism Groups to the database
@@ -529,7 +521,7 @@ public class dbtool {
 	 */
 	private void analyzeKeggPathwayMap(String keggOrganismCode) throws IOException, SQLException, DataFormatException {
 		KeggGenomeUrn orgUrn = new KeggGenomeUrn(keggOrganismCode); // miriam:kegg.genome:xxx
-		Integer compartmentId = InteractionDB.getOrCreateIdFor(orgUrn,InteractionDB.COMPARTMENT);
+		Integer compartmentId = InteractionDB.getOrCreateIdFor(orgUrn, InteractionDB.COMPARTMENT);
 		if (compartmentId != null) {
 			String[] pathwayMap = orgUrn.fetchLines();
 			System.out.print("collecting pathway information for organism " + keggOrganismCode + "...");
@@ -544,16 +536,16 @@ public class dbtool {
 						String name = pathwayMap[i].substring(k + 1, l);
 						KeggPathwayUrn urn = new KeggPathwayUrn(keggOrganismCode + keggPathwayId);
 
-						Integer pid = InteractionDB.createPathway(urn,name,orgUrn.url());
-						InteractionDB.linkPathway(pid,compartmentId);
+						Integer pid = InteractionDB.createPathway(urn, name, orgUrn.url());
+						InteractionDB.linkPathway(pid, compartmentId);
 						Tools.indent("");
 
-//						try {
-//							st.execute("INSERT INTO compartment_pathways VALUES(" + compartmentId + ", " + pid + ")");
-//						} catch (SQLException e) {
-//							if (!e.getMessage().contains("Duplicate key")) throw e;
-//						}
-//						InteractionDB.insertName(pid, name);
+						// try {
+						// st.execute("INSERT INTO compartment_pathways VALUES(" + compartmentId + ", " + pid + ")");
+						// } catch (SQLException e) {
+						// if (!e.getMessage().contains("Duplicate key")) throw e;
+						// }
+						// InteractionDB.insertName(pid, name);
 					} catch (NumberFormatException nfe) {}
 				}
 			}
@@ -573,7 +565,7 @@ public class dbtool {
 	 * @throws DataFormatException
 	 */
 	private TreeMap<String, Integer> readKeggOrganisms() throws IOException, SQLException, DataFormatException {
-		URL listSource=new URL("http://www.genome.jp/kegg/catalog/org_list.html");
+		URL listSource = new URL("http://www.genome.jp/kegg/catalog/org_list.html");
 		String[] code = PageFetcher.fetchLines(listSource);
 		System.out.print("Reading KEGG organism list...");
 		TreeMap<String, Integer> mappingFromKeggIdsToDbIds = new TreeMap<String, Integer>(ObjectComparator.get());
@@ -599,12 +591,12 @@ public class dbtool {
 				String sql = null;
 				try {
 					KeggGenomeUrn urn = new KeggGenomeUrn(keggId);
-					
-					Integer cid=InteractionDB.createCompartment(speciesName,urn,currentKeggGroup,listSource);
-				  Tools.indent("");
 
-//					Integer cid = InteractionDB.getOrCreateCompartment(urn, currentKeggGroup,urn);
-//					InteractionDB.insertName(cid, speciesName);
+					Integer cid = InteractionDB.createCompartment(speciesName, urn, currentKeggGroup, listSource);
+					Tools.indent("");
+
+					// Integer cid = InteractionDB.getOrCreateCompartment(urn, currentKeggGroup,urn);
+					// InteractionDB.insertName(cid, speciesName);
 					mappingFromKeggIdsToDbIds.put(keggId, cid);
 				} catch (SQLException e) {
 					System.err.println(sql);
@@ -674,9 +666,10 @@ public class dbtool {
 	 */
 	private Stack<String> getKeggSubstanceIds() throws IOException {
 		Stack<String> result = new Stack<String>();
-		
-		/* Glykane werden vor den Compounds eingelesen, so dass die Compounds OBEN auf dem Stack liegen.
-		 * Das bewirkt wiederum, dass die Substanzen zuerst eingelesen werden, so dass auch deren Formeln genutzt werden */
+
+		/*
+		 * Glykane werden vor den Compounds eingelesen, so dass die Compounds OBEN auf dem Stack liegen. Das bewirkt wiederum, dass die Substanzen zuerst eingelesen werden, so dass auch deren Formeln genutzt werden
+		 */
 		int glycans = 0;
 		StringBuffer data = PageFetcher.fetch("http://www.genome.jp/dbget-bin/www_bfind_sub?max_hit=nolimit&dbkey=glycan&keywords=G");
 		int pos = 0;
@@ -691,9 +684,9 @@ public class dbtool {
 			} catch (NumberFormatException e) {}
 		}
 		Tools.indent("found " + glycans + " glycans.");
-		
-		if (!skipKeggCompounds){
-			int compounds=0;
+
+		if (!skipKeggCompounds) {
+			int compounds = 0;
 			data = PageFetcher.fetch("http://www.genome.jp/dbget-bin/www_bfind_sub?max_hit=nolimit&dbkey=compound&keywords=C");
 			pos = 0;
 			keggId = null;
@@ -714,7 +707,8 @@ public class dbtool {
 
 	/**
 	 * reads information about substances in the kegg database
-	 * @param source 
+	 * 
+	 * @param source
 	 * 
 	 * @return a mapping from kegg ids to their respecitve databse ids
 	 * 
@@ -723,8 +717,8 @@ public class dbtool {
 	 * @throws NameNotFoundException
 	 * @throws NoSuchMethodException
 	 * @throws DataFormatException
-	 * @throws AlreadyBoundException 
-	 * @throws NoTokenException 
+	 * @throws AlreadyBoundException
+	 * @throws NoTokenException
 	 */
 	private void readKeggSubstances(TreeMap<String, Integer> mappingFromKeggSubstanceIdsToDbIds) throws IOException, NameNotFoundException, SQLException, NoSuchMethodException, DataFormatException, AlreadyBoundException, NoTokenException {
 		Stack<String> keggSubstanceIds = getKeggSubstanceIds();
@@ -733,7 +727,7 @@ public class dbtool {
 		int count = 0;
 		System.out.print((100 * count / (keggSubstanceIds.size() + count)) + "% - ");
 		while (!keggSubstanceIds.isEmpty()) {
-			count++;			
+			count++;
 			if (InteractionDB.parseSubstanceInfo(keggSubstanceIds, mappingFromKeggSubstanceIdsToDbIds)) System.out.print((100 * count / (keggSubstanceIds.size() + count)) + "% - ");
 		}
 		InteractionDB.setDateMark("Read KEGG substances");
@@ -742,14 +736,15 @@ public class dbtool {
 
 	/**
 	 * reads the reaction description file from the kegg database and parses the reaction information (data is stored in the MYSQL database)
-	 * @param source 
+	 * 
+	 * @param source
 	 * 
 	 * @return a a mapping from the kegg reaction identifiers to the corrosponding MYSQL database ids
 	 * @throws IOException if the reaction data file cannot be downloaded
 	 * @throws DataFormatException
-	 * @throws SQLException 
-	 * @throws NoTokenException 
-	 * @throws AlreadyBoundException 
+	 * @throws SQLException
+	 * @throws NoTokenException
+	 * @throws AlreadyBoundException
 	 */
 	private TreeMap<String, Integer> readKeggReactions(TreeMap<String, Integer> mappingFromKeggIdsToDbIds) throws IOException, DataFormatException, SQLException, AlreadyBoundException, NoTokenException {
 		// String[] reactionInfos = PageFetcher.fetch("ftp://ftp.genome.jp/pub/kegg/ligand/reaction/reaction").toString().split("///");
@@ -758,6 +753,7 @@ public class dbtool {
 		while (!keggReactionIds.isEmpty()) {
 			System.out.print((100 * (++count) / (keggReactionIds.size() + count)) + "% - ");
 			String kid = keggReactionIds.peek();
+			if (count == 100) Tools.disableLogging();
 			if (mappingFromKeggIdsToDbIds.containsKey(kid)) {
 				System.out.println(kid + " already analyzed");
 				keggReactionIds.pop();
@@ -766,7 +762,6 @@ public class dbtool {
 					if (kid.contains("10121")) {
 						Tools.resetIntendation();
 						Tools.enableLogging();
-						
 					}
 					parseReactionInfo(keggReactionIds, mappingFromKeggIdsToDbIds);
 					if (kid.contains("10121")) Tools.disableLogging();
@@ -788,11 +783,11 @@ public class dbtool {
 	 * reads various data from the kegg database
 	 * 
 	 * @param mappingFromKeggOrganismIdsToDbIds
-	 * @param source 
+	 * @param source
 	 * 
 	 * @throws IOException
 	 * @throws DataFormatException
-	 * @throws SQLException 
+	 * @throws SQLException
 	 */
 	private void readKeggEnzymes(TreeMap<String, Integer> mappingFromKeggOrganismIdsToDbIds) throws IOException, DataFormatException, SQLException {
 		System.out.println("Reading enzyme list...");
@@ -830,7 +825,7 @@ public class dbtool {
 	 * parses the information text belonging to an enzyme
 	 * 
 	 * @param mappingFromKeggOrganismIdsToDbIds
-	 * @param source 
+	 * @param source
 	 * 
 	 * @param enzymeIds the text token from the enzyme description file
 	 * @throws SQLException if any database related error occurs
@@ -865,27 +860,27 @@ public class dbtool {
 				}
 				if (lines[++i].length() > 3) throw new UnexpectedException("Unexpected input '" + lines[i] + "' in line " + i + " of " + enzymeUrn.keggUrl());
 			}
-// TODO: read "Other DBs" links
+			// TODO: read "Other DBs" links
 		}
 
 		int enzymeDBId = InteractionDB.createEnzyme(names, enzymeCode, null, enzymeUrn, enzymeUrn.keggUrl());
-		InteractionDB.linkOrganismsToEnzyme(orgIds,enzymeDBId);
-		
-//		Statement statement = InteractionDB.createStatement();
-//		for (Iterator<Integer> it = orgIds.iterator(); it.hasNext();) {
-//			int organismDBId = it.next();
-//			String query = "INSERT INTO enzymes_compartments VALUES (" + organismDBId + "," + enzymeDBId + ")";
-//			try {
-//				statement.execute(query);
-//			} catch (SQLException e) {
-//				if (e.getMessage().contains("Duplicate key")) continue;
-//				System.err.println(query);
-//				throw e;
-//			}
-//		}
-//		for (Iterator<String> name = names.iterator(); name.hasNext();)
-//			InteractionDB.insertName(enzymeDBId, name.next());
-//		statement.close();
+		InteractionDB.linkOrganismsToEnzyme(orgIds, enzymeDBId);
+
+		// Statement statement = InteractionDB.createStatement();
+		// for (Iterator<Integer> it = orgIds.iterator(); it.hasNext();) {
+		// int organismDBId = it.next();
+		// String query = "INSERT INTO enzymes_compartments VALUES (" + organismDBId + "," + enzymeDBId + ")";
+		// try {
+		// statement.execute(query);
+		// } catch (SQLException e) {
+		// if (e.getMessage().contains("Duplicate key")) continue;
+		// System.err.println(query);
+		// throw e;
+		// }
+		// }
+		// for (Iterator<String> name = names.iterator(); name.hasNext();)
+		// InteractionDB.insertName(enzymeDBId, name.next());
+		// statement.close();
 		System.out.println("done");
 	}
 
@@ -894,21 +889,20 @@ public class dbtool {
 	 * 
 	 * @param token the description of a single reaction
 	 * @param mappingFromKeggIdsToDbIds a mapping, which is filled with references from the Kegg reaction identifiers to the MYSQL reaction ids
-	 * @param source 
+	 * @param source
 	 * @throws SQLException if errors occur while writing reaction information to the MYSQL database
 	 * @throws IOException
 	 * @throws NoSuchMethodException
 	 * @throws NameNotFoundException
 	 * @throws DataFormatException
-	 * @throws NoTokenException 
-	 * @throws AlreadyBoundException 
+	 * @throws NoTokenException
+	 * @throws AlreadyBoundException
 	 */
 	private void parseReactionInfo(Stack<String> unexploredKeggIds, TreeMap<String, Integer> mappingFromKeggIdsToDbIds) throws SQLException, IOException, NoSuchMethodException, NameNotFoundException, DataFormatException, AlreadyBoundException, NoTokenException {
 		String keggReactionId = unexploredKeggIds.pop();
-		Tools.startMethod("parseReactionInfo("+keggReactionId+", ...)");
+		Tools.startMethod("parseReactionInfo(" + keggReactionId + ", ...)");
 		TreeSet<URN> urns = new TreeSet<URN>(ObjectComparator.get());
 
-		
 		KeggReactionUrn reactionUrn = new KeggReactionUrn(keggReactionId);
 		urns.add(reactionUrn);
 		String description = reactionUrn.fetch();
@@ -945,8 +939,8 @@ public class dbtool {
 			if (lines[i].contains("<nobr>Name</nobr>")) {
 				while (!lines[++i].contains("</div>")) {
 					String name = Tools.removeHtml(lines[i]);
-					name=name.endsWith(";") ? (name.substring(0, name.length() - 1)) : name; // only remove end-of-line semicolons, preserve in-string semicolons
-					Tools.indent("add name "+name);
+					name = name.endsWith(";") ? (name.substring(0, name.length() - 1)) : name; // only remove end-of-line semicolons, preserve in-string semicolons
+					Tools.indent("add name " + name);
 					names.add(name);
 				}
 			}
@@ -954,8 +948,8 @@ public class dbtool {
 			if (lines[i].contains("<nobr>Definition</nobr>") && names.isEmpty()) {
 				while (!lines[++i].contains("</div>")) {
 					String definition = Tools.removeHtml(lines[i]);
-					String name=definition.endsWith(";") ? (definition.substring(0, definition.length() - 1)) : definition; // only remove endo-of-line semicolons, preserve in-string semicolons
-					Tools.indent("add name "+name+ "(from definition)");
+					String name = definition.endsWith(";") ? (definition.substring(0, definition.length() - 1)) : definition; // only remove endo-of-line semicolons, preserve in-string semicolons
+					Tools.indent("add name " + name + "(from definition)");
 					names.add(name);
 				}
 			}
@@ -969,7 +963,7 @@ public class dbtool {
 
 			if (lines[i].contains("<nobr>Equation</nobr>")) {
 				String equation = Tools.removeHtml(lines[++i]);
-				Tools.indent("equation: "+equation);
+				Tools.indent("equation: " + equation);
 				substrates = new TreeMap<Integer, Integer>();
 				products = new TreeMap<Integer, Integer>();
 				String[] equationParts = equation.split("<=>");
@@ -980,39 +974,33 @@ public class dbtool {
 				for (int k = 0; k < subs.length; k++) {
 					String dummy = replaceN(subs[k]).replace("(", "").replace(")", "");
 					int spacePos = dummy.indexOf(" ");
+					String substanceKeggId;
 					if (spacePos < 0) { // no stoichiometric coefficients
-						String substanceKeggId = dummy.substring(0, 6);
-						Tools.indent("substrate: "+substanceKeggId);
-//						substanceDbId = mappingFromKeggIdsToDbIds.get(substanceKeggId);
-						substanceDbId = InteractionDB.readIdFor(InteractionDB.urnForComponent(substanceKeggId));
-						if (substanceDbId == null) {
-							unexploredKeggIds.push(substanceKeggId);
-							while (!unexploredKeggIds.isEmpty()) InteractionDB.parseSubstanceInfo(unexploredKeggIds, mappingFromKeggIdsToDbIds);
-							substanceDbId = InteractionDB.readIdFor(InteractionDB.urnForComponent(substanceKeggId));
-							if (substanceDbId == null) {
-								Tools.warn("No information found for " + substanceKeggId + ", one of the substrates of reaction " + keggReactionId);
-								continue;
-							}
-						}
-						if (substrates.containsKey(substanceDbId)){
-							substrates.put(substanceDbId, substrates.get(substanceDbId)+1);
-						} else substrates.put(substanceDbId, 1);
+						substanceKeggId = dummy.substring(0, 6);
 					} else { // stoichiometric coefficients present
-						String substanceKeggId = dummy.substring(spacePos + 1, spacePos + 7);
-						Tools.indent("substrate: "+substanceKeggId);
-//						substanceDbId = mappingFromKeggIdsToDbIds.get(substanceKeggId);
+						substanceKeggId = dummy.substring(spacePos + 1, spacePos + 7);
+					}
+
+					Tools.indent("substrate: " + substanceKeggId);
+					// substanceDbId = mappingFromKeggIdsToDbIds.get(substanceKeggId);
+					substanceDbId = InteractionDB.readIdFor(InteractionDB.urnForComponent(substanceKeggId));
+					if (substanceDbId == null) {
+						unexploredKeggIds.push(substanceKeggId);
+						InteractionDB.parseSubstanceInfo(unexploredKeggIds, mappingFromKeggIdsToDbIds);
 						substanceDbId = InteractionDB.readIdFor(InteractionDB.urnForComponent(substanceKeggId));
 						if (substanceDbId == null) {
-							unexploredKeggIds.push(substanceKeggId);
-							while (!unexploredKeggIds.isEmpty()) InteractionDB.parseSubstanceInfo(unexploredKeggIds, mappingFromKeggIdsToDbIds);
-							substanceDbId = InteractionDB.readIdFor(InteractionDB.urnForComponent(substanceKeggId));
-							if (substanceDbId == null) {
-								Tools.warn("No information found for " + substanceKeggId + ", one of the substrates of reaction " + keggReactionId);
-								continue;
-							}
+							Tools.warn("No information found for " + substanceKeggId + ", one of the substrates of reaction " + keggReactionId);
+							continue;
 						}
-						if (substrates.containsKey(substanceDbId)){
-							substrates.put(substanceDbId, substrates.get(substanceDbId)+Integer.parseInt(dummy.substring(0, spacePos)));
+					}
+
+					if (spacePos < 0) {
+						if (substrates.containsKey(substanceDbId)) {
+							substrates.put(substanceDbId, substrates.get(substanceDbId) + 1);
+						} else substrates.put(substanceDbId, 1);
+					} else {
+						if (substrates.containsKey(substanceDbId)) {
+							substrates.put(substanceDbId, substrates.get(substanceDbId) + Integer.parseInt(dummy.substring(0, spacePos)));
 						} else substrates.put(substanceDbId, Integer.parseInt(dummy.substring(0, spacePos)));
 					}
 				}
@@ -1020,41 +1008,33 @@ public class dbtool {
 				for (int k = 0; k < prods.length; k++) {
 					String dummy = replaceN(prods[k]).replace("(", "").replace(")", "");
 					int spacePos = dummy.indexOf(" ");
+					String substanceKeggId;
 					if (spacePos < 0) {
-						String substanceKeggId = dummy.substring(0, 6);
-						Tools.indent("product: "+substanceKeggId);
-//						substanceDbId = mappingFromKeggIdsToDbIds.get(substanceKeggId);
+						substanceKeggId = dummy.substring(0, 6);
+					} else {
+						substanceKeggId = dummy.substring(spacePos + 1, spacePos + 7);
+					}
+					Tools.indent("product: " + substanceKeggId);
+					// substanceDbId = mappingFromKeggIdsToDbIds.get(substanceKeggId);
+					substanceDbId = InteractionDB.readIdFor(InteractionDB.urnForComponent(substanceKeggId));
+					if (substanceDbId == null) {
+						unexploredKeggIds.push(substanceKeggId);
+						InteractionDB.parseSubstanceInfo(unexploredKeggIds, mappingFromKeggIdsToDbIds);
 						substanceDbId = InteractionDB.readIdFor(InteractionDB.urnForComponent(substanceKeggId));
 						if (substanceDbId == null) {
-							unexploredKeggIds.push(substanceKeggId);
-							while (!unexploredKeggIds.isEmpty()) InteractionDB.parseSubstanceInfo(unexploredKeggIds, mappingFromKeggIdsToDbIds);
-							substanceDbId = InteractionDB.readIdFor(InteractionDB.urnForComponent(substanceKeggId));
-							if (substanceDbId == null) {
-								Tools.warn("No information found for " + substanceKeggId + ", one of the products of reaction " + keggReactionId);
-								continue;
-							}
+							Tools.warn("No information found for " + substanceKeggId + ", one of the products of reaction " + keggReactionId);
+							continue;
 						}
-						if (products.containsKey(substanceDbId)){
-							products.put(substanceDbId, products.get(substanceDbId)+1);
+					}
+					if (spacePos<0){
+						if (products.containsKey(substanceDbId)) {
+							products.put(substanceDbId, products.get(substanceDbId) + 1);
 						} else products.put(substanceDbId, 1);
 					} else {
-						String substanceKeggId = dummy.substring(spacePos + 1, spacePos + 7);
-						Tools.indent("product: "+substanceKeggId);
-//						substanceDbId = mappingFromKeggIdsToDbIds.get(substanceKeggId);
-						substanceDbId = InteractionDB.readIdFor(InteractionDB.urnForComponent(substanceKeggId));
-						if (substanceDbId == null) {
-							unexploredKeggIds.push(substanceKeggId);
-							while (!unexploredKeggIds.isEmpty()) InteractionDB.parseSubstanceInfo(unexploredKeggIds, mappingFromKeggIdsToDbIds);
-							substanceDbId = InteractionDB.readIdFor(InteractionDB.urnForComponent(substanceKeggId));
-							if (substanceDbId == null) {
-								Tools.warn("No information found for " + substanceKeggId + ", one of the products of reaction " + keggReactionId);
-								continue;
-							}
-						}
-						if (products.containsKey(substanceDbId)){
-							products.put(substanceDbId, products.get(substanceDbId)+Integer.parseInt(dummy.substring(0, spacePos)));
+						if (products.containsKey(substanceDbId)) {
+							products.put(substanceDbId, products.get(substanceDbId) + Integer.parseInt(dummy.substring(0, spacePos)));
 						} else products.put(substanceDbId, Integer.parseInt(dummy.substring(0, spacePos)));
-					}
+					}	
 				}
 			}
 			if (lines[i].contains("<nobr>Remark</nobr>")) {
@@ -1071,7 +1051,7 @@ public class dbtool {
 					for (int k = 0; k < dummy.length; k++) {
 						URN urn = InteractionDB.urnForComponent(dummy[k]);
 						if (urn != null) {
-							Tools.indent("same as "+dummy[k]);
+							Tools.indent("same as " + dummy[k]);
 							synonyms.add(dummy[k]);
 							urns.add(urn);
 						}
@@ -1083,8 +1063,8 @@ public class dbtool {
 				while (lines[i].contains("  "))
 					lines[i] = lines[i].replace("  ", " ");
 				String[] codes = lines[i].split(" ");
-				for (int k = 0; k < codes.length; k++){
-					Tools.indent("Enzyme: "+codes[k]);
+				for (int k = 0; k < codes.length; k++) {
+					Tools.indent("Enzyme: " + codes[k]);
 					enzymes.add(codes[k]);
 				}
 			}
@@ -1098,103 +1078,100 @@ public class dbtool {
 		for (Iterator<String> it = synonyms.iterator(); it.hasNext();)
 			unexploredKeggIds.push(it.next());
 
-		int rid = InteractionDB.createReaction(names,urns,spontan,reactionUrn.url());
-		
-		//int rid = InteractionDB.getOrCreateReactionId(urns,reactionUrn);
+		int rid = InteractionDB.createReaction(names, urns, spontan, reactionUrn.url());
+
+		// int rid = InteractionDB.getOrCreateReactionId(urns,reactionUrn);
 		mappingFromKeggIdsToDbIds.put(keggReactionId, rid);
 
-		/*Statement st = InteractionDB.createStatement();
-
-		ResultSet rs = st.executeQuery("SELECT name FROM names WHERE id=" + rid); // get name of the substance
-		while (rs.next())
-			names.remove(rs.getString(1)); // we must'n add names which are already in the database, so remove those names from the set of names to add
-		rs.close();
-
-		for (Iterator<String> name = names.iterator(); name.hasNext();)
-			InteractionDB.insertName(rid, name.next()); // add new names only
-*/
-
+		/*
+		 * Statement st = InteractionDB.createStatement();
+		 * 
+		 * ResultSet rs = st.executeQuery("SELECT name FROM names WHERE id=" + rid); // get name of the substance while (rs.next()) names.remove(rs.getString(1)); // we must'n add names which are already in the database, so remove those names from the set of names to add rs.close();
+		 * 
+		 * for (Iterator<String> name = names.iterator(); name.hasNext();) InteractionDB.insertName(rid, name.next()); // add new names only
+		 */
 
 		for (Iterator<Entry<Integer, Integer>> it = substrates.entrySet().iterator(); it.hasNext();) {
-			Entry<Integer, Integer> reactant = it.next();			
-			InteractionDB.addSubstrateToReaction(rid,reactant.getKey(),reactant.getValue());
+			Entry<Integer, Integer> reactant = it.next();
+			InteractionDB.addSubstrateToReaction(rid, reactant.getKey(), reactant.getValue());
 		}
 		for (Iterator<Entry<Integer, Integer>> it = products.entrySet().iterator(); it.hasNext();) {
 			Entry<Integer, Integer> reactant = it.next();
-			InteractionDB.addProductToReaction(rid,reactant.getKey(),reactant.getValue());
+			InteractionDB.addProductToReaction(rid, reactant.getKey(), reactant.getValue());
 		}
-		if (!enzymes.isEmpty())	InteractionDB.linkEnzymesToReaction(rid,enzymes);
-		if (!Tools.logging())System.out.println("done.");
+		if (!enzymes.isEmpty()) InteractionDB.linkEnzymesToReaction(rid, enzymes);
+		if (!Tools.logging()) System.out.println("done.");
 	}
 
 	private static String replaceN(String input) {
 		try {
 			do {
-				input=input.replace("n1","n").replace("n2", "m");
-				int npos=Math.max(input.indexOf("n"),input.indexOf("m"));
-				if (npos==-1) break;
-				int pos=npos;
-				while (pos>0 && Character.isDigit(input.charAt(pos-1))) pos--;
-				int factor=1;
-				if (pos>-1 && pos<npos) factor=Integer.parseInt(input.substring(pos,npos));
-				input=input.substring(0,pos)+(factor*Formula.nReplacement)+input.substring(npos+1);
+				input = input.replace("n1", "n").replace("n2", "m");
+				int npos = Math.max(input.indexOf("n"), input.indexOf("m"));
+				if (npos == -1) break;
+				int pos = npos;
+				while (pos > 0 && Character.isDigit(input.charAt(pos - 1)))
+					pos--;
+				int factor = 1;
+				if (pos > -1 && pos < npos) factor = Integer.parseInt(input.substring(pos, npos));
+				input = input.substring(0, pos) + (factor * Formula.nReplacement) + input.substring(npos + 1);
 			} while (true);
-			
-			int operatorPos=-1;
-			int plusPos=input.indexOf('+');
-			int minusPos=input.indexOf('-');
-			boolean addition=true;
-			if (plusPos>-1){
-				if (minusPos>-1) { // both operators present
-					operatorPos=Math.min(plusPos, minusPos);
-					addition=input.charAt(operatorPos)=='+';
-				} else operatorPos=plusPos; // only plus present		
-			} else if (minusPos>-1){
-				operatorPos=minusPos; // only minus present
-				addition=false;
+
+			int operatorPos = -1;
+			int plusPos = input.indexOf('+');
+			int minusPos = input.indexOf('-');
+			boolean addition = true;
+			if (plusPos > -1) {
+				if (minusPos > -1) { // both operators present
+					operatorPos = Math.min(plusPos, minusPos);
+					addition = input.charAt(operatorPos) == '+';
+				} else operatorPos = plusPos; // only plus present
+			} else if (minusPos > -1) {
+				operatorPos = minusPos; // only minus present
+				addition = false;
 			}
-		
-			while (operatorPos>0){
-				int index1=operatorPos;			
-				while (input.charAt(index1-1)==' ') index1--;
-				while (index1>0 && Character.isDigit(input.charAt(index1-1))) index1--;			
-				String dummy=input.substring(index1, operatorPos).trim();
-				int operand1=Integer.parseInt(dummy);
-			
-				int index2=operatorPos+1;
-				while (input.charAt(index2)==' ') index2++;
-				while (index2<input.length() && Character.isDigit(input.charAt(index2))) index2++;
-				dummy=input.substring(operatorPos+1, index2).trim();
-				int operand2=Integer.parseInt(dummy);
-			
-				String key=input.substring(index1,index2);
-				int sum=addition?operand1+operand2:operand1-operand2;
-				input=input.replace(key, ""+sum);
-			
-				operatorPos=-1;
-				plusPos=input.indexOf('+');
-				minusPos=input.indexOf('-');
-				addition=true;
-				if (plusPos>-1){
-					if (minusPos>-1) { // both operators present
-						operatorPos=Math.min(plusPos, minusPos);
-						addition=input.charAt(operatorPos)=='+';
-					} else operatorPos=plusPos; // only plus present		
-				} else if (minusPos>-1){
-					operatorPos=minusPos; // only minus present
-					addition=false;
+
+			while (operatorPos > 0) {
+				int index1 = operatorPos;
+				while (input.charAt(index1 - 1) == ' ')
+					index1--;
+				while (index1 > 0 && Character.isDigit(input.charAt(index1 - 1)))
+					index1--;
+				String dummy = input.substring(index1, operatorPos).trim();
+				int operand1 = Integer.parseInt(dummy);
+
+				int index2 = operatorPos + 1;
+				while (input.charAt(index2) == ' ')
+					index2++;
+				while (index2 < input.length() && Character.isDigit(input.charAt(index2)))
+					index2++;
+				dummy = input.substring(operatorPos + 1, index2).trim();
+				int operand2 = Integer.parseInt(dummy);
+
+				String key = input.substring(index1, index2);
+				int sum = addition ? operand1 + operand2 : operand1 - operand2;
+				input = input.replace(key, "" + sum);
+
+				operatorPos = -1;
+				plusPos = input.indexOf('+');
+				minusPos = input.indexOf('-');
+				addition = true;
+				if (plusPos > -1) {
+					if (minusPos > -1) { // both operators present
+						operatorPos = Math.min(plusPos, minusPos);
+						addition = input.charAt(operatorPos) == '+';
+					} else operatorPos = plusPos; // only plus present
+				} else if (minusPos > -1) {
+					operatorPos = minusPos; // only minus present
+					addition = false;
 				}
 			}
 			return input;
-		} catch (NumberFormatException nfe){
-			Tools.warn("dbtool.replaceN("+input+") failed!");
+		} catch (NumberFormatException nfe) {
+			Tools.warn("dbtool.replaceN(" + input + ") failed!");
 			throw nfe;
 		}
-  }
-
-
-
-
+	}
 
 	/**
 	 * removes all content, which contains ids larger than the given one, from the database
