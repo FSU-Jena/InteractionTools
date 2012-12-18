@@ -858,7 +858,8 @@ public class dbtool {
 					if (orgid == null) throw new UnexpectedException("Unexpectedly, we found no database id for the organism '" + org + "'");
 					orgIds.add(orgid);
 				}
-				if (lines[++i].length() > 3) throw new UnexpectedException("Unexpected input '" + lines[i] + "' in line " + i + " of " + enzymeUrn.keggUrl());
+				i++;
+				if (lines[i].length() > 3  && !lines[i].startsWith("<input type")) throw new UnexpectedException("Unexpected input '" + lines[i] + "' in line " + i + " of " + enzymeUrn.keggUrl());
 			}
 			// TODO: read "Other DBs" links
 		}
