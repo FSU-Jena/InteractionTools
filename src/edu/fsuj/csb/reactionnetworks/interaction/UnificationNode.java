@@ -1178,6 +1178,7 @@ public class UnificationNode extends DefaultMutableTreeNode implements MutableTr
 					line=Tools.removeHtml(lines[++i]).trim();					
 				}
 				smiles = line;;
+				Tools.note("Smiles found: "+smiles+" on "+url);
 				break;
 			}
 		}
