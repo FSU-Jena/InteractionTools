@@ -18,7 +18,6 @@ import edu.fsuj.csb.tools.xml.CachedXMLReader;
 import edu.fsuj.csb.tools.xml.NoTokenException;
 import edu.fsuj.csb.tools.xml.ObjectComparator;
 import edu.fsuj.csb.tools.xml.Tools;
-import edu.fsuj.csb.tools.xml.XMLReader;
 import edu.fsuj.csb.tools.xml.XmlToken;
 
 public class Biomodels {
