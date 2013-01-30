@@ -81,13 +81,13 @@ public class DatabasePane extends VerticalPanel implements ActionListener, Mouse
 	 * create a new database pane
 	 * 
 	 * @throws SQLException
-	 * @throws MalformedURLException 
 	 * @throws DataFormatException 
+	 * @throws IOException 
 	 * @throws ClassNotFoundException
 	 * @throws IllegalAccessException
 	 * @throws InstantiationException
 	 */
-	public DatabasePane() throws SQLException, MalformedURLException, DataFormatException {
+	public DatabasePane() throws SQLException, DataFormatException, IOException {
 		add(createAddModelPanel());
 		add(createUnificationPanel());
 		add(createExaminationButton());
@@ -105,10 +105,10 @@ public class DatabasePane extends VerticalPanel implements ActionListener, Mouse
 	/**
 	 * @return creates a unification panel including the tree of unified substances and a svg panel showing graphical information
 	 * @throws SQLException
-	 * @throws MalformedURLException
 	 * @throws DataFormatException
+	 * @throws IOException 
 	 */
-	private JComponent createUnificationPanel() throws SQLException, MalformedURLException, DataFormatException {
+	private JComponent createUnificationPanel() throws SQLException, DataFormatException, IOException {
 		System.out.println("   `- creating panel for unification examination...");
 		HorizontalPanel panel = new HorizontalPanel();
 		
@@ -125,11 +125,11 @@ public class DatabasePane extends VerticalPanel implements ActionListener, Mouse
 	/**
 	 * creates a swing component with the unification tree inside a scroll area
 	 * @return the swing component
-	 * @throws MalformedURLException
 	 * @throws SQLException
 	 * @throws DataFormatException
+	 * @throws IOException 
 	 */
-	private JComponent createUnificationTree() throws MalformedURLException, SQLException, DataFormatException {
+	private JComponent createUnificationTree() throws SQLException, DataFormatException, IOException {
 		unificationTree=new JTree(getUnificationTree());
 		unificationTree.addMouseListener(this);
 		unificationTree.addTreeSelectionListener(this);		
@@ -144,10 +144,10 @@ public class DatabasePane extends VerticalPanel implements ActionListener, Mouse
 	 * creates a treee of nodes which include unifications
 	 * @return the reference to the root of the tree
 	 * @throws SQLException
-	 * @throws MalformedURLException
 	 * @throws DataFormatException
+	 * @throws IOException 
 	 */
-	public static DefaultMutableTreeNode getUnificationTree() throws SQLException, MalformedURLException, DataFormatException {
+	public static DefaultMutableTreeNode getUnificationTree() throws SQLException, DataFormatException, IOException {
 		Vector<Integer> ids = InteractionDB.getIdsOfSubstancesWithMultipleReferencingURLs();
 		DefaultMutableTreeNode root=new DefaultMutableTreeNode("Unifications ("+ids.size()+")");
 		TreeSet<MutableTreeNode> nodes=new TreeSet<MutableTreeNode>(ObjectComparator.get());
@@ -160,7 +160,7 @@ public class DatabasePane extends VerticalPanel implements ActionListener, Mouse
 	  return root;
   }
 
-	private JComponent createAddModelPanel() throws SQLException {
+	private JComponent createAddModelPanel() throws SQLException, IOException {
 		HorizontalPanel addModelPanel = new HorizontalPanel();
 		loadFileButton = new JButton("load SBML file");
 		loadFileButton.addActionListener(this);
@@ -182,11 +182,12 @@ public class DatabasePane extends VerticalPanel implements ActionListener, Mouse
 	 * 
 	 * @return the newly created drop-down list
 	 * @throws SQLException
+	 * @throws IOException 
 	 * @throws ClassNotFoundException
 	 * @throws IllegalAccessException
 	 * @throws InstantiationException
 	 */
-	private JComboBox createDropDown() throws SQLException {
+	private JComboBox createDropDown() throws SQLException, IOException {
 		Statement st = InteractionDB.createStatement();
 		ResultSet rs = st.executeQuery("SELECT id,name FROM names NATURAL JOIN ids WHERE type=" + InteractionDB.COMPARTMENT_GROUP);
 		Vector<String> strings = new Vector<String>();
@@ -255,8 +256,9 @@ public class DatabasePane extends VerticalPanel implements ActionListener, Mouse
 	 * @param sources the drop-down list, on which this method is applied
 	 * @return the group index of the selected group
 	 * @throws SQLException
+	 * @throws IOException 
 	 */
-	private int getGroup(JComboBox sources) throws SQLException {
+	private int getGroup(JComboBox sources) throws SQLException, IOException {
 		int i = sources.getSelectedIndex();
 		if (i + 1 == sources.getItemCount()) return addGroup();
 		return mappingFromGroupIndicesToIds.get(i);
@@ -267,8 +269,9 @@ public class DatabasePane extends VerticalPanel implements ActionListener, Mouse
 	 * 
 	 * @return the number of the added group
 	 * @throws SQLException
+	 * @throws IOException 
 	 */
-	private int addGroup() throws SQLException {
+	private int addGroup() throws SQLException, IOException {
 		String groupname = JOptionPane.showInputDialog("Enter name of new Group");
 		int id = InteractionDB.getOrCreateGroup(groupname);
 		int index = sources.getItemCount() - 1;
@@ -324,7 +327,9 @@ public class DatabasePane extends VerticalPanel implements ActionListener, Mouse
 		      }      
 		    } catch (SQLException e1) {
 		      e1.printStackTrace();
-		    }				
+		    } catch (IOException e) {
+	        e.printStackTrace();
+        }				
 				try {
 		      Set<URL> sites=urnNode.getUrn().urls();
 		      if (!sites.isEmpty()) {
@@ -439,19 +444,21 @@ public class DatabasePane extends VerticalPanel implements ActionListener, Mouse
   }
 
 
-	public void valueChanged(TreeSelectionEvent e) {
+	public void valueChanged(TreeSelectionEvent event) {
 		Object lastSelected = unificationTree.getLastSelectedPathComponent();
 		if (lastSelected instanceof SubstanceNode){
 			try {
 				SubstanceNode sn=((SubstanceNode) lastSelected);
 	      sn.loadDetails();
         sn.insert(referencingUrls(sn.substance().id()),0);
-      } catch (MalformedURLException e1) {
-	      e1.printStackTrace();
-      } catch (DataFormatException e1) {
-	      e1.printStackTrace();
-      } catch (SQLException e1) {
-	      e1.printStackTrace();
+      } catch (MalformedURLException e) {
+	      e.printStackTrace();
+      } catch (DataFormatException e) {
+	      e.printStackTrace();
+      } catch (SQLException e) {
+	      e.printStackTrace();
+      } catch (IOException e) {
+	      e.printStackTrace();
       }
 		} else if (lastSelected instanceof DefaultMutableTreeNode) {
 	    DefaultMutableTreeNode node = (DefaultMutableTreeNode) lastSelected;	    
@@ -471,7 +478,7 @@ public class DatabasePane extends VerticalPanel implements ActionListener, Mouse
   }
 
 
-	private MutableTreeNode referencingUrls(int id) throws SQLException {
+	private MutableTreeNode referencingUrls(int id) throws SQLException, IOException {
 		DefaultMutableTreeNode result=new DefaultMutableTreeNode("referencing URLs");
 		Vector<URL> urls = InteractionDB.getReferencingURLs(id);
 		for (Iterator<URL> it = urls.iterator(); it.hasNext();) {

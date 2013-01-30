@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.sql.SQLException;
 import java.util.Enumeration;
@@ -230,7 +231,7 @@ public class CompartmentList extends VerticalPanel implements ChangeListener, Mo
 	 */
 	public void mouseReleased(MouseEvent arg0) {  }
 
-	public void valueChanged(TreeSelectionEvent e) {
+	public void valueChanged(TreeSelectionEvent event) {
 		Object lastSelected = compartmentTree.getLastSelectedPathComponent();
 		if (lastSelected instanceof CompartmentNode){
 			try {
@@ -243,6 +244,8 @@ public class CompartmentList extends VerticalPanel implements ChangeListener, Mo
 	      e2.printStackTrace();
       } catch (DataFormatException e1) {
 	      e1.printStackTrace();
+      } catch (IOException e) {
+	      e.printStackTrace();
       }
 		}		
   }

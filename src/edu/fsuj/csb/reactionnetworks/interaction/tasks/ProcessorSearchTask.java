@@ -58,8 +58,9 @@ public class ProcessorSearchTask extends CalculationTask {
 	 * @param sids a set of substrates ("seed")
 	 * @return the set of substances, which may reached from the seed by processing through spontaneous reactions
 	 * @throws SQLException
+	 * @throws IOException 
 	 */
-	public static TreeSet<Integer> getSpontaneousClosure(TreeSet<Integer> sids) throws SQLException {
+	public static TreeSet<Integer> getSpontaneousClosure(TreeSet<Integer> sids) throws SQLException, IOException {
 		TreeSet<Integer> reactions = getSpontaneousReactions();
 		TreeSet<Integer> result = new TreeSet<Integer>(sids);
 		int size = 0;
@@ -77,8 +78,9 @@ public class ProcessorSearchTask extends CalculationTask {
 	/**
 	 * @return the set of all reactions that may fire spontaneously, when supplied with the appropriate substrates
 	 * @throws SQLException
+	 * @throws IOException 
 	 */
-	public static TreeSet<Integer> getSpontaneousReactions() throws SQLException {
+	public static TreeSet<Integer> getSpontaneousReactions() throws SQLException, IOException {
 		Statement st = InteractionDB.createStatement();
 		String query = "SELECT id FROM reactions WHERE spontan";
 
@@ -91,7 +93,7 @@ public class ProcessorSearchTask extends CalculationTask {
 		return reactions;
 	}
 	
-	private static TreeMap<Integer, TreeSet<Integer>> findProcessors(TreeSet<Integer> substances) throws SQLException {
+	private static TreeMap<Integer, TreeSet<Integer>> findProcessors(TreeSet<Integer> substances) throws SQLException, IOException {
 		
 		TreeMap<Integer,TreeSet<Integer>> mappingFromCompartmentsToProcessedSubstances=new TreeMap<Integer, TreeSet<Integer>>(ObjectComparator.get());
 		for (Iterator<Integer> substanceIterator = substances.iterator();substanceIterator.hasNext();){
@@ -112,7 +114,7 @@ public class ProcessorSearchTask extends CalculationTask {
   }
 
 
-	private static TreeSet<Integer> findProcessors(int substanceId) throws SQLException {
+	private static TreeSet<Integer> findProcessors(int substanceId) throws SQLException, IOException {
 		//System.out.println("findProcessors("+substanceId+")");
 	  TreeSet<Integer> forwardReactions = findForwardReactions(substanceId); // find reactions, which have the targets on their substrate site
 	  //System.out.println("forwardReactions: "+forwardReactions);
@@ -135,8 +137,9 @@ public class ProcessorSearchTask extends CalculationTask {
 	 * @param sid database id of a substance
 	 * @return all those reactions, which have this substance in their substrate set
 	 * @throws SQLException
+	 * @throws IOException 
 	 */
-	public static TreeSet<Integer> findForwardReactions(int sid) throws SQLException {
+	public static TreeSet<Integer> findForwardReactions(int sid) throws SQLException, IOException {
 		String query = "SELECT DISTINCT rid FROM substrates WHERE sid = " + sid;
 		// System.out.print(query);
 		TreeSet<Integer> forwardReactions = new TreeSet<Integer>();
@@ -154,8 +157,9 @@ public class ProcessorSearchTask extends CalculationTask {
 	 * @param sid the database id of a certain substance
 	 * @return a set of all the reactions, which have this substance in their product set
 	 * @throws SQLException
+	 * @throws IOException 
 	 */
-	public static TreeSet<Integer> findBackwardReactions(int sid) throws SQLException {
+	public static TreeSet<Integer> findBackwardReactions(int sid) throws SQLException, IOException {
 		String query = "SELECT DISTINCT rid FROM products WHERE sid=" + sid;
 		// System.out.print(query);
 		TreeSet<Integer> backwardReactions = new TreeSet<Integer>();
@@ -168,7 +172,7 @@ public class ProcessorSearchTask extends CalculationTask {
 		st.close();
 		return backwardReactions;
 	}
-	private static TreeSet<Integer> findBackwardCompartments(TreeSet<Integer> backwardReactions) throws SQLException {
+	private static TreeSet<Integer> findBackwardCompartments(TreeSet<Integer> backwardReactions) throws SQLException, IOException {
 		TreeSet<Integer> compartments=new TreeSet<Integer>();
 	  for (Iterator<Integer> reactionIterator = backwardReactions.iterator();reactionIterator.hasNext();){
 	  	compartments.addAll(findBackwardCompartments(reactionIterator.next()));
@@ -176,7 +180,7 @@ public class ProcessorSearchTask extends CalculationTask {
 	  return compartments;
   }
 	
-	private static TreeSet<Integer> findBackwardCompartments(Integer rid) throws SQLException {
+	private static TreeSet<Integer> findBackwardCompartments(Integer rid) throws SQLException, IOException {
 		//System.out.println(Reaction.get(rid));
 		String query="SELECT eid FROM reaction_enzymes WHERE rid="+rid;
 		//System.out.print(query);
@@ -211,7 +215,7 @@ public class ProcessorSearchTask extends CalculationTask {
 	  return compartments;
   }
 	
-	private static TreeSet<Integer> findForwardCompartments(TreeSet<Integer> forwardReactions) throws SQLException {
+	private static TreeSet<Integer> findForwardCompartments(TreeSet<Integer> forwardReactions) throws SQLException, IOException {
 		TreeSet<Integer> compartments=new TreeSet<Integer>();
 	  for (Iterator<Integer> reactionIterator = forwardReactions.iterator();reactionIterator.hasNext();){
 	  	compartments.addAll(findForwardCompartments(reactionIterator.next()));
@@ -219,7 +223,7 @@ public class ProcessorSearchTask extends CalculationTask {
 	  return compartments;
   }
 
-	private static TreeSet<Integer> findForwardCompartments(Integer rid) throws SQLException {
+	private static TreeSet<Integer> findForwardCompartments(Integer rid) throws SQLException, IOException {
 		//System.out.println(Reaction.get(rid));
 	  String query="SELECT eid FROM reaction_enzymes WHERE rid="+rid;		
 		//System.out.print(query);

@@ -201,13 +201,12 @@ public class SBMLLoader {
 	 * @throws SQLException
 	 * @throws NoSuchAlgorithmException
 	 * @throws NoSuchAttributeException if a referenced compartment is missing
-	 * @throws MalformedURLException
 	 * @throws DataFormatException
 	 * @throws NoSuchMethodException
 	 * @throws NoTokenException 
-	 * @throws UnexpectedException 
+	 * @throws IOException 
 	 */
-	private static void writeSbmlIntoDatabase(XmlToken sbmlToken, MD5Hash fileHash, int groupnumber, DbCompartment superCompartment, URL source) throws SQLException, NoSuchAlgorithmException, NoSuchAttributeException, MalformedURLException, NoSuchMethodException, DataFormatException, NoTokenException, UnexpectedException {
+	private static void writeSbmlIntoDatabase(XmlToken sbmlToken, MD5Hash fileHash, int groupnumber, DbCompartment superCompartment, URL source) throws SQLException, NoSuchAlgorithmException, NoSuchAttributeException, NoSuchMethodException, DataFormatException, NoTokenException, IOException {
 		TreeMap<String, Integer> mapFromCompartmentIdsToDbIds = new TreeMap<String, Integer>(ObjectComparator.get());
 		TreeMap<String, Integer> mapFromSubstanceIdsToDbIds = new TreeMap<String, Integer>(ObjectComparator.get());
 		TreeMap<Integer, Integer> mapFromSubstanceToCompartment = new TreeMap<Integer, Integer>();
@@ -236,13 +235,12 @@ public class SBMLLoader {
 	 * @throws SQLException
 	 * @throws NoSuchAlgorithmException
 	 * @throws NoSuchAttributeException if a referenced compartment is missing
-	 * @throws MalformedURLException
 	 * @throws DataFormatException
 	 * @throws NoSuchMethodException
 	 * @throws NoTokenException 
-	 * @throws UnexpectedException 
+	 * @throws IOException 
 	 */
-	private static void writeModelIntoDatabase(XmlToken model, MD5Hash fileHash, int groupnumber, TreeMap<String, Integer> mapFromCompartmentIdsToCids, TreeMap<String, Integer> mapFromSubstanceIdsToSids, TreeMap<Integer, Integer> mapFromSubstanceToCompartment, DbCompartment superCompartment, URL source, TreeMap<String, String> mapFromModelSubstanceToECNumber) throws SQLException, NoSuchAlgorithmException, NoSuchAttributeException, MalformedURLException, NoSuchMethodException, DataFormatException, NoTokenException, UnexpectedException {
+	private static void writeModelIntoDatabase(XmlToken model, MD5Hash fileHash, int groupnumber, TreeMap<String, Integer> mapFromCompartmentIdsToCids, TreeMap<String, Integer> mapFromSubstanceIdsToSids, TreeMap<Integer, Integer> mapFromSubstanceToCompartment, DbCompartment superCompartment, URL source, TreeMap<String, String> mapFromModelSubstanceToECNumber) throws SQLException, NoSuchAlgorithmException, NoSuchAttributeException, NoSuchMethodException, DataFormatException, NoTokenException, IOException {
 		String modelName = model.getValue("name");
 		if (modelName == null) modelName = model.getValue("id");
 		if (modelName == null) modelName = fileHash.toString();
@@ -270,12 +268,11 @@ public class SBMLLoader {
 	 * @param source 
 	 * @throws SQLException
 	 * @throws NoSuchAlgorithmException
-	 * @throws MalformedURLException
 	 * @throws DataFormatException
 	 * @throws NoSuchMethodException
-	 * @throws UnexpectedException 
+	 * @throws IOException 
 	 */
-	private static void writeCompartmentListIntoDatabase(XmlToken compartmentList, MD5Hash fileHash, int groupnumber, TreeMap<String, Integer> mapFromCompartmentIdsToCids, String modelName, DbCompartment superCompartment, URL source) throws SQLException, NoSuchAlgorithmException, MalformedURLException, NoSuchMethodException, DataFormatException, UnexpectedException {
+	private static void writeCompartmentListIntoDatabase(XmlToken compartmentList, MD5Hash fileHash, int groupnumber, TreeMap<String, Integer> mapFromCompartmentIdsToCids, String modelName, DbCompartment superCompartment, URL source) throws SQLException, NoSuchAlgorithmException, NoSuchMethodException, DataFormatException, IOException {
 		Vector<XmlToken> unparsedSubTokens = new Vector<XmlToken>();
 		for (Iterator<XmlToken> it = compartmentList.subtokenIterator(); it.hasNext();)	unparsedSubTokens.add(it.next());
 		while (!unparsedSubTokens.isEmpty()) {
@@ -305,12 +302,11 @@ public class SBMLLoader {
 	 * @param mapFromModelSubstanceToECNumber 
 	 * @throws SQLException
 	 * @throws NoSuchAttributeException if a referenced compartment is not present.
-	 * @throws MalformedURLException
 	 * @throws DataFormatException
 	 * @throws NoSuchMethodException 
-	 * @throws UnexpectedException 
+	 * @throws IOException 
 	 */
-	private static void writeSubstancesListIntoDatabase(XmlToken token, MD5Hash fileHash, int groupnumber, TreeMap<String, Integer> mapFromSubstanceIdsToCids, TreeMap<String, Integer> mapFromCompartmentIdsToCids, TreeMap<Integer, Integer> mapFromSubstanceToCompartment, DbCompartment superCompartment, URL source, TreeMap<String, String> mapFromModelSubstanceToECNumber) throws SQLException, NoSuchAttributeException, MalformedURLException, DataFormatException, NoSuchMethodException, UnexpectedException {
+	private static void writeSubstancesListIntoDatabase(XmlToken token, MD5Hash fileHash, int groupnumber, TreeMap<String, Integer> mapFromSubstanceIdsToCids, TreeMap<String, Integer> mapFromCompartmentIdsToCids, TreeMap<Integer, Integer> mapFromSubstanceToCompartment, DbCompartment superCompartment, URL source, TreeMap<String, String> mapFromModelSubstanceToECNumber) throws SQLException, NoSuchAttributeException, DataFormatException, NoSuchMethodException, IOException {
 		for (Iterator<XmlToken> it = token.subtokenIterator(); it.hasNext();) {
 			XmlToken subtoken = it.next();
 			if (subtoken.instanceOf("species")) {
@@ -334,9 +330,9 @@ public class SBMLLoader {
 	 * @throws NoSuchAlgorithmException
 	 * @throws NoTokenException 
 	 * @throws NoSuchMethodException 
-	 * @throws UnexpectedException 
+	 * @throws IOException 
 	 */
-	private static void writeReactionListIntoDatabase(XmlToken token, MD5Hash fileHash, int groupnumber, TreeMap<String, Integer> mapFromSubstanceIdsToSids, TreeMap<String, Integer> mapFromCompartmentIdsToCids, TreeMap<Integer, Integer> mapFromSubstanceToCompartment, DbCompartment superCompartment,URL source, TreeMap<String, String> mapFromModelSubstanceToECNumber) throws SQLException, NoSuchAlgorithmException, NoTokenException, UnexpectedException, NoSuchMethodException {
+	private static void writeReactionListIntoDatabase(XmlToken token, MD5Hash fileHash, int groupnumber, TreeMap<String, Integer> mapFromSubstanceIdsToSids, TreeMap<String, Integer> mapFromCompartmentIdsToCids, TreeMap<Integer, Integer> mapFromSubstanceToCompartment, DbCompartment superCompartment,URL source, TreeMap<String, String> mapFromModelSubstanceToECNumber) throws SQLException, NoSuchAlgorithmException, NoTokenException, NoSuchMethodException, IOException {
 		for (Iterator<XmlToken> it = token.subtokenIterator(); it.hasNext();) {
 			XmlToken subtoken = it.next();
 
@@ -358,12 +354,11 @@ public class SBMLLoader {
 	 * @param source 
 	 * @throws SQLException
 	 * @throws NoSuchAlgorithmException
-	 * @throws MalformedURLException
 	 * @throws NoSuchMethodException
 	 * @throws DataFormatException
-	 * @throws UnexpectedException 
+	 * @throws IOException 
 	 */
-	private static void writeCompartmentIntoDatabase(XmlToken token, MD5Hash fileHash, int groupNumber, TreeMap<String, Integer> mapFromCompartmentIdsToCids, DbCompartment superCompartment, URL source) throws SQLException, NoSuchAlgorithmException, MalformedURLException, NoSuchMethodException, DataFormatException, UnexpectedException {
+	private static void writeCompartmentIntoDatabase(XmlToken token, MD5Hash fileHash, int groupNumber, TreeMap<String, Integer> mapFromCompartmentIdsToCids, DbCompartment superCompartment, URL source) throws SQLException, NoSuchAlgorithmException, NoSuchMethodException, DataFormatException, IOException {
 		String idUsedInFile = token.getValue("id");
 		String nameUsedInFile = token.getValue("name");
 		
@@ -687,12 +682,11 @@ public class SBMLLoader {
 	 * @param mapFromModelSubstanceToECNumber 
 	 * @throws SQLException
 	 * @throws NoSuchAttributeException if a referenced compartment is not present.
-	 * @throws MalformedURLException
 	 * @throws DataFormatException
 	 * @throws NoSuchMethodException 
-	 * @throws UnexpectedException 
+	 * @throws IOException 
 	 */
-	private static void writeSpeciesIntoDatabase(XmlToken token, MD5Hash fileHash, int groupNumber, TreeMap<String, Integer> mapFromSubstanceIdsToCids, TreeMap<String, Integer> mapFromCompartmentIdsToCids, TreeMap<Integer, Integer> mapFromSubstanceToCompartment,DbCompartment supercompartment, URL source, TreeMap<String, String> mapFromModelSubstanceToECNumber) throws SQLException, NoSuchAttributeException, MalformedURLException, DataFormatException, NoSuchMethodException, UnexpectedException {
+	private static void writeSpeciesIntoDatabase(XmlToken token, MD5Hash fileHash, int groupNumber, TreeMap<String, Integer> mapFromSubstanceIdsToCids, TreeMap<String, Integer> mapFromCompartmentIdsToCids, TreeMap<Integer, Integer> mapFromSubstanceToCompartment,DbCompartment supercompartment, URL source, TreeMap<String, String> mapFromModelSubstanceToECNumber) throws SQLException, NoSuchAttributeException, DataFormatException, NoSuchMethodException, IOException {
 		String id = token.getValue("id");
 		String name = token.getValue("name");
 		if (name!=null && name.equals(".")) {
@@ -863,9 +857,9 @@ public class SBMLLoader {
 	 * @throws NoSuchAlgorithmException
 	 * @throws NoTokenException 
 	 * @throws NoSuchMethodException 
-	 * @throws UnexpectedException 
+	 * @throws IOException 
 	 */
-	private static void writeReactionIntoDatabase(XmlToken token, TreeMap<String, Integer> mapFromSubstanceIdsToSids, TreeMap<String, Integer> mapFromCompartmentIdsToCids, TreeMap<Integer, Integer> mapFromSubstanceToCompartment, MD5Hash fileHash, DbCompartment superCompartment,URL source, TreeMap<String, String> mapFromModelSubstanceToECNumber) throws SQLException, NoSuchAlgorithmException, NoTokenException, UnexpectedException, NoSuchMethodException {
+	private static void writeReactionIntoDatabase(XmlToken token, TreeMap<String, Integer> mapFromSubstanceIdsToSids, TreeMap<String, Integer> mapFromCompartmentIdsToCids, TreeMap<Integer, Integer> mapFromSubstanceToCompartment, MD5Hash fileHash, DbCompartment superCompartment,URL source, TreeMap<String, String> mapFromModelSubstanceToECNumber) throws SQLException, NoSuchAlgorithmException, NoTokenException, NoSuchMethodException, IOException {
 		String idString = token.getValue("id");
 		String name = token.getValue("name");
 		if (name!=null && name.equals(".")) {
@@ -929,9 +923,10 @@ public class SBMLLoader {
 	 * @param mapFROMSubstanceIdsToSids
 	 * @return
 	 * @throws SQLException
+	 * @throws IOException 
 	 * @throws NoTokenException 
 	 */
-	private static TreeSet<Integer> writeReactionReactantsIntoDatabase(XmlToken token, int rid, TreeMap<String, Integer> mapFROMSubstanceIdsToSids) throws SQLException {
+	private static TreeSet<Integer> writeReactionReactantsIntoDatabase(XmlToken token, int rid, TreeMap<String, Integer> mapFROMSubstanceIdsToSids) throws SQLException, IOException {
 		TreeSet<Integer> databaseIds = new TreeSet<Integer>();
 		if (!token.subtokenIterator().hasNext()) Tools.warn("no reactants found in reactant list!");
 		for (Iterator<XmlToken> it = token.subtokenIterator(); it.hasNext();) {
@@ -951,8 +946,9 @@ public class SBMLLoader {
 	 * @return
 	 * @throws SQLException
 	 * @throws NoTokenException 
+	 * @throws IOException 
 	 */
-	private static TreeSet<Integer> writeReactionProductsIntoDatabase(XmlToken token, int rid, TreeMap<String, Integer> mapFROMSubstanceIdsToSids) throws SQLException, NoTokenException {
+	private static TreeSet<Integer> writeReactionProductsIntoDatabase(XmlToken token, int rid, TreeMap<String, Integer> mapFROMSubstanceIdsToSids) throws SQLException, NoTokenException, IOException {
 		TreeSet<Integer> databaseIds = new TreeSet<Integer>();
 		if (!token.subtokenIterator().hasNext()) Tools.warn("no products found in product list!");
 		for (Iterator<XmlToken> it = token.subtokenIterator(); it.hasNext();) {
@@ -974,8 +970,9 @@ public class SBMLLoader {
 	 * @return the set of database ids of the given modifiers
 	 * @throws SQLException
 	 * @throws NoSuchAlgorithmException
+	 * @throws IOException 
 	 */
-	private static TreeSet<Integer> writeReactionModifiersIntoDatabase(XmlToken token, int rid, TreeMap<String, Integer> mapFROMSubstanceIdsToSids, MD5Hash fileHash, TreeMap<String, String> mapFromModelSubstanceToECNumber) throws SQLException, NoSuchAlgorithmException {
+	private static TreeSet<Integer> writeReactionModifiersIntoDatabase(XmlToken token, int rid, TreeMap<String, Integer> mapFROMSubstanceIdsToSids, MD5Hash fileHash, TreeMap<String, String> mapFromModelSubstanceToECNumber) throws SQLException, NoSuchAlgorithmException, IOException {
 		TreeSet<Integer> databaseIds = new TreeSet<Integer>();
 		for (Iterator<XmlToken> it = token.subtokenIterator(); it.hasNext();) {
 			XmlToken subtoken = it.next();
@@ -992,8 +989,9 @@ public class SBMLLoader {
 	 * @param cids
 	 * @param reversible the hash-value of the sbml file containing the reaction
 	 * @throws SQLException
+	 * @throws IOException 
 	 */
-	private static void setReactionDirection(int rid, Collection<Integer> cids, String reversible) throws SQLException {
+	private static void setReactionDirection(int rid, Collection<Integer> cids, String reversible) throws SQLException, IOException {
 		Statement st = InteractionDB.createStatement();
 		String query;
 		for (Iterator<Integer> cit = cids.iterator(); cit.hasNext();) {
@@ -1013,8 +1011,9 @@ public class SBMLLoader {
 	 * @param mapFromSubstanceIdsToSids
 	 * @return
 	 * @throws SQLException
+	 * @throws IOException 
 	 */
-	private static int writeReactantSpeciesReferenceIntoDatabase(XmlToken token, int rid, TreeMap<String, Integer> mapFromSubstanceIdsToSids) throws SQLException {
+	private static int writeReactantSpeciesReferenceIntoDatabase(XmlToken token, int rid, TreeMap<String, Integer> mapFromSubstanceIdsToSids) throws SQLException, IOException {
 		String ref = token.getValue("species");
 		String stoichValue=token.getValue("stoichiometry");
 		double stoich=1.0;
@@ -1046,8 +1045,9 @@ public class SBMLLoader {
 	 * @param mapFROMSubstanceIdsToSids a map from the substances ids used in the model file to their respective database ids
 	 * @return the database id of the referenced substance
 	 * @throws SQLException
+	 * @throws IOException 
 	 */
-	private static int writeProductSpeciesReferenceIntoDatabase(XmlToken token, int rid, TreeMap<String, Integer> mapFROMSubstanceIdsToSids) throws SQLException {
+	private static int writeProductSpeciesReferenceIntoDatabase(XmlToken token, int rid, TreeMap<String, Integer> mapFROMSubstanceIdsToSids) throws SQLException, IOException {
 		String ref = token.getValue("species");
 		String stoichValue=token.getValue("stoichiometry");
 		double stoich=1.0;
@@ -1082,8 +1082,9 @@ public class SBMLLoader {
 	 * @return
 	 * @throws SQLException
 	 * @throws NoSuchAlgorithmException
+	 * @throws IOException 
 	 */
-	private static void writeModifierSpeciesReferenceIntoDatabase(MD5Hash fileHash, XmlToken token, int rid, TreeMap<String, Integer> mapFromSubstanceIdsToSids, TreeMap<String, String> mapFromModelSubstanceToECNumber) throws SQLException, NoSuchAlgorithmException {
+	private static void writeModifierSpeciesReferenceIntoDatabase(MD5Hash fileHash, XmlToken token, int rid, TreeMap<String, Integer> mapFromSubstanceIdsToSids, TreeMap<String, String> mapFromModelSubstanceToECNumber) throws SQLException, NoSuchAlgorithmException, IOException {
 		String ref = token.getValue("species");
 		int sid = mapFromSubstanceIdsToSids.get(ref);
 		

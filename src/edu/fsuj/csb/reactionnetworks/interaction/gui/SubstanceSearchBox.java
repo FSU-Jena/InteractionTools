@@ -3,6 +3,7 @@ package edu.fsuj.csb.reactionnetworks.interaction.gui;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -57,12 +58,14 @@ public class SubstanceSearchBox extends JComboBox implements KeyListener {
 		  st.close();
     } catch (SQLException e) {
 	    e.printStackTrace();
+    } catch (IOException e) {
+	    e.printStackTrace();
     }
   }
 	
 	@Override
-	public void actionPerformed(ActionEvent e) {
-		super.actionPerformed(e);
+	public void actionPerformed(ActionEvent event) {
+		super.actionPerformed(event);
 		Object item = this.getSelectedItem();
 		if (item instanceof String){
 			String s=(String)item;
@@ -70,11 +73,13 @@ public class SubstanceSearchBox extends JComboBox implements KeyListener {
 	      addSubstancesToList(s);
       } catch (SQLException e1) {
 	      e1.printStackTrace();
+      } catch (IOException e) {
+	      e.printStackTrace();
       }
 		}
 	}
 
-	private void addSubstancesToList(String s) throws SQLException {
+	private void addSubstancesToList(String s) throws SQLException, IOException {
 		//System.err.println("SubstanceSearchBox.addSubstancesToLost("+s+")");
 		String query="SELECT DISTINCT id FROM names NATURAL JOIN id_names NATURAL JOIN ids WHERE type="+InteractionDB.SUBSTANCE+" AND name='"+s.replace("'", "\\'")+"'";
 		Statement st;

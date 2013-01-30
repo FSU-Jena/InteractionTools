@@ -47,7 +47,7 @@ public class CompartmentsTab extends HorizontalPanel implements ActionListener {
 	 * @throws SQLException 
 	 * @throws IOException
 	 */
-	public CompartmentsTab(int width, int height) throws SQLException {
+	public CompartmentsTab(int width, int height) throws SQLException, IOException {
 		ListModificationPanel lmp = new ListModificationPanel();
 		System.out.println("    |     `- reading compartment list...");
 		//System.out.print("    |           `- ");
@@ -66,7 +66,7 @@ public class CompartmentsTab extends HorizontalPanel implements ActionListener {
 	 * @throws SQLException 
 	 * @throws IOException
 	 */
-	private VerticalPanel createListOfAllCompartments(int width, int height) throws SQLException {
+	private VerticalPanel createListOfAllCompartments(int width, int height) throws SQLException, IOException {
 		VerticalPanel panel = new VerticalPanel();
 		panel.add(listOfAllCompartments = new CompartmentList(width, height-40, "All species"));
 		listOfAllCompartments.addActionListener(this);
@@ -86,8 +86,9 @@ public class CompartmentsTab extends HorizontalPanel implements ActionListener {
 	/**
 	 * adds the different compartment grouping nodes to the list of available compartments
 	 * @param groupList
+	 * @throws IOException 
 	 */
-	private void addCompartmentGroups(CompartmentList groupList) throws SQLException {
+	private void addCompartmentGroups(CompartmentList groupList) throws SQLException, IOException {
     String query="connection attempt:"; 
 		
     try {

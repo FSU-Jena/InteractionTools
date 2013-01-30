@@ -339,7 +339,7 @@ public class ResultPanel extends VerticalPanel implements ActionListener, TreeSe
 		return output.toString();
 	}
 
-	public void valueChanged(TreeSelectionEvent e) {
+	public void valueChanged(TreeSelectionEvent event) {
 		Object lastSelected = tree.getLastSelectedPathComponent();
 		try {
 			if (lastSelected instanceof SubstanceNode) {
@@ -354,12 +354,14 @@ public class ResultPanel extends VerticalPanel implements ActionListener, TreeSe
 				CompartmentNode cn = ((CompartmentNode) lastSelected);
 				cn.loadDetails();
 			}
-		} catch (MalformedURLException e1) {
-			e1.printStackTrace();
-		} catch (SQLException e2) {
-			e2.printStackTrace();
-		} catch (DataFormatException e3) {
-	    e3.printStackTrace();
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (DataFormatException e) {
+	    e.printStackTrace();
+    } catch (IOException e) {
+	    e.printStackTrace();
     }
 		startUpdate();
 

@@ -384,8 +384,9 @@ public class dbtool {
 	 * adds the basic Kegg Organism Groups to the database
 	 * 
 	 * @throws SQLException
+	 * @throws IOException 
 	 */
-	private void addKeggGroups() throws SQLException {
+	private void addKeggGroups() throws SQLException, IOException {
 		keggEukaryotes = InteractionDB.getOrCreateGroup("Kegg Eukaryotes");
 		keggProkaryotes = InteractionDB.getOrCreateGroup("Kegg Prokaryotes");
 	}
@@ -397,8 +398,9 @@ public class dbtool {
 	 * @param rid the MYSQL database intern id of the kegg reaction
 	 * @return a set of compartments, which fulfill the above conditions
 	 * @throws SQLException if any MYSQL acces violation occurs
+	 * @throws IOException 
 	 */
-	private TreeSet<Integer> getCompartmentsHoldingPathwayAndReaction(String pathwayId, int rid) throws SQLException {
+	private TreeSet<Integer> getCompartmentsHoldingPathwayAndReaction(String pathwayId, int rid) throws SQLException, IOException {
 		// in the following, a query is constructed, which is used to retrieve the list of compartments which
 		// - hold the current reaction
 		// - are assigned to the current pathway
@@ -462,8 +464,9 @@ public class dbtool {
 	 * @param mappingFromKeggSubstanceIdsToDbIds maps for each substance code from kegg to the database internal id
 	 * @return true, iff all substrates from the mapformula equation occur on the substrate site in the databases reaction definition and all products from the mapformula equation occur on the product site in the database
 	 * @throws SQLException if any database acces violation happens
+	 * @throws IOException 
 	 */
-	private boolean testReactionInversion(int rid, String equation, TreeMap<String, Integer> mappingFromKeggSubstanceIdsToDbIds) throws SQLException {
+	private boolean testReactionInversion(int rid, String equation, TreeMap<String, Integer> mappingFromKeggSubstanceIdsToDbIds) throws SQLException, IOException {
 		String parts[] = null;
 		if (equation.contains(" <=> ")) return false; // a bidirectional reactionmay not be inverted
 		if (equation.contains(" => ")) parts = equation.split(" => ");
@@ -1180,8 +1183,9 @@ public class dbtool {
 	 * @param lastRemainingId the last id, which will be not deleted
 	 * 
 	 * @throws SQLException
+	 * @throws IOException 
 	 */
-	public static void cleanDb(int lastRemainingId) throws SQLException {
+	public static void cleanDb(int lastRemainingId) throws SQLException, IOException {
 		Statement st = InteractionDB.createStatement();
 		Vector<String> queries = new Vector<String>();
 		queries.add("DELETE FROM compartment_pathways WHERE cid>" + lastRemainingId + " OR pid>" + lastRemainingId);
