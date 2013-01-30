@@ -49,7 +49,7 @@ public class dbtool {
 	private static int keggProkaryotes;
 	private static int keggEukaryotes;
 	private static boolean skipClear, skipKegg, skipBiomodels, skipFiles, skipKeggPathways, skipKeggEnzymes, skipKeggCodes, skipKeggOrganisms, skipKeggCompounds, skipKeggSubstances, skipKeggReactions;
-	private static String directory;
+	private static String sbmlDirectory=System.getProperty("user.home")+"/Documents/sbml";
 	private static boolean skipAsk;
 	private static boolean clearDecisions;
 
@@ -119,8 +119,8 @@ public class dbtool {
 				skipKegg = true;
 			}
 			if (args[i].startsWith("--folder=")) {
-				directory = args[i].substring(9);
-				Tools.note("Reading sbml files from " + directory + ".");
+				sbmlDirectory = args[i].substring(9);
+				Tools.note("Reading sbml files from " + sbmlDirectory + ".");
 			}
 			if (args[i].equals("--skip-biomodels")) {
 				Tools.note("Will skip biomodels.");
@@ -231,7 +231,7 @@ public class dbtool {
 		System.out.println("last kegg id: " + lastKeggId);
 		System.out.println("last biomodels id: " + lastBiomodelsId);// */
 
-		if (!skipFiles) parseSbmlFiles(getSbmlFileList(directory));
+		if (!skipFiles) parseSbmlFiles(getSbmlFileList(sbmlDirectory));
 		Integer lastSbmlId = InteractionDB.getLastID();
 		System.out.println("last kegg id: " + lastKeggId);
 		System.out.println("last biomodels id: " + lastBiomodelsId);// */
