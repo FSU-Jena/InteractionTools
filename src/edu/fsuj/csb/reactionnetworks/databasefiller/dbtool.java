@@ -1118,7 +1118,7 @@ public class dbtool {
 					pos--;
 				int factor = 1;
 				if (pos > -1 && pos < npos) factor = Integer.parseInt(input.substring(pos, npos));
-				input = input.substring(0, pos) + (factor * Formula.nReplacement) + input.substring(npos + 1);
+				input = input.substring(0, pos) + (factor * Formula.VARIABLE_REPLACEMENT) + input.substring(npos + 1);
 			} while (true);
 
 			int operatorPos = -1;
