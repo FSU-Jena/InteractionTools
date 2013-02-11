@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.zip.DataFormatException;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
@@ -37,17 +38,20 @@ public class SeedCalculationTask extends StructuredTask {
 	private int compartmentId;
 	private int numberOfSubtasks=0;
 	private TreeSet<Integer> ignoredSubstances,targets;
+	private boolean ignoreUnbalanced;
 	
 	/**
 	 * This clas represents a Task for calculation the seedset of a certain set of substances in a given compartment 
 	 * @param compartmentId the database id of the compartment
 	 * @param targetSubstanceIds the set of (database related) substance ids, which shall be built
+	 * @param ignoreUnbalanced 
 	 */
-	public SeedCalculationTask(int compartmentId, TreeSet<Integer> targetSubstanceIds,TreeSet<Integer> ignoredSubstances) {
+	public SeedCalculationTask(int compartmentId, TreeSet<Integer> targetSubstanceIds,TreeSet<Integer> ignoredSubstances, boolean ignoreUnbalanced) {
 		super();
 		this.compartmentId=compartmentId;
 		this.targets=targetSubstanceIds;
 		this.ignoredSubstances=ignoredSubstances;
+		this.ignoreUnbalanced=ignoreUnbalanced;
   }
 
 
@@ -108,13 +112,15 @@ public class SeedCalculationTask extends StructuredTask {
 	    e.printStackTrace();
     } catch (InterruptedException e) {
 	    e.printStackTrace();
+    } catch (DataFormatException e) {
+	    e.printStackTrace();
     }
   }
   
   /**********************************************************************************************************/
   /*																																																				*/
   /*																																																				*/
-  /*			Problem ist im Moment, dass zwar das lp-file korrek geschrieben wird (oder doch nicht?),					*/
+  /*			Problem ist im Moment, dass zwar das lp-file korrekt geschrieben wird (oder doch nicht?),					*/
   /*																																																				*/
   /*			dennoch keine Lösungen ausgegeben werden.                                         								*/
   /*																																																				*/
@@ -152,12 +158,14 @@ public class SeedCalculationTask extends StructuredTask {
    * @throws SQLException if any database error occurs
    * @throws IOException
    * @throws InterruptedException 
+   * @throws DataFormatException 
    */
-  private TreeMap<Integer, Double> runInternal(TreeSet<TreeSet<Integer>> solutions) throws SQLException, IOException, InterruptedException{  	
+  private TreeMap<Integer, Double> runInternal(TreeSet<TreeSet<Integer>> solutions) throws SQLException, IOException, InterruptedException, DataFormatException{  	
   	System.out.println("running seed calculation:");  	
   	System.out.println("Potential precursors: "+potentialPrecursors);
   	System.out.println("continously available:"+continouslyAvailableSubstances);
   	System.out.println("targets: "+targets);
+  	if (ignoreUnbalanced) System.out.println("Not taking unbalanced reactions into account.");
   	System.out.print("Creating solver input file...");
   	
   	double inflowOutflowWeight = 10.0;
@@ -166,7 +174,7 @@ public class SeedCalculationTask extends StructuredTask {
   	CplexWrapper cpw=new CplexWrapper(); // create program wrapper
   	Compartment compartment=DbCompartment.load(compartmentId); // load the compartment
 
-  	TreeMap<Integer, LPTerm> balances = OptimizationTask.createBasicBalances(cpw, ignoredSubstances, compartment); // create balances for all substances in the compartment
+  	TreeMap<Integer, LPTerm> balances = OptimizationTask.createBasicBalances(cpw, ignoredSubstances, ignoreUnbalanced, compartment); // create balances for all substances in the compartment
   	TreeSet<Integer> utilizedSubstances = compartment.utilizedSubstances(); // get the list of all substances utilized by this compartment
 		OptimizationTask.addInflowReactionsFor(potentialPrecursors, balances, cpw);
 		OptimizationTask.addOutflowReactionsFor(targets, balances, cpw);

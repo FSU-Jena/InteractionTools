@@ -51,7 +51,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	private JButton calculateProductsButton,calcPotentialAdditionals,searchProcessors;
 	private JTabbedPane taskTabs;
 	private JButton optimizeSeeds,evolveSeeds;
-	private JCheckBox onlyOdle;
+	private JCheckBox onlyOdle,skipUnbalancedReactions;
 	private OptimizationParametersTab parametersTab;
 
 	/**
@@ -202,6 +202,12 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		searchProcessors.setToolTipText("<html>Search for species, which enable reactions that have at least one of the given substances as substrate</html>");
 		searchProcessors.addActionListener(this);
 		taskButtons.add(searchProcessors);
+		
+		skipUnbalancedReactions=new JCheckBox("<html>Skip unbalanced reactions");
+		skipUnbalancedReactions.setToolTipText("<html>Unbalanced reactions wil not be taken into account, when using methods which use stoichiometry.");
+		taskButtons.add(skipUnbalancedReactions);
+		
+		
 		taskButtons.skalieren();
 		buttonPane.add(taskButtons);
 		
@@ -312,7 +318,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 			TreeSet<Integer> buildList = substancesTab.produceList();
 			if (buildList!=null && !buildList.isEmpty()){
 				if (method==1){
-					actionHandler.optimizeSeeds(compartmentTab.getUserList().getListed(),decompositionList,buildList,substancesTab.ignoreList(),parametersTab.optimizationParameterSet());
+					actionHandler.optimizeSeeds(compartmentTab.getUserList().getListed(),decompositionList,buildList,substancesTab.ignoreList(),parametersTab.optimizationParameterSet(),skipUnbalancedReactions.isSelected());
 				} else {
 					actionHandler.evovleSeeds(compartmentTab.getUserList().getListed(), decompositionList, buildList,substancesTab.ignoreList());
 				}
@@ -340,7 +346,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		Component frame=SwingUtilities.getRoot(this);
 		frame.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 		try {
-			if (source == calculateSeedsButton) actionHandler.calcSeeds(compartmentTab.getUserList().getListed(),substancesTab.produceList(),substancesTab.ignoreList());
+			if (source == calculateSeedsButton) actionHandler.calcSeeds(compartmentTab.getUserList().getListed(),substancesTab.produceList(),substancesTab.ignoreList(),skipUnbalancedReactions.isSelected());
 			if (source == calculateProductsButton){
 						TreeSet<Integer> nutrients = substancesTab.degradeList();
 						nutrients.addAll(substancesTab.ignoreList());

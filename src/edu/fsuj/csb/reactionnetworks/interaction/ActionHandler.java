@@ -110,13 +110,14 @@ public class ActionHandler extends Master {
 	 * @param compartmentNodes the ids of the compartments to be examined
 	 * @param targetSubstanceIds the ids of the targeted substances
 	 * @param ignoredSubstances 
+	 * @param ignoreUnbalanced 
 	 * @throws IOException
 	 */
-	public void calcSeeds(TreeSet<CompartmentNode> compartmentNodes, TreeSet<Integer> targetSubstanceIds, TreeSet<Integer> ignoredSubstances) throws IOException {
+	public void calcSeeds(TreeSet<CompartmentNode> compartmentNodes, TreeSet<Integer> targetSubstanceIds, TreeSet<Integer> ignoredSubstances, boolean ignoreUnbalanced) throws IOException {
 		if (warnforEmptyList(targetSubstanceIds)) return;
 		for (Iterator<CompartmentNode> it = compartmentNodes.iterator(); it.hasNext();) {	// loop through the set of compartments		
 			int cid = it.next().compartment().id();
-			calcSeeds(cid,targetSubstanceIds,ignoredSubstances); // calculate seed for specific compartment
+			calcSeeds(cid,targetSubstanceIds,ignoredSubstances,ignoreUnbalanced); // calculate seed for specific compartment
 		}
 	}
 
@@ -127,8 +128,8 @@ public class ActionHandler extends Master {
 	 * @param ignoredSubstances 
 	 * @throws IOException
 	 */
-	private void calcSeeds(int compartmentId, TreeSet<Integer> targetSubstanceIds, TreeSet<Integer> ignoredSubstances) throws IOException {
-		SeedCalculationTask sct=new SeedCalculationTask(compartmentId,targetSubstanceIds,ignoredSubstances);
+	private void calcSeeds(int compartmentId, TreeSet<Integer> targetSubstanceIds, TreeSet<Integer> ignoredSubstances,boolean ignoreUnbalanced) throws IOException {
+		SeedCalculationTask sct=new SeedCalculationTask(compartmentId,targetSubstanceIds,ignoredSubstances,ignoreUnbalanced);
 		
 		// before the seed calculation can be started, a number of precursor calculations have to be done:
 		for (Iterator<Integer> substanceIterator=targetSubstanceIds.iterator(); substanceIterator.hasNext();){
@@ -303,6 +304,7 @@ public class ActionHandler extends Master {
 	 * @param decompose the set of substances, which shall be processed by those compartments
 	 * @param build the set of substances, which shall be built be the respective compartments
 	 * @param optimizationParameterSet 
+	 * @param b 
 	 * @param rateOfOutflowReactionsImportance 
 	 * @param numberOfOutflowReactionsImportance 
 	 * @param rateOfInflowReactionsImportance 
@@ -311,10 +313,10 @@ public class ActionHandler extends Master {
 	 * @param minimizeInternalReactions determines, whether the use of internal reactions shall be minimized
 	 * @throws IOException
 	 */
-	public void optimizeSeeds(TreeSet<CompartmentNode> compartments, TreeSet<Integer> decompose, TreeSet<Integer> build, TreeSet<Integer> ignore, OptimizationParameterSet optimizationParameterSet) throws IOException {
+	public void optimizeSeeds(TreeSet<CompartmentNode> compartments, TreeSet<Integer> decompose, TreeSet<Integer> build, TreeSet<Integer> ignore, OptimizationParameterSet optimizationParameterSet, boolean ignoreUnbalanced) throws IOException {
 		for (Iterator<CompartmentNode> it = compartments.iterator();it.hasNext();){
 			int cid=it.next().compartment().id();
-			sendTask(new OptimizeBuildTask(cid,decompose,build,ignore, optimizationParameterSet));
+			sendTask(new OptimizeBuildTask(cid,decompose,build,ignore, optimizationParameterSet,ignoreUnbalanced));
 		}
 	}
 

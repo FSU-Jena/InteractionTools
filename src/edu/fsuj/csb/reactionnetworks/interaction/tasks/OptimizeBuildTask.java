@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.zip.DataFormatException;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
@@ -36,6 +37,7 @@ public class OptimizeBuildTask extends OptimizationTask {
 
 	private static final long serialVersionUID = 3199686545941979280L;
 	private OptimizationParameterSet parameters;
+	private boolean ignoreUnbalanced;
 	
 	/**
 	 * A task, which calculates for a given set of target substances (build) which shall be formed, the optimal set of inflows with the side condition, that the set of substances to be decomposed (decompose) is used.
@@ -45,10 +47,12 @@ public class OptimizeBuildTask extends OptimizationTask {
 	 * @param build the set of substances, for which the production shall be optimized
 	 * @param ignore the set of substances, which shall not be taken into account during calculation
 	 * @param optimizationParameterSet a set of optimization parameters
+	 * @param ignoreUnbalanced 
 	 */
-	public OptimizeBuildTask(int cid, TreeSet<Integer> decompose, TreeSet<Integer> build, TreeSet<Integer> ignore, OptimizationParameterSet optimizationParameterSet) {
+	public OptimizeBuildTask(int cid, TreeSet<Integer> decompose, TreeSet<Integer> build, TreeSet<Integer> ignore, OptimizationParameterSet optimizationParameterSet, boolean ignoreUnbalanced) {
 		super(cid, decompose, build,ignore);
 		parameters=optimizationParameterSet;
+		this.ignoreUnbalanced=ignoreUnbalanced;
 	}
 
 	public void run(CalculationClient calculationClient) throws IOException, NoTokenException, AlreadyBoundException {
@@ -87,6 +91,8 @@ public class OptimizeBuildTask extends OptimizationTask {
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
+	    e.printStackTrace();
+    } catch (DataFormatException e) {
 	    e.printStackTrace();
     }
 	}
@@ -127,8 +133,9 @@ public class OptimizeBuildTask extends OptimizationTask {
 	 * @throws SQLException if any database error occurs
 	 * @throws IOException
 	 * @throws InterruptedException 
+	 * @throws DataFormatException 
 	 */
-	private SeedOptimizationSolution runInternal(TreeMap<TreeSet<Integer>, TreeSet<Integer>> solutions) throws SQLException, IOException, InterruptedException {
+	private SeedOptimizationSolution runInternal(TreeMap<TreeSet<Integer>, TreeSet<Integer>> solutions) throws SQLException, IOException, InterruptedException, DataFormatException {
 		System.out.println("running seed optimization:");
 		System.out.println("  forbidden solutions: " + solutions.toString().replace("=", "=>"));
 		System.out.print("  Creating solver input file...");
@@ -136,7 +143,7 @@ public class OptimizeBuildTask extends OptimizationTask {
 		CplexWrapper cpw = new CplexWrapper(); // create solver instance
 		int cid = getCompartmentId(); // get compartment id
 		Compartment compartment = DbCompartment.load(cid); // get compartment
-		TreeMap<Integer, LPTerm> balances = createBasicBalances(cpw,ignoreSubstancesList, compartment); // create balances for all substances in the compartment
+		TreeMap<Integer, LPTerm> balances = createBasicBalances(cpw,ignoreSubstancesList, ignoreUnbalanced,compartment); // create balances for all substances in the compartment
 		TreeSet<Integer> utilizedSubstances = compartment.utilizedSubstances(); // get the list of all substances utilized by this compartment
 		utilizedSubstances.removeAll(ignoreSubstancesList); 
 		addInflowReactionsFor(utilizedSubstances, balances, cpw); // add inflow reactions for all substances

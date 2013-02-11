@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.zip.DataFormatException;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
@@ -47,15 +48,17 @@ public class OptimizationTask extends TaskContainingCompartmentAndSubtances {
 	 * 
 	 * @return a mapping from the substance ids to their balance terms
 	 * @throws SQLException
+	 * @throws DataFormatException 
 	 */
-	public static TreeMap<Integer, LPTerm> createBasicBalances(CplexWrapper cpw, TreeSet<Integer> ignoredSubstances, Compartment compartment) throws SQLException {
+	public static TreeMap<Integer, LPTerm> createBasicBalances(CplexWrapper cpw, TreeSet<Integer> ignoredSubstances, boolean ignoreUnbalanced, Compartment compartment) throws SQLException, DataFormatException {
 
 		TreeMap<Integer, LPTerm> mappingFromSIDtoBalanceTerm = new TreeMap<Integer, LPTerm>(ObjectComparator.get());
 
 		for (Iterator<Integer> reactions = compartment.reactions().iterator(); reactions.hasNext();) { // iterate through all reactions
 			int reactionID = reactions.next();
 			Reaction reaction = Reaction.get(reactionID);
-			if (reaction.hasUnchangedSubstances()) continue; // skip "magic" reactions
+			if (ignoreUnbalanced && !reaction.isBalanced()) continue;
+			//if (reaction.hasUnchangedSubstances()) continue; // skip "magic" reactions
 
 			/* in the following, basic reaction parameters are set */
 			LPVariable forwardVelocity = null;
