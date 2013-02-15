@@ -729,7 +729,10 @@ public class dbtool {
 		System.out.println("done, found " + keggSubstanceIds.size() + " substances.");
 		int count = 0;
 		System.out.print((100 * count / (keggSubstanceIds.size() + count)) + "% - ");
-		while (!keggSubstanceIds.isEmpty()) {
+//		keggSubstanceIds.push("C00720");
+//		Tools.resetIntendation();
+//		Tools.enableLogging();
+		while (!keggSubstanceIds.isEmpty()) {			
 			count++;
 			if (InteractionDB.parseSubstanceInfo(keggSubstanceIds, mappingFromKeggSubstanceIdsToDbIds)) System.out.print((100 * count / (keggSubstanceIds.size() + count)) + "% - ");
 		}
@@ -1114,7 +1117,7 @@ public class dbtool {
 				int npos = Math.max(input.indexOf("n"), input.indexOf("m"));
 				if (npos == -1) break;
 				int pos = npos;
-				while (pos > 0 && Character.isDigit(input.charAt(pos - 1)))
+				while (pos > 0 && Character.isDigit(input.charAt(pos - 1))) // find leading count, line 2n
 					pos--;
 				int factor = 1;
 				if (pos > -1 && pos < npos) factor = Integer.parseInt(input.substring(pos, npos));
