@@ -456,6 +456,8 @@ public class SBMLLoader {
 				// we are not interested in celldesigner extensions
 			} else if (token.instanceOf("celldesigner:listOfCatalyzedReactions")){
 				// shoould be annotated in modifiers of reaction, too
+			} else if (token.instanceOf("dcterms:creator")){
+				// we are currently not interested in vcards ;)
 			} else if (token.instanceOf("srsoftware:urn")){
 				urns.add(new MiriamUrn(token.getValue("urn")));
 			} else {
