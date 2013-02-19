@@ -516,6 +516,8 @@ public class SBMLLoader {
 				// we are currently not interested in descriptions
 			} else if (token.instanceOf("dcterms:created")){
 				// we don't care about creation times
+			} else if (token.instanceOf("dcterms:creator")){
+				// we don't care about vcards
 			} else if (token.instanceOf("dcterms:bibliographicCitation")){
 				// we don't care about bibs
 			} else if (token.instanceOf("dc:relation")){
