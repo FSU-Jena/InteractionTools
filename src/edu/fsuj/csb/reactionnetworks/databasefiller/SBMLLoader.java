@@ -458,6 +458,8 @@ public class SBMLLoader {
 				// shoould be annotated in modifiers of reaction, too
 			} else if (token.instanceOf("dcterms:creator")){
 				// we are currently not interested in vcards ;)
+			} else if (token.instanceOf("dcterms:created")){
+				// we are currently not interested in creation dates ;)
 			} else if (token.instanceOf("srsoftware:urn")){
 				urns.add(new MiriamUrn(token.getValue("urn")));
 			} else {
