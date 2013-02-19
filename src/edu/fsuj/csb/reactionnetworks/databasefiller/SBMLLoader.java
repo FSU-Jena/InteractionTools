@@ -624,8 +624,10 @@ public class SBMLLoader {
 			token=subtokens.next();
 			if (token.instanceOf("rdf:li")){
 				String u=token.getValue("rdf:resource");
-				if (u!=null && u.startsWith("urn")) {
-					urns.add(new MiriamUrn(u));					
+				if (u!=null){
+					if (u.startsWith("urn") || u.startsWith("http://identifiers.org")){
+						urns.add(new MiriamUrn(u));
+					} else System.err.println("Notice: found rdf:li, but its rdf:ressource has unknown format! ("+token+")");
 				} else System.err.println("Notice: found rdf:li, but it has no rdf:ressource! ("+token+")"); 
 			} else throw new DataFormatException("found "+token.tokenClass()+" token in "+path+"...");
 		}
