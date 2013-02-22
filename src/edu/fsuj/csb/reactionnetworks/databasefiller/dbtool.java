@@ -370,7 +370,6 @@ public class dbtool {
 
 		displayTimeStamp();
 
-		Tools.enableLogging();
 		if (!skipKeggSubstances && !skipKeggReactions) {
 			TreeMap<String, Integer> mappingFromKeggReactionIdsToDbIds = readKeggReactions(mappingFromKeggSubstanceIdsToDbIds);
 			displayTimeStamp();
@@ -765,12 +764,7 @@ public class dbtool {
 				keggReactionIds.pop();
 			} else {
 				try {
-					if (kid.contains("10121")) {
-						Tools.resetIntendation();
-						Tools.enableLogging();
-					}
 					parseReactionInfo(keggReactionIds, mappingFromKeggIdsToDbIds);
-					if (kid.contains("10121")) Tools.disableLogging();
 					Tools.indent("");
 				} catch (SQLException e) {
 					e.printStackTrace();
