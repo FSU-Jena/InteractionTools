@@ -2,6 +2,7 @@ package edu.fsuj.csb.reactionnetworks.interaction.gui;
 
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -13,7 +14,6 @@ import java.util.zip.DataFormatException;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTabbedPane;
@@ -44,8 +44,6 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	private JButton calculateSeedsButton;
 	private CompartmentsTab compartmentTab;
 	private ActionHandler actionHandler;
-	//private ResultPanel resultPane;
-	private int statusHeight = 200;
 	private JButton disconnectClients;
 	private SubstancesTab substancesTab;
 	private JButton calculateProductsButton,calcPotentialAdditionals,searchProcessors;
@@ -53,7 +51,13 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	private JButton optimizeSeeds,evolveSeeds;
 	private JCheckBox onlyOdle,skipUnbalancedReactions;
 	private OptimizationParametersTab parametersTab;
-
+	private StatusPanel statusPanel;
+	private DatabasePane databasePane;
+	private JTabbedPane taskResultPane;
+	private VerticalPanel mainPanel;
+	private ResultPanel resultPane;
+	private HorizontalPanel taskPane;
+	private VerticalPanel taskButtonPanel;
 	/**
 	 * create a new window instance
 	 * @param splash
@@ -67,7 +71,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	public InteractionToolbox() throws IOException, NoTokenException, AlreadyBoundException, SQLException, DataFormatException {
 		super("Interaction Toolbox");
 		System.out.println("Creating GUI components:");
-		createComponents(1200, 800);
+		createComponents();
 		popUp();
 	}
 
@@ -78,6 +82,8 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setVisible(true);
 	}
+	
+	
 
 	/**
 	 * create and arrange all components
@@ -89,35 +95,41 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	 * @throws DataFormatException 
 	 * @throws UndispatchedException
 	 */
-	private void createComponents(int width, int height) throws IOException, NoTokenException, AlreadyBoundException, SQLException, DataFormatException {
-		JTabbedPane taskResultPane = new JTabbedPane();
+	private void createComponents() throws IOException, NoTokenException, AlreadyBoundException, SQLException, DataFormatException {
 
+		
+		//***** MAIN PANEL ********//
+		mainPanel = new VerticalPanel();
+		mainPanel.add(taskResultPane=taskResultPane());		
+		mainPanel.add(statusPanel=new StatusPanel());		
+		//statusPanel.setWidth(taskResultPane().getWidth());
+		System.setOut(out);
+		mainPanel.scale();
+		add(mainPanel);
+		pack();
+	}
+
+	private JTabbedPane taskResultPane() throws IOException, NoTokenException, AlreadyBoundException, SQLException, DataFormatException {
+		JTabbedPane taskResultPane = new JTabbedPane();
+		
 		//***** TASKS *******//
 		System.out.println("- creating panel for tasks...");
-		taskResultPane.add(createTaskPane(width - 20, height - statusHeight-70), "Tasks");
+		taskResultPane.add(taskPane=createTaskPane(), "Tasks");
 
 		//***** RESULTS *****//
 		System.out.println("- creating panel for results...");
-		taskResultPane.add(createResultPane(width - 40, height - statusHeight-70), "Results");
+		taskResultPane.add(resultPane=createResultPane(), "Results");
 		
 		//***** DATABASE **********//
 		System.out.println("- creating panel for database actions...");
-		DatabasePane databasePane = new DatabasePane();
+		databasePane = new DatabasePane();
 		databasePane.addChangeListener(this);
 		taskResultPane.add(databasePane,"Database");
 		
 		//***** INFO *********//
 		taskResultPane.add(createInfoPanel(),"Information");
-		
-		//***** MAIN PANEL ********//
-		VerticalPanel panel = new VerticalPanel();
-		panel.add(taskResultPane);
-		panel.add(new StatusPanel(width - 40, statusHeight));
-		System.setOut(out);
-		panel.skalieren();
-		add(panel);
-		pack();
-	}
+		return taskResultPane;
+  }
 
 	/**
 	 * creates a panel showing some short info related to the program
@@ -127,6 +139,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		VerticalPanel result = new VerticalPanel();
 		JLabel text=new JLabel("<html>This is the <i>Interaction Toolbox</i><br/><br/><br/>Author: <b>Stephan Richter</b><br/>Bio System Analysis Group<br/><br/>Get more info at http://www.biosys.uni-jena.de<br/><br/>Bitte beachten sie bei den hiermit untersuchten Modellen, dass evtl. falsche Daten durch uneindeutige Annotation entstehen können.<br/><br/>(siehe Genome annotation errors in pathway databases due to semantic abiguity in partial EC numbers)");
 		result.add(text);
+		result.scale();
 	  return result;
   }
 
@@ -137,8 +150,8 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	 * @return the newly creaed result panel
 	 * @throws IOException 
 	 */
-	private ResultPanel createResultPane(int width, int height) throws IOException {
-		ResultPanel resultPane=new ResultPanel(width, height-70);
+	private ResultPanel createResultPane() throws IOException {
+		ResultPanel resultPane=new ResultPanel();
 		System.out.print("- trying to start server: ");
 		actionHandler = new ActionHandler(resultPane.getTree());
 		System.out.println();
@@ -155,13 +168,12 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	 * @throws AlreadyBoundException
 	 * @throws SQLException
 	 */
-	JComponent taskButtonPanel = createTaskButtons();
 		
-	private HorizontalPanel createTaskPane(int width, int height) throws IOException, NoTokenException, AlreadyBoundException, SQLException {
+	private HorizontalPanel createTaskPane() throws IOException, NoTokenException, AlreadyBoundException, SQLException {
 		HorizontalPanel taskPane = new HorizontalPanel();
-		taskPane.add(createTaskTabs(width - taskButtonPanel.getWidth() - 60, height-50));
-		taskPane.add(taskButtonPanel);
-		taskPane.skalieren();
+		taskPane.add(taskTabs=createTaskTabs());
+		taskPane.add(taskButtonPanel=createTaskButtons());
+		taskPane.scale();
 		return taskPane;
 	}
 
@@ -169,7 +181,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	 * creates the sidebar of the task panel, which holds the buttons to submit tasks
 	 * @return the button panel after it has been created
 	 */
-	private JComponent createTaskButtons() {
+	private VerticalPanel createTaskButtons() {
 		VerticalPanel buttonPane = new VerticalPanel();
 		VerticalPanel taskButtons=new VerticalPanel("Tasks");
 
@@ -208,7 +220,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		taskButtons.add(skipUnbalancedReactions);
 		
 		
-		taskButtons.skalieren();
+		taskButtons.scale();
 		buttonPane.add(taskButtons);
 		
 		VerticalPanel clientManager = new VerticalPanel("Client actions");
@@ -222,10 +234,10 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		clientManager.add(onlyOdle);
 		
 		
-		clientManager.skalieren();
+		clientManager.scale();
 		buttonPane.add(clientManager);
 		
-		buttonPane.skalieren();
+		buttonPane.scale();
 		return buttonPane;
 	}
 
@@ -239,14 +251,14 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	 * @throws AlreadyBoundException
 	 * @throws SQLException
 	 */
-	private JComponent createTaskTabs(int width, int height) throws IOException, NoTokenException, AlreadyBoundException, SQLException {
+	private JTabbedPane createTaskTabs() throws IOException, NoTokenException, AlreadyBoundException, SQLException {
 		taskTabs = new JTabbedPane();
 		System.out.println("    |`- creating compartments panel");
-		compartmentTab = new CompartmentsTab(width - 60, height-60);
+		compartmentTab = new CompartmentsTab();
 		System.out.println("    |`- creating substances panel");
-		substancesTab = new SubstancesTab(width-60,height-50);
+		substancesTab = new SubstancesTab();
 		System.out.println("    `-- creating parameters panel");		
-		parametersTab = new OptimizationParametersTab(width-60,height-60);
+		parametersTab = new OptimizationParametersTab();
 		compartmentTab.getUserList().addChangeListener(substancesTab);
 		compartmentTab.getUserList().addChangeListener(this);
 		taskTabs.add(compartmentTab, "selectable Species");
@@ -279,7 +291,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	      new InteractionToolbox();
 	      splash.stop(1);
       } catch (SQLException e) {
-        splash.stop(1);
+      	splash.stop(1);
       	if (e.getMessage().contains("Unable to connect to database")){
       		System.err.println(e.getMessage()+" Is the mysql daemon running?");
       	} else throw e;
@@ -362,5 +374,33 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 			e1.printStackTrace();
 		}
 		frame.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+	}
+	
+	public void validate() {
+	  super.validate();
+	  Dimension size = getSize();
+	  size.width=size.width-20;
+	  statusPanel.setWidth(size.width);
+	  Dimension d=new Dimension(size.width,size.height-statusPanel.getHeight()-35);	  
+	  taskResultPane.setPreferredSize(d);
+	  databasePane.scaleTo(d);
+	  resultPane.setSize(d);
+	  databasePane.scale();
+	  resultPane.scale();
+	  
+	  Dimension btnd = taskButtonPanel.getSize();
+	  d=new Dimension(d.width-btnd.width-30,d.height-50);
+	  taskTabs.setPreferredSize(d);
+	  d=new Dimension(d.width-10,d.height-10);
+	  compartmentTab.scaleScrollPanes(d);
+	  compartmentTab.scale();
+	  
+	  substancesTab.scaleScrollPanes(d);
+	  substancesTab.scale();
+	  taskPane.scale();
+
+	  
+	  
+	  mainPanel.scale();
 	}
 }

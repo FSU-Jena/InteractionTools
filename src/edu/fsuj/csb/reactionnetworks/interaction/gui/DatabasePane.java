@@ -63,7 +63,7 @@ import edu.fsuj.csb.tools.xml.Tools;
  * @author Stephan Richter
  * 
  */
-public class DatabasePane extends VerticalPanel implements ActionListener, MouseListener, TreeSelectionListener {
+public class DatabasePane extends HorizontalPanel implements ActionListener, MouseListener, TreeSelectionListener {
 	private static final long serialVersionUID = -7663240543407963010L;
 	private JButton loadFileButton;
 	private JComboBox sources;
@@ -75,6 +75,7 @@ public class DatabasePane extends VerticalPanel implements ActionListener, Mouse
 	private JScrollPane scrollPane;
 	private JButton examinationButton;
 	private JSVGCanvas svg;
+	private JComponent addModPanel;
 	private static String substancePrefix="Substance #";
 
 	/**
@@ -88,17 +89,20 @@ public class DatabasePane extends VerticalPanel implements ActionListener, Mouse
 	 * @throws InstantiationException
 	 */
 	public DatabasePane() throws SQLException, DataFormatException, IOException {
-		add(createAddModelPanel());
+		add(createButtonPanel());
 		add(createUnificationPanel());
-		add(createExaminationButton());
-		skalieren();
+		scale();
 	}	
 	
 
-	private JComponent createExaminationButton() {
+	private VerticalPanel createButtonPanel() throws SQLException, IOException, DataFormatException {
+		VerticalPanel result=new VerticalPanel();
+		result.add(addModPanel=createAddModelPanel());
+		result.add(createUnificationTree());
 		examinationButton=new JButton("Analyze all unifications (may take a LONG time!)");
 		examinationButton.addActionListener(this);
-	  return examinationButton;
+		result.add(examinationButton);
+	  return result;
   }
 
 
@@ -108,18 +112,14 @@ public class DatabasePane extends VerticalPanel implements ActionListener, Mouse
 	 * @throws DataFormatException
 	 * @throws IOException 
 	 */
-	private JComponent createUnificationPanel() throws SQLException, DataFormatException, IOException {
+	private JSVGCanvas createUnificationPanel() throws SQLException, DataFormatException, IOException {
 		System.out.println("   `- creating panel for unification examination...");
-		HorizontalPanel panel = new HorizontalPanel();
 		
 		svg=new JSVGCanvas();
-		svg.setPreferredSize(new Dimension(630,650));
+		svg.setPreferredSize(new Dimension(630,630));
 		svg.setSize(svg.getPreferredSize());
 		
-		panel.add(createUnificationTree());
-		panel.add(svg);
-		panel.skalieren();
-	  return panel;
+	  return svg;
   }
 	
 	/**
@@ -134,8 +134,7 @@ public class DatabasePane extends VerticalPanel implements ActionListener, Mouse
 		unificationTree.addMouseListener(this);
 		unificationTree.addTreeSelectionListener(this);		
 		scrollPane=new JScrollPane(unificationTree);
-		scrollPane.setPreferredSize(new Dimension(600	, 400));
-		scrollPane.setSize(scrollPane.getPreferredSize());
+		scrollPane.setPreferredSize(new Dimension(600	, 650));		
 		return scrollPane;
   }
 
@@ -160,7 +159,7 @@ public class DatabasePane extends VerticalPanel implements ActionListener, Mouse
 	  return root;
   }
 
-	private JComponent createAddModelPanel() throws SQLException, IOException {
+	private HorizontalPanel createAddModelPanel() throws SQLException, IOException {
 		HorizontalPanel addModelPanel = new HorizontalPanel();
 		loadFileButton = new JButton("load SBML file");
 		loadFileButton.addActionListener(this);
@@ -172,7 +171,7 @@ public class DatabasePane extends VerticalPanel implements ActionListener, Mouse
 		addModelPanel.add(loadFileButton);
 		addModelPanel.add(sources);
 		addModelPanel.add(cleanButton);
-		addModelPanel.skalieren();
+		addModelPanel.scale();
 		return addModelPanel;
   }
 
@@ -487,5 +486,32 @@ public class DatabasePane extends VerticalPanel implements ActionListener, Mouse
     }
 	  return result;
   }
+	
+	@Override
+	public void setSize(Dimension d) {
+	  super.setSize(d);
+	  d.width=d.width-10;
+	  d.height=d.height-addModPanel.getHeight()-examinationButton.getHeight();
+	  Dimension scpd = scrollPane.getSize();
+	  scpd.height=d.height-135;
+	  scpd.width=d.width-svg.getWidth()-45;	  
+	  if (scpd.width<addModPanel.getWidth()) scpd.width=addModPanel.getWidth();
+	  scrollPane.setPreferredSize(scpd);
+	}
+
+	public void scaleTo(Dimension d) {
+		int width=(d.width/2)-150;
+		
+		if (width<addModPanel.getWidth())width=addModPanel.getWidth();
+		
+		Dimension scpd = new Dimension(width,d.height-addModPanel.getHeight()-examinationButton.getHeight()-70);
+		
+	  Dimension svgd=new Dimension(d.width-width-40,d.height-60);
+	  svg.setPreferredSize(svgd);
+	  svg.setSize(svgd);
+
+	  scrollPane.setPreferredSize(scpd);
+
+	}
 
 }

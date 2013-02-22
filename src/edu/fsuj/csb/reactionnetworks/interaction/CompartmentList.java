@@ -48,6 +48,8 @@ public class CompartmentList extends VerticalPanel implements ChangeListener, Mo
   private TreeSet<ChangeListener> changeListeners;
   private String rootText;
 	private TreeSet<ActionListener> actionListeners;
+	private JScrollPane scp;
+	private static final Dimension initialSize=new Dimension(150,300);
   
 	/**
 	 * create new compartment list
@@ -55,18 +57,18 @@ public class CompartmentList extends VerticalPanel implements ChangeListener, Mo
 	 * @param height the desired height for the list
 	 * @param rootText the text which shall be applied to the root node
 	 */
-	public CompartmentList(int width, int height,String rootText) {
+	public CompartmentList(String rootText) {
 		this.rootText=rootText;
 		root=new SortedTreeNode(rootText);
 		root.addChangeListener(this);
 		compartmentTree=new JTree(new DefaultTreeModel(root));
 		compartmentTree.addMouseListener(this);
 		compartmentTree.addTreeSelectionListener(this);
-		JScrollPane scp=new JScrollPane(compartmentTree);
-		scp.setPreferredSize(new Dimension(width, height));
+		scp = new JScrollPane(compartmentTree);
+		scp.setPreferredSize(initialSize);
 		scp.setSize(scp.getPreferredSize());
 		add(scp);
-		skalieren();
+		scale();
   }
 	
 	/**
@@ -257,4 +259,8 @@ public class CompartmentList extends VerticalPanel implements ChangeListener, Mo
 		alert(new ChangeEvent(this));
 		frame.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));		
   }
+	
+	public void setScrollPaneSize(Dimension d){
+		scp.setPreferredSize(d);
+	}
 }

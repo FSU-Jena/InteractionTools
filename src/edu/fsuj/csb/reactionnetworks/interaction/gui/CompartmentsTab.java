@@ -1,6 +1,7 @@
 package edu.fsuj.csb.reactionnetworks.interaction.gui;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -39,6 +40,7 @@ public class CompartmentsTab extends HorizontalPanel implements ActionListener {
 	private JButton opensbmlButton;
 	private JButton reaButton;
 	private CompartmentListener cListener;
+	private ListModificationPanel lmp;
 
 	/**
 	 * creates a new compartments tab with the desired height and width
@@ -47,15 +49,15 @@ public class CompartmentsTab extends HorizontalPanel implements ActionListener {
 	 * @throws SQLException 
 	 * @throws IOException
 	 */
-	public CompartmentsTab(int width, int height) throws SQLException, IOException {
-		ListModificationPanel lmp = new ListModificationPanel();
+	public CompartmentsTab() throws SQLException, IOException {
+		lmp = new ListModificationPanel();
 		System.out.println("    |     `- reading compartment list...");
 		//System.out.print("    |           `- ");
-		add(createListOfAllCompartments((width - lmp.getWidth()) / 2 - 90, height));
+		add(createListOfAllCompartments());
 		add(lmp);
 		lmp.addActionListener(this);
-		add(speciesTabs= createCompartmentsTabs((width - lmp.getWidth()) / 2 - 50, height));
-		skalieren();
+		add(speciesTabs= createCompartmentsTabs());
+		scale();
 	}
 
 	/**
@@ -66,20 +68,20 @@ public class CompartmentsTab extends HorizontalPanel implements ActionListener {
 	 * @throws SQLException 
 	 * @throws IOException
 	 */
-	private VerticalPanel createListOfAllCompartments(int width, int height) throws SQLException, IOException {
+	private VerticalPanel createListOfAllCompartments() throws SQLException, IOException {
 		VerticalPanel panel = new VerticalPanel();
-		panel.add(listOfAllCompartments = new CompartmentList(width, height-40, "All species"));
+		panel.add(listOfAllCompartments = new CompartmentList("All species"));
 		listOfAllCompartments.addActionListener(this);
 		HorizontalPanel buttonPanel = new HorizontalPanel();
 		buttonPanel.add(opensbmlButton = new JButton("open sbml file..."));
 		opensbmlButton.addActionListener(this);
 		buttonPanel.add(reaButton = new JButton("open rea file..."));
 		reaButton.addActionListener(this);
-		buttonPanel.skalieren();
+		buttonPanel.scale();
 		panel.add(buttonPanel);
 
 		addCompartmentGroups(listOfAllCompartments);
-		panel.skalieren();
+		panel.scale();
 		return panel;
 	}
 
@@ -150,9 +152,9 @@ public class CompartmentsTab extends HorizontalPanel implements ActionListener {
 	 * @param height
 	 * @return a tabbed pane containing the created tabs
 	 */
-	private JTabbedPane createCompartmentsTabs(int width, int height) {
-		JTabbedPane speciesTabs = new JTabbedPane();
-		userSelection = new CompartmentList(width, height-60	, "selected compartments");
+	private JTabbedPane createCompartmentsTabs() {
+		speciesTabs = new JTabbedPane();
+		userSelection = new CompartmentList("selected compartments");
 		userSelection.addActionListener(this);
 		PopupMenu.setCompartmentList(userSelection);
 		speciesTabs.add(userSelection, "User selection");
@@ -250,4 +252,12 @@ public class CompartmentsTab extends HorizontalPanel implements ActionListener {
 	public void setCompartmentListener(CompartmentListener cListener) {
 		this.cListener=cListener;	  
   }
+	
+	public void scaleScrollPanes(Dimension d) {
+	  int width=(d.width-lmp.getWidth()-40)/2;
+	  listOfAllCompartments.setScrollPaneSize(new Dimension(width,d.height-100));
+	  speciesTabs.setPreferredSize(new Dimension(width,d.height-35));
+	  userSelection.setScrollPaneSize(new Dimension(width-20,d.height-90));
+	  userSelection.scale();
+	}
 }

@@ -44,29 +44,32 @@ public class SubstanceList extends VerticalPanel implements ChangeListener,TreeS
 	private JCheckBox degradeButton;
 	private JCheckBox produceButton;
 	private JCheckBox ignoreButton;
+	private JScrollPane scp;
+	private HorizontalPanel buttonPane;
 	private static SubstanceList degradeList;
 	private static SubstanceList produceList;
 	private static SubstanceList ignoreList;
+	private static final Dimension initialSize=new Dimension(150, 300);
 
-	public SubstanceList(int width, int height, String name,boolean showBoxes) {
+	public SubstanceList(String name,boolean showBoxes) {
 		this.name=name;
 		root = new SortedTreeNode("Substances");
 		root.addChangeListener(this);
 		substancesTree = new JTree(new DefaultTreeModel(root));
 		substancesTree.addTreeSelectionListener(this);
 		substancesTree.addMouseListener(this);
-		JScrollPane scp = new JScrollPane(substancesTree);
-		scp.setPreferredSize(new Dimension(width, height));
+		scp = new JScrollPane(substancesTree);
+		scp.setPreferredSize(initialSize);
 		scp.setSize(scp.getPreferredSize());
 		if (showBoxes){
-			HorizontalPanel buttonPane=new HorizontalPanel();
+			buttonPane=new HorizontalPanel();
 			buttonPane.add(degradeButton=new JCheckBox("<html>substances&nbsp;&nbsp;&nbsp;&nbsp;<br>to degrade"));
 			degradeButton.addActionListener(this);
 			buttonPane.add(produceButton=new JCheckBox("<html>substances&nbsp;&nbsp;&nbsp;&nbsp;<br>to produce"));
 			produceButton.addActionListener(this);
 			buttonPane.add(ignoreButton=new JCheckBox("<html>substances&nbsp;&nbsp;&nbsp;&nbsp;<br>to ignore"));
 			ignoreButton.addActionListener(this);
-			buttonPane.skalieren();
+			buttonPane.scale();
 			add(buttonPane);
 			if (degradeList==null) {
 				setDegradeList(true); 
@@ -77,7 +80,7 @@ public class SubstanceList extends VerticalPanel implements ChangeListener,TreeS
 			}
 		}
 		add(scp);
-		skalieren();
+		scale();
 		
 	}
 
@@ -324,4 +327,8 @@ public class SubstanceList extends VerticalPanel implements ChangeListener,TreeS
 	public static SubstanceList getIgnoreList() {
 	  return ignoreList;
   }
+	
+	public void scaleScrollPane(Dimension d){
+		scp.setPreferredSize(d);
+	}
 }

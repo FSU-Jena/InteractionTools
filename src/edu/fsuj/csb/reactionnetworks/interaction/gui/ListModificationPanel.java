@@ -27,7 +27,7 @@ public class ListModificationPanel extends VerticalPanel implements ActionListen
 		toLeft.addActionListener(this);
 		add(toRight);
 		add(toLeft);
-		skalieren();
+		scale();
 	}
 	
 	public void addActionListener(ActionListener l){

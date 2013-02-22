@@ -18,8 +18,8 @@ public class InteractionSplash extends Splashscreen {
 		super();
 		panel = new VerticalPanel();
 		panel.add(new JLabel("<html><font size=\"6\">InteractionToolbox starting up..."));
-		panel.add(feed=new StatusPanel(800,200));
-		panel.skalieren();
+		panel.add(feed=new StatusPanel());
+		panel.scale();
 		panel.setBorder(new LineBorder(Color.black,5));
 		add(panel);
 	}

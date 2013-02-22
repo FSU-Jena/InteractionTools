@@ -48,18 +48,19 @@ public class ResultPanel extends VerticalPanel implements ActionListener, TreeSe
 	private JScrollPane scrollpane;
 	private JButton clearButton, exportButton;
 	private JTree tree;
+	private HorizontalPanel buttonPanel;
+	private static final Dimension initialSize=new Dimension(600, 600);
 
 
-
-	public ResultPanel(int width, int height) {
+	public ResultPanel() {
 		treeRoot = new DefaultMutableTreeNode("Results");
 		tree = new JTree(treeRoot);
 		tree.addTreeSelectionListener(this);
 		tree.addMouseListener(this);
 		scrollpane = new JScrollPane(tree);
-		scrollpane.setPreferredSize(new Dimension(width, height));
+		scrollpane.setPreferredSize(initialSize);
 		add(scrollpane);
-		HorizontalPanel buttonPanel = new HorizontalPanel();
+		buttonPanel = new HorizontalPanel();
 
 		clearButton = new JButton("clear list");
 		clearButton.addActionListener(this);
@@ -68,9 +69,9 @@ public class ResultPanel extends VerticalPanel implements ActionListener, TreeSe
 		exportButton = new JButton("export");
 		exportButton.addActionListener(this);
 		buttonPanel.add(exportButton);
-		buttonPanel.skalieren();
+		buttonPanel.scale();
 		add(buttonPanel);
-		skalieren();
+		scale();
 	}
 
 	private static final long serialVersionUID = 7742166075954843594L;
@@ -367,6 +368,13 @@ public class ResultPanel extends VerticalPanel implements ActionListener, TreeSe
 
 	}
 
+	@Override
+	public void setSize(Dimension d) {
+	  super.setSize(d);
+	  d=new Dimension(d.width-20,d.height-90);
+	  scrollpane.setPreferredSize(d);
+	}
+	
 	public void mouseClicked(MouseEvent e) {
 		if (e.getButton()==MouseEvent.BUTTON3) showPopupForComponentAt(e.getPoint(),e.getLocationOnScreen());
   }

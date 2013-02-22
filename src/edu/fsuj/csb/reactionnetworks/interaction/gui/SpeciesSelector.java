@@ -15,8 +15,8 @@ public class SpeciesSelector extends HorizontalPanel {
 		setPreferredSize(new Dimension(width,height));
 		
 		ListModificationPanel lmp=new ListModificationPanel();
-		CompartmentList listOfAllSpecies=new CompartmentList((width-lmp.getWidth())/2-50, height-50,"all species");
-		CompartmentList userList=new CompartmentList((width-lmp.getWidth())/2-50, height-50,"user list");
+		CompartmentList listOfAllSpecies=new CompartmentList("all species");
+		CompartmentList userList=new CompartmentList("user list");
 		add(listOfAllSpecies);
 		add(lmp);
 		add(userList);

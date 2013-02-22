@@ -29,7 +29,7 @@ public class ObjectList extends VerticalPanel implements Serializable{
 		scrollpane=new JScrollPane(list);
 		scrollpane.setPreferredSize(new Dimension(width,height));
 		add(scrollpane);
-		skalieren();		
+		scale();		
   }
 
 	public TreeSet<Object> getSelectedElements() {

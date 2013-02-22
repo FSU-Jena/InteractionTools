@@ -37,59 +37,63 @@ public class SubstancesTab extends HorizontalPanel implements ActionListener, Co
 	private JTabbedPane selectedSubstancesTabs;
 	private Vector<SubstanceList> substanceLists;
 	private JButton clearButton;
+	private ListModificationPanel lmp;
+	private HorizontalPanel searchPanel;
+	private SubstanceList list1;
+	private SubstanceList list2;
+	private SubstanceList list3;
 	
-	public SubstancesTab(int width, int height) throws IOException, NoTokenException, AlreadyBoundException, SQLException {
-		ListModificationPanel lmp = new ListModificationPanel();
-		add(createChoosableSubstancesList((width - lmp.getWidth()) / 2 - 80, height));
-		add(lmp);
-		add(createSelectedSubstancesTabs((width - lmp.getWidth()) / 2 - 80, height-30));
+	public SubstancesTab() throws IOException, NoTokenException, AlreadyBoundException, SQLException {
+		lmp = new ListModificationPanel();
 		lmp.addActionListener(this);
+
+		add(createChoosableSubstancesList());
+		add(lmp);
+		add(createSelectedSubstancesTabs());
+		scale();
   }
 
-	private JTabbedPane createSelectedSubstancesTabs(int width, int height) {
+	private JTabbedPane createSelectedSubstancesTabs() {
 		substanceLists=new Vector<SubstanceList>();
 	  selectedSubstancesTabs=new JTabbedPane();
 	  
-	  SubstanceList dummy;
 	  
-	  substanceLists.add(dummy=new SubstanceList(width, height-60,"Substances List 1",true));
-	  selectedSubstancesTabs.add(dummy,"Substance List 1");
-	  PopupMenu.addSubstanceList(dummy);
-	  dummy.addActionListener(this);
+	  substanceLists.add(list1=new SubstanceList("Substances List 1",true));
+	  selectedSubstancesTabs.add(list1,"List 1");
+	  PopupMenu.addSubstanceList(list1);
+	  list1.addActionListener(this);
 	  
-	  substanceLists.add(dummy=new SubstanceList(width, height-60,"Substances List 2",true));
-	  selectedSubstancesTabs.add(dummy,"Substance List 2");	  
-	  PopupMenu.addSubstanceList(dummy);
-	  dummy.addActionListener(this);
+	  substanceLists.add(list2=new SubstanceList("Substances List 2",true));
+	  selectedSubstancesTabs.add(list2,"List 2");	  
+	  PopupMenu.addSubstanceList(list2);
+	  list2.addActionListener(this);
 	  
-	  substanceLists.add(dummy=new SubstanceList(width, height-60,"Substances List 3",true));
-	  selectedSubstancesTabs.add(dummy,"Substance List 3");	  
-	  PopupMenu.addSubstanceList(dummy);
-	  dummy.addActionListener(this);
+	  substanceLists.add(list3=new SubstanceList("Substances List 3",true));
+	  selectedSubstancesTabs.add(list3,"List 3");	  
+	  PopupMenu.addSubstanceList(list3);
+	  list3.addActionListener(this);
 	  
 	  return selectedSubstancesTabs;
   }
 
-	private VerticalPanel createChoosableSubstancesList(int width, int height) throws IOException, NoTokenException, AlreadyBoundException, SQLException {
-		VerticalPanel choosableSubstancePanel=new VerticalPanel();
-		choosableSubstances = new SubstanceList(width, height-40,"Nutrient substances",false);
+	private VerticalPanel createChoosableSubstancesList() throws IOException, NoTokenException, AlreadyBoundException, SQLException {
+		VerticalPanel result=new VerticalPanel();		
+		choosableSubstances = new SubstanceList("Nutrient substances",false);
 		choosableSubstances.addActionListener(this);
-		//loadSubstances(choosableSubstances);
-		choosableSubstancePanel.add(choosableSubstances);
-		HorizontalPanel searchPanel = new HorizontalPanel();
+		
+		searchPanel = new HorizontalPanel();
 		
 		SubstanceSearchBox searchBox=new SubstanceSearchBox(choosableSubstances);
-		searchBox.setPreferredSize(new Dimension(width-70,searchBox.getPreferredSize().height));
-		searchPanel.add(searchBox);
 		
 		clearButton=new JButton("↑ clear list");
 		clearButton.addActionListener(this);
+		searchPanel.add(searchBox);
 		searchPanel.add(clearButton);
-		searchPanel.skalieren();
-		choosableSubstancePanel.add(searchPanel);
-		choosableSubstancePanel.skalieren();
+
+		result.add(choosableSubstances);
+		result.add(searchPanel);
 		
-	  return choosableSubstancePanel;
+	  return result;
   }
 
 	public void actionPerformed(ActionEvent arg0) {
@@ -205,6 +209,19 @@ public class SubstancesTab extends HorizontalPanel implements ActionListener, Co
 		SubstanceList dummy =  SubstanceList.getIgnoreList();
 		if (dummy==null) return null;
 	  return dummy.getListed();
+  }
+
+	public void scaleScrollPanes(Dimension d) {
+		int width=(d.width-lmp.getWidth()-40)/2;
+		choosableSubstances.scaleScrollPane(new Dimension(width,d.height-searchPanel.getHeight()-60));
+		selectedSubstancesTabs.setPreferredSize(new Dimension(width,d.height-40));
+		d=new Dimension(width-20,d.height-140);
+		list1.scaleScrollPane(d);
+		list2.scaleScrollPane(d);
+		list3.scaleScrollPane(d);
+		list1.scale();
+		list2.scale();
+		list3.scale();
   }
 
 }
