@@ -6,7 +6,6 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.rmi.AlreadyBoundException;
 import java.sql.SQLException;
 import java.util.TreeSet;
@@ -40,7 +39,7 @@ import edu.fsuj.csb.tools.xml.Tools;
 public class InteractionToolbox extends JFrame implements ActionListener, ChangeListener {
 
 	private static final long serialVersionUID = 7;
-	private static PrintStream out;
+	//private static PrintStream out;
 	private JButton calculateSeedsButton;
 	private CompartmentsTab compartmentTab;
 	private ActionHandler actionHandler;
@@ -103,7 +102,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		mainPanel.add(taskResultPane=taskResultPane());		
 		mainPanel.add(statusPanel=new StatusPanel());		
 		//statusPanel.setWidth(taskResultPane().getWidth());
-		System.setOut(out);
+		//System.setOut(out);
 		mainPanel.scale();
 		add(mainPanel);
 		pack();
@@ -281,7 +280,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	 * @throws DataFormatException 
 	 */
 	public static void main(String[] args) throws IOException, NoTokenException, AlreadyBoundException, ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException, SQLException, DataFormatException  {
-		out=System.out;
+		//out=System.out;
 		parseArgs(args);
 		Tools.disableLogging();
 		InteractionSplash splash = new InteractionSplash();
