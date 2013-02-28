@@ -6,7 +6,6 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -15,23 +14,21 @@ import java.util.zip.DataFormatException;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 
+import edu.fsuj.csb.reactionnetworks.interaction.Balances;
 import edu.fsuj.csb.reactionnetworks.interaction.CalculationClient;
 import edu.fsuj.csb.reactionnetworks.interaction.SeedOptimizationSolution;
 import edu.fsuj.csb.reactionnetworks.interaction.SubstanceListNode;
 import edu.fsuj.csb.reactionnetworks.interaction.gui.OptimizationParametersTab.OptimizationParameterSet;
 import edu.fsuj.csb.reactionnetworks.interaction.results.SeedOptimizationResult;
 import edu.fsuj.csb.reactionnetworks.organismtools.DbCompartment;
-import edu.fsuj.csb.tools.LPSolverWrapper.CplexWrapper;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPCondition;
-import edu.fsuj.csb.tools.LPSolverWrapper.LPDiff;
+import edu.fsuj.csb.tools.LPSolverWrapper.LPConditionEqualOrGreater;
+import edu.fsuj.csb.tools.LPSolverWrapper.LPSolveWrapper;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPSum;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPTerm;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPVariable;
-import edu.fsuj.csb.tools.organisms.Compartment;
-import edu.fsuj.csb.tools.organisms.Reaction;
 import edu.fsuj.csb.tools.organisms.gui.ComponentNode;
 import edu.fsuj.csb.tools.xml.NoTokenException;
-import edu.fsuj.csb.tools.xml.ObjectComparator;
 
 public class OptimizeBuildTask extends OptimizationTask {
 
@@ -59,7 +56,7 @@ public class OptimizeBuildTask extends OptimizationTask {
 		System.out.println("substances that shall be decomposed: " + substancesThatShallBeDecomposed());
 		System.out.println("substances that shall be produced: " + substancesThatShallBeBuilt());
 		try {
-			TreeMap<TreeSet<Integer>, TreeSet<Integer>> solutions = new TreeMap<TreeSet<Integer>, TreeSet<Integer>>(ObjectComparator.get()); // set of (set of substances, that must be supplied)
+			TreeSet<SeedOptimizationSolution> solutions = SeedOptimizationSolution.set(); // set of (set of substances, that must be supplied)
 			int solutionSize = Integer.MAX_VALUE; // for monitoring the size of the solutions
 			int number=1;
 			while (true) {
@@ -83,7 +80,7 @@ public class OptimizeBuildTask extends OptimizationTask {
 					}
 				}
 				System.out.println("solution #"+(number++)+": Inflows "+solution.inflows()+" / Outflows "+solution.outflows());
-				solutions.put(solution.inflows(), solution.outflows()); // don't allow inflow of the substances in the solution in the next turn
+				solutions.add(solution); // don't allow inflow of the substances in the solution in the next turn
 				calculationClient.sendObject(new SeedOptimizationResult(this, solution));
 			}
 		} catch (SQLException e) {
@@ -135,126 +132,58 @@ public class OptimizeBuildTask extends OptimizationTask {
 	 * @throws InterruptedException 
 	 * @throws DataFormatException 
 	 */
-	private SeedOptimizationSolution runInternal(TreeMap<TreeSet<Integer>, TreeSet<Integer>> solutions) throws SQLException, IOException, InterruptedException, DataFormatException {
-		System.out.println("running seed optimization:");
-		System.out.println("  forbidden solutions: " + solutions.toString().replace("=", "=>"));
-		System.out.print("  Creating solver input file...");
-
-		CplexWrapper cpw = new CplexWrapper(); // create solver instance
-		int cid = getCompartmentId(); // get compartment id
-		Compartment compartment = DbCompartment.load(cid); // get compartment
-		TreeMap<Integer, LPTerm> balances = createBasicBalances(cpw,ignoreSubstancesList, ignoreUnbalanced,compartment); // create balances for all substances in the compartment
-		TreeSet<Integer> utilizedSubstances = compartment.utilizedSubstances(); // get the list of all substances utilized by this compartment
-		utilizedSubstances.removeAll(ignoreSubstancesList); 
-		addInflowReactionsFor(utilizedSubstances, balances, cpw); // add inflow reactions for all substances
-		addOutflowReactionsFor(utilizedSubstances, balances, cpw); // add outflow reactions for all substances
-		writeBalances(balances, cpw); // write the balance equations to the solver input file
-
-		LPTerm termToMinimize = null; // start creating the directive
-
-		if (parameters.getNumberOfAllReactions()>0) {
-			System.out.println("numberOfAllReactionsImportance>0");
-			for (Iterator<Integer> rit = compartment.reactions().iterator(); rit.hasNext();) { // iterate through all the compartments reactions
-				int rid = rit.next(); // reaction id
-				Reaction reaction = Reaction.get(rid); // get the respective reaction
-				if (reaction.hasUnchangedSubstances()) continue; // skip "magic" reactions
-				if (reaction.firesForwardIn(compartment)) { // if reaction can fire forward in the compartment:
-					LPVariable var = new LPVariable("sRf_" + rid); // add forward switch to termToMinimize, so the optimizer tries to suppress the reaction
-					if (termToMinimize == null) {
-						termToMinimize = var;
-					} else termToMinimize = new LPSum(termToMinimize, var);
-				}
-				if (reaction.firesBackwardIn(compartment)) { // if reaction can fire backward in the compartment:
-					LPVariable var = new LPVariable("sRb_" + rid); // add backward switch to termToMinimize, so the optimizer tries to suppress the backward reaction
-					if (termToMinimize == null) {
-						termToMinimize = var;
-					} else termToMinimize = new LPSum(termToMinimize, var);
-				}
-			}
-			if (termToMinimize!=null) termToMinimize=new LPSum(null, 0.0+parameters.getNumberOfAllReactions(),termToMinimize); // 
+	private SeedOptimizationSolution runInternal(TreeSet<SeedOptimizationSolution> solutions) throws SQLException, IOException, InterruptedException, DataFormatException {
+		DbCompartment compartment=DbCompartment.load(compartmentId);
+		Balances balances=new Balances(ignoreSubstancesList, ignoreUnbalanced, compartment);
+		
+		LPTerm reactionTerm=null;
+		for (LPVariable reaction:balances.reactionSet())	reactionTerm=new LPSum(reactionTerm,reaction);
+		
+		LPTerm inflowTerm=null;
+		LPSum outflowTerm=null;
+		for (Integer substanceId:balances.substanceSet()) {			
+			inflowTerm=new LPSum(inflowTerm, Balances.inflow(substanceId));
+			outflowTerm=new LPSum(outflowTerm, Balances.outflow(substanceId));
 		}
+		
+		TreeSet<LPCondition> conditions=LPCondition.set();
+		
+		for (Integer sid:substancesThatShallBeBuilt()) conditions.add(new LPConditionEqualOrGreater(Balances.outflow(sid), 5.0));
+		for (Integer sid:substancesThatShallBeDecomposed())	conditions.add(new LPConditionEqualOrGreater(Balances.inflow(sid), 5.0));
 
-		int numberOfInflowReactionsImportance=Math.max(parameters.getNumberOfInflows(), parameters.getNumberOfAllReactions());
-		int numberOfOutflowReactionsImportance=Math.max(parameters.getNumberOfOutflows(), parameters.getNumberOfAllReactions());
-		for (Iterator<Integer> it = utilizedSubstances.iterator(); it.hasNext();) { // iterate through all the compartment's substances:
-			int sid = it.next(); // get substance id
-
-			LPVariable inflowSwitch = new LPVariable("sRi_" + sid);
-			LPVariable outflowSwitch = new LPVariable("sRo_" + sid);
-			LPVariable inflowVelocity = new LPVariable("vRi_" + sid);
-			LPVariable outflowVelocity = new LPVariable("vRo_" + sid);
-
-			addCondition(sid, cpw, INFLOW); // connect inflow switch and velocity
-			addCondition(sid, cpw, OUTFLOW); // connect outflow switch and velocity
-
-			if (substancesThatShallBeDecomposed().contains(sid)) { // activate inflow for all substances, that shall be decomposed
-				cpw.setEqual(inflowSwitch, 1.0, "force inflow for substance to be degraded");
-				cpw.setEqual(outflowSwitch, 0.0, "forbid outflow of substances to be degraded");
-				if (parameters.getRateOfInflows()>0)	{
-					termToMinimize=new LPDiff(termToMinimize, parameters.getRateOfInflows()+0.0,inflowVelocity);
-					LPCondition lpc=new LPCondition(inflowVelocity, 10000);
-					lpc.setComment("Test");
-					cpw.addCondition(lpc);
-				}
-			} else {
-				if (numberOfInflowReactionsImportance>0) termToMinimize = new LPSum(termToMinimize, 0.0+numberOfInflowReactionsImportance, inflowSwitch); // minimize other inflows
-			}
-
-			if (substancesThatShallBeBuilt().contains(sid)) { // activate outflow for all substances, that shall be produced
-				cpw.setEqual(outflowSwitch, 1.0, "force outflow for substance to be built");
-				cpw.setEqual(inflowSwitch, 0.0, "forbid inflow of substances to be built");
-				if (parameters.getRateOfOutflows()>0)	{
-					termToMinimize=new LPDiff(termToMinimize, parameters.getRateOfOutflows()+0.0,outflowVelocity);
-					LPCondition lpc=new LPCondition(outflowVelocity, 10000);
-					lpc.setComment("Test");
-					cpw.addCondition(lpc);
-				}
-			} else {
-				if (numberOfOutflowReactionsImportance>0)	termToMinimize = new LPSum(termToMinimize, 0.0+numberOfOutflowReactionsImportance, outflowSwitch); // minimize other outflows
-			}
-
-		}
-
-		int solutionNumber = 0;
-		for (Iterator<TreeSet<Integer>> solutionIterator = solutions.keySet().iterator(); solutionIterator.hasNext();) {
-			solutionNumber++;
-			int sum = 0;
-			TreeSet<Integer> solution = solutionIterator.next();
-			LPTerm inflowSwitchSum = null;
-			for (Iterator<Integer> inflowIterator = solution.iterator(); inflowIterator.hasNext();) {
-				if (inflowSwitchSum == null) inflowSwitchSum = new LPVariable("sRi_" + inflowIterator.next());
-				else inflowSwitchSum = new LPSum(inflowSwitchSum, new LPVariable("sRi_" + inflowIterator.next()));
-				sum++;
-			}
-			LPCondition lpc = new LPCondition(inflowSwitchSum, sum - 1);
-			lpc.setComment("Forbid solution " + solutionNumber);
-			cpw.addCondition(lpc);
-		}
-
-		cpw.minimize(termToMinimize); // set the optimization directive
-
+		
+		LPTerm termToMinimize=new LPSum(reactionTerm, new LPSum(inflowTerm, outflowTerm));
+		
+		LPSolveWrapper solver=new LPSolveWrapper();
+		balances.writeToSolver(solver);
+		for (LPCondition condition:conditions) solver.addCondition(condition);
+		solver.minimize(termToMinimize);
+		
 		System.out.print("done.\n  Starting solver: ");
 		SimpleDateFormat formatter = new SimpleDateFormat("yy-MM-dd HH.mm.ss");
 
 		String filename=("seedOptimization " + getNumber() + " " + formatter.format(new Date()) + ".lp").replace(" ", "_").replace(":", ".");
-		cpw.setTaskfileName(filename);
+		solver.setTaskfileName(filename);
 		
-		cpw.start("sR*");
-
-		TreeMap<LPVariable, Double> solution = cpw.getSolution();
+		solver.start();
+		TreeMap<LPVariable, Double> solution = solver.getSolution();
+		System.out.println();
+		
 		if (solution == null) return null;
 		SeedOptimizationSolution result = new SeedOptimizationSolution(compartmentId);
-		for (Iterator<Entry<LPVariable, Double>> values = solution.entrySet().iterator(); values.hasNext();) {
-			Entry<LPVariable, Double> entry = values.next();
+		for (Entry<LPVariable, Double> entry:solution.entrySet()) {
 			String name = entry.getKey().toString();
-			if (entry.getValue() > 0) {
-				if (name.startsWith("sRi")) result.addInflow(Integer.parseInt(name.substring(4))); // get values of the switches
-				if (name.startsWith("sRo")) result.outInflow(Integer.parseInt(name.substring(4))); // get values of the switches
-				if (name.startsWith("sRf")) result.addForwardReaction(Integer.parseInt(name.substring(4)));
-				if (name.startsWith("sRb")) result.addBackwardReaction(Integer.parseInt(name.substring(4)));
+			Double value=entry.getValue();			
+			if (value != 0) {
+				System.out.println(name+" : "+value);
+				if (name.startsWith("I")) result.addInflow(Integer.parseInt(name.substring(1))); // get values of the switches
+				if (name.startsWith("O")) result.outInflow(Integer.parseInt(name.substring(1))); // get values of the switches
+				if (name.startsWith("F")) result.addForwardReaction(Integer.parseInt(name.substring(1)));
+				if (name.startsWith("B")) result.addBackwardReaction(Integer.parseInt(name.substring(1)));
 			}
 		}
-		return result;
+		if (solutions.isEmpty())return result;
+		return null;
 	}
 
 	public MutableTreeNode treeRepresentation() throws IOException, NoTokenException, AlreadyBoundException, SQLException {

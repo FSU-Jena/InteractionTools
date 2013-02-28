@@ -57,6 +57,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	private ResultPanel resultPane;
 	private HorizontalPanel taskPane;
 	private VerticalPanel taskButtonPanel;
+	private JButton findPath;
 	/**
 	 * create a new window instance
 	 * @param splash
@@ -193,6 +194,11 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		optimizeSeeds.setToolTipText("<html>Takes one substance list as targets<br/>and the other as \"desired nutrients\"<br/>and tries to optimize (maximize) flow<br/>towards targets and decomposition<br/>of the <i>desired nutrients</i> while keeping<br/>all other inflow reactions low.</html>");
 		optimizeSeeds.addActionListener(this);
 		taskButtons.add(optimizeSeeds);
+		
+		findPath=new JButton("find path");
+		findPath.setToolTipText("<html>Tries to connections between the substances to degrade<br/>and the substances that shall be built.");
+		findPath.addActionListener(this);
+		taskButtons.add(findPath);
 		
 		evolveSeeds=new JButton("<html>Calculate additionals<br/>with evolutionary Algorithm");
 		evolveSeeds.setToolTipText("<html>Takes one substance list as targets<br/>and the other as \"desired nutrients\"<br/>and tries to optimize (maximize) flow<br/>towards targets and decomposition<br/>of the <i>desired nutrients</i> while keeping<br/>all other inflow reactions low.</html>");
@@ -336,6 +342,10 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 			}
 		}
   }
+	
+	private void findPath() throws IOException {
+		actionHandler.findPath(compartmentTab.getUserSpecies(),substancesTab.degradeList(),substancesTab.produceList(),substancesTab.ignoreList());
+  }
 
 	public void stateChanged(ChangeEvent arg0) {
 		Object source=arg0.getSource();
@@ -349,32 +359,12 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	  // TODO: implement
   }
 
-	/* (non-Javadoc)
-	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-	 */
-	public void actionPerformed(ActionEvent e) {
-		Object source = e.getSource();
-		Component frame=SwingUtilities.getRoot(this);
-		frame.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-		try {
-			if (source == calculateSeedsButton) actionHandler.calcSeeds(compartmentTab.getUserList().getListed(),substancesTab.produceList(),substancesTab.ignoreList(),skipUnbalancedReactions.isSelected());
-			if (source == calculateProductsButton){
-						TreeSet<Integer> nutrients = substancesTab.degradeList();
-						nutrients.addAll(substancesTab.ignoreList());
-						actionHandler.calculateProducts(compartmentTab.getUserList().getListed(),nutrients);
-			}
-			if (source == disconnectClients) actionHandler.disconnect(onlyOdle.isSelected());
-			if (source == calcPotentialAdditionals) actionHandler.calcPotentialAdditionals(compartmentTab.getUserList().getListed(),substancesTab.degradeList(),substancesTab.ignoreList());
-			if (source == searchProcessors) actionHandler.searchProcessors(substancesTab.degradeList());
-			if (source == optimizeSeeds) optimizeSeeds(1);
-			if (source == evolveSeeds) optimizeSeeds(2);
-			
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
-		frame.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-	}
+
 	
+	/**
+	 * rescale application parts if necessary
+	 * @see java.awt.Container#validate()	  
+	 */
 	public void validate() {
 	  super.validate();
 	  Dimension size = getSize();
@@ -402,4 +392,33 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	  
 	  mainPanel.scale();
 	}
+	
+	/* (non-Javadoc)
+	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+	 */
+	public void actionPerformed(ActionEvent e) {
+		Object source = e.getSource();
+		Component frame=SwingUtilities.getRoot(this);
+		frame.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+		try {
+			if (source == calculateSeedsButton) actionHandler.calcSeeds(compartmentTab.getUserList().getListed(),substancesTab.produceList(),substancesTab.ignoreList(),skipUnbalancedReactions.isSelected());
+			if (source == calculateProductsButton){
+						TreeSet<Integer> nutrients = substancesTab.degradeList();
+						nutrients.addAll(substancesTab.ignoreList());
+						actionHandler.calculateProducts(compartmentTab.getUserList().getListed(),nutrients);
+			}
+			if (source == disconnectClients) actionHandler.disconnect(onlyOdle.isSelected());
+			if (source == calcPotentialAdditionals) actionHandler.calcPotentialAdditionals(compartmentTab.getUserList().getListed(),substancesTab.degradeList(),substancesTab.ignoreList());
+			if (source == searchProcessors) actionHandler.searchProcessors(substancesTab.degradeList());
+			if (source == optimizeSeeds) optimizeSeeds(1);
+			if (source == evolveSeeds) optimizeSeeds(2);
+			if (source == findPath) findPath();
+			
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		frame.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+	}
+
+
 }

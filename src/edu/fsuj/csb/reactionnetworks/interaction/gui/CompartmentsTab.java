@@ -167,30 +167,10 @@ public class CompartmentsTab extends HorizontalPanel implements ActionListener {
 	 * private static String readContent(String line) { line = line.trim(); String key = line.substring(1, line.indexOf(" ")); int i = line.indexOf(">") + 1; int k = line.indexOf("</" + key, i); if (k < 0) return line.substring(i); return line.substring(i, k); }
 	 */
 
-	/* (non-Javadoc)
-	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-	 */
-	public void actionPerformed(ActionEvent arg0) {
-		Object source = arg0.getSource();
-		try {
-			if (source==listOfAllCompartments){
-				addCompartmentsToUserList();
-			} else if (source==userSelection){
-				removeSpeciesFromUserList();
-			} else {			
-				switch (arg0.getID()) {
-				case ListModificationPanel.RIGHT:
-					addCompartmentsToUserList();
-					break;
-				case ListModificationPanel.LEFT:
-					removeSpeciesFromUserList();
-					break;
-				}
-			}
-    } catch (SQLException e) {
-      e.printStackTrace();
-    }
-	} /*
+
+	
+	
+	/*
 		 * 
 		 * private void addReaFile() throws URISyntaxException { URL fileUrl = PanelTools.showSelectFileDialog("choose REA file", "*.rea", new GenericFileFilter("rea file", ".rea"), this); addUserFile(fileUrl); }
 		 * 
@@ -238,10 +218,9 @@ public class CompartmentsTab extends HorizontalPanel implements ActionListener {
 	 * @return the set of species ids from the current active user list
 	 */
 	TreeSet<Integer> getUserSpecies() {
+		TreeSet<CompartmentNode> set = userSelection.getListed();
 		TreeSet<Integer> result = new TreeSet<Integer>();
-		for (Iterator<CompartmentNode> it = userSelection.getSelected().iterator(); it.hasNext();) {
-			result.add(it.next().compartment().id());
-		}
+		for (CompartmentNode cn:set) result.add(cn.compartment().id());
 		return result;
 	}
 
@@ -259,5 +238,30 @@ public class CompartmentsTab extends HorizontalPanel implements ActionListener {
 	  speciesTabs.setPreferredSize(new Dimension(width,d.height-35));
 	  userSelection.setScrollPaneSize(new Dimension(width-20,d.height-90));
 	  userSelection.scale();
+	}
+	
+	/* (non-Javadoc)
+	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+	 */
+	public void actionPerformed(ActionEvent arg0) {
+		Object source = arg0.getSource();
+		try {
+			if (source==listOfAllCompartments){
+				addCompartmentsToUserList();
+			} else if (source==userSelection){
+				removeSpeciesFromUserList();
+			} else {			
+				switch (arg0.getID()) {
+				case ListModificationPanel.RIGHT:
+					addCompartmentsToUserList();
+					break;
+				case ListModificationPanel.LEFT:
+					removeSpeciesFromUserList();
+					break;
+				}
+			}
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
 	}
 }

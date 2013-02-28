@@ -156,7 +156,9 @@ public class SubstancesTab extends HorizontalPanel implements ActionListener, Co
   }
 
 	public void compartmentListChanged(CompartmentList compartmentList) throws SQLException {
+		System.out.println(compartmentList);
 		TreeSet<CompartmentNode> list = compartmentList.getListed();
+		System.out.println(list);
 		//System.err.println("compartmentListChanged("+list+")");
 		TreeSet<Integer> substanceIds=new TreeSet<Integer>();		
 		for (Iterator<CompartmentNode> iter = list.iterator(); iter.hasNext();){

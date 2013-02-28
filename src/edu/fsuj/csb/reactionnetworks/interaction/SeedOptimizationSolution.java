@@ -3,6 +3,8 @@ package edu.fsuj.csb.reactionnetworks.interaction;
 import java.io.Serializable;
 import java.util.TreeSet;
 
+import edu.fsuj.csb.tools.xml.ObjectComparator;
+
 public class SeedOptimizationSolution implements Serializable {
 
   private static final long serialVersionUID = -3138802826107790526L;
@@ -56,4 +58,8 @@ public class SeedOptimizationSolution implements Serializable {
 	public String toString() {
 	  return "SeedOptimizationSolution:\nin: "+inflows()+"\nout: "+outflows()+"\nforward: "+forwardReactions()+"\nbackward: "+backwardReactions();
 	}
+
+	public static TreeSet<SeedOptimizationSolution> set() {
+	  return new TreeSet<SeedOptimizationSolution>(ObjectComparator.get());
+  }
 }

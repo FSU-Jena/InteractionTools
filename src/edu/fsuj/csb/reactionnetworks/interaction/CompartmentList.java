@@ -25,6 +25,7 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import edu.fsuj.csb.gui.VerticalPanel;
@@ -148,15 +149,22 @@ public class CompartmentList extends VerticalPanel implements ChangeListener, Mo
 	/**
 	 * @return the set of selected nodes
 	 */
-	@SuppressWarnings("rawtypes")
   public TreeSet<CompartmentNode> getListed() {
-		Enumeration nodes = root.depthFirstEnumeration();
-		TreeSet<CompartmentNode> result = new TreeSet<CompartmentNode>(ObjectComparator.get());
-		while (nodes.hasMoreElements()){
-			Object dummy = nodes.nextElement();
-			if (dummy instanceof CompartmentNode) result.add((CompartmentNode) dummy);
+		return getCompartments(root); 
+  }
+
+	private TreeSet<CompartmentNode> getCompartments(TreeNode root) {
+	  TreeSet<CompartmentNode> result=CompartmentNode.set();
+		@SuppressWarnings("rawtypes")
+    Enumeration children = root.children();
+		while (children.hasMoreElements()){
+			TreeNode child = (TreeNode)children.nextElement();
+			if (child instanceof CompartmentNode) {
+				result.add((CompartmentNode)child);
+			}
+			if (!child.toString().equals("contained in"))	result.addAll(getCompartments(child));
 		}
-	  return result; 
+		return result;
   }
 
 	/**

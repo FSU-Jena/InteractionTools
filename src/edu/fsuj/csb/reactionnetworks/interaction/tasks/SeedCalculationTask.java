@@ -21,6 +21,7 @@ import edu.fsuj.csb.reactionnetworks.organismtools.DbCompartment;
 import edu.fsuj.csb.reactionnetworks.organismtools.SeedCalculationIntermediate;
 import edu.fsuj.csb.tools.LPSolverWrapper.CplexWrapper;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPCondition;
+import edu.fsuj.csb.tools.LPSolverWrapper.LPConditionLessThan;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPSum;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPTerm;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPVariable;
@@ -201,7 +202,7 @@ public class SeedCalculationTask extends StructuredTask {
 		int solutionNumber = 0;
 		for (Iterator<TreeSet<Integer>> solutionIterator = solutions.iterator(); solutionIterator.hasNext();) {
 			solutionNumber++;
-			int sum = 0;
+			Double sum = 0.0;
 			TreeSet<Integer> solution = solutionIterator.next();
 			LPTerm inflowSwitchSum = null;
 			for (Iterator<Integer> inflowIterator = solution.iterator(); inflowIterator.hasNext();) {
@@ -209,7 +210,7 @@ public class SeedCalculationTask extends StructuredTask {
 				else inflowSwitchSum = new LPSum(inflowSwitchSum, new LPVariable("sRi_" + inflowIterator.next()));
 				sum++;
 			}
-			LPCondition lpc = new LPCondition(inflowSwitchSum, sum - 1);
+			LPCondition lpc = new LPConditionLessThan(inflowSwitchSum, sum);
 			lpc.setComment("Forbid solution " + solutionNumber);
 			cpw.addCondition(lpc);
 		}

@@ -13,7 +13,7 @@ import edu.fsuj.csb.tools.organisms.gui.ComponentNode;
 import edu.fsuj.csb.tools.xml.NoTokenException;
 
 
-public class TaskContainingCompartmentAndSubtances extends CalculationTask {
+public abstract class TaskContainingCompartmentAndSubtances extends CalculationTask {
   private static final long serialVersionUID = 8394003713911216366L;
 	protected Collection<Integer> substanceIds;
 	protected int compartmentId;

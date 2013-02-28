@@ -9,6 +9,7 @@ import edu.fsuj.csb.distributedcomputing.tools.Ports;
 import edu.fsuj.csb.distributedcomputing.tools.Signal;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.CalculationTask;
 import edu.fsuj.csb.tools.xml.NoTokenException;
+import edu.fsuj.csb.tools.xml.Tools;
 
 
 /**
@@ -41,6 +42,7 @@ public class CalculationClient extends Client{
 	 * @throws ClassNotFoundException
 	 */
 	public static void main(String[] args) throws UnknownHostException, IOException, InterruptedException, ClassNotFoundException {
+		Tools.disableLogging();
 		String host=(args.length>0)?args[0]:"quad";
 		for (int i=0; i<args.length; i++) System.out.println(args[i]);
 		int port=Ports.registrationPort();

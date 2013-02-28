@@ -13,6 +13,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import edu.fsuj.csb.reactionnetworks.interaction.SubstanceListNode;
 import edu.fsuj.csb.tools.LPSolverWrapper.CplexWrapper;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPCondition;
+import edu.fsuj.csb.tools.LPSolverWrapper.LPConditionEqual;
+import edu.fsuj.csb.tools.LPSolverWrapper.LPConditionEqualOrLess;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPDiff;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPSum;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPTerm;
@@ -22,7 +24,7 @@ import edu.fsuj.csb.tools.organisms.Reaction;
 import edu.fsuj.csb.tools.organisms.Substance;
 import edu.fsuj.csb.tools.xml.ObjectComparator;
 
-public class OptimizationTask extends TaskContainingCompartmentAndSubtances {
+public abstract class OptimizationTask extends TaskContainingCompartmentAndSubtances {
 
 	private static final long serialVersionUID = -7358978173891618447L;
 	protected TreeSet<Integer> buildSubstancesList,ignoreSubstancesList;
@@ -74,7 +76,7 @@ public class OptimizationTask extends TaskContainingCompartmentAndSubtances {
 				addProductBalances(backwardVelocity, reaction.substrates(), mappingFromSIDtoBalanceTerm,ignoredSubstances);
 
 				if (forwardVelocity != null) { // if reaction can fire in both directions: allow only one at a time
-					LPCondition condition = new LPCondition(new LPSum(reactionSwitch(reactionID, FORWARD), reactionSwitch(reactionID, BACKWARD)), 1.0);
+					LPCondition condition = new LPConditionEqual(new LPSum(reactionSwitch(reactionID, FORWARD), reactionSwitch(reactionID, BACKWARD)), 1.0);
 					condition.setComment("forbid forward and backward to occur simultanously");
 					cpw.addCondition(condition);
 				}
@@ -158,10 +160,10 @@ public class OptimizationTask extends TaskContainingCompartmentAndSubtances {
 	}
 
 	private static void couple(LPVariable reactionSwitch, LPVariable velocity, CplexWrapper solver) {
-		LPCondition condition = new LPCondition(reactionSwitch, velocity);
+		LPCondition condition = new LPConditionEqualOrLess(new LPDiff(reactionSwitch, velocity), 0.0);
 		condition.setComment("force velocity>1 if switch=1");
 		solver.addCondition(condition);
-		condition = new LPCondition(velocity, limit, reactionSwitch);
+		condition = new LPConditionEqualOrLess(new LPDiff(velocity, limit,reactionSwitch),0.0);
 		condition.setComment("force velocity=0 if switch==0 ");
 		solver.addCondition(condition);
 		solver.addBinVar(reactionSwitch);
