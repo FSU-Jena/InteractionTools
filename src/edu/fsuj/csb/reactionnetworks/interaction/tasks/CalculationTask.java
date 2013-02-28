@@ -17,7 +17,7 @@ import edu.fsuj.csb.tools.xml.NoTokenException;
  * @author Stephan Richter
  *
  */
-public class CalculationTask implements Serializable {
+public abstract class CalculationTask implements Serializable {
 
   private static final long serialVersionUID = -252544614439255597L;
   private int number=0;
@@ -57,10 +57,7 @@ public class CalculationTask implements Serializable {
    * @throws AlreadyBoundException
    * @throws SQLException 
    */
-  public void run(CalculationClient calculationClient) throws IOException, NoTokenException, AlreadyBoundException, SQLException{
-  	System.out.println(this.getClass().getSimpleName()+".run() not implemented yet!");
-  }
-
+  public abstract void run(CalculationClient calculationClient) throws IOException, NoTokenException, AlreadyBoundException, SQLException;
 	/**
 	 * @return a hierarchic representation of this task. should be overridden by extending classes
 	 * @throws IOException
