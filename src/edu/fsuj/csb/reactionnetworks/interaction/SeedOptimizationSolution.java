@@ -26,7 +26,7 @@ public class SeedOptimizationSolution implements Serializable {
 		inflows.add(substanceId);
   }
 
-	public void outInflow(int substanceId) {
+	public void addOutflow(int substanceId) {
 		outflows.add(substanceId);
   }
 
