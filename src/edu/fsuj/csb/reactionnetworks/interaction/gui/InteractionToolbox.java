@@ -190,13 +190,13 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		calculateSeedsButton.addActionListener(this);
 		taskButtons.add(calculateSeedsButton);
 		
-		optimizeSeeds=new JButton("<html>Calculate additionals<br/>with MILP (buggy)");
+		optimizeSeeds=new JButton("<html>Calculate Flow<br/>Distributions for given<br/>Input/Output<br/>using linear programming");
 		optimizeSeeds.setToolTipText("<html>Takes one substance list as targets<br/>and the other as \"desired nutrients\"<br/>and tries to optimize (maximize) flow<br/>towards targets and decomposition<br/>of the <i>desired nutrients</i> while keeping<br/>all other inflow reactions low.</html>");
 		optimizeSeeds.addActionListener(this);
 		taskButtons.add(optimizeSeeds);
 		
-		findPath=new JButton("find path");
-		findPath.setToolTipText("<html>Tries to connections between the substances to degrade<br/>and the substances that shall be built.");
+		findPath=new JButton("<html>Find paths from<br/>substances-to-degrade<br/>to substances-to-produce");
+		findPath.setToolTipText("<html>Tries to find connections between the substances to degrade<br/>and the substances that shall be built.");
 		findPath.addActionListener(this);
 		taskButtons.add(findPath);
 		
@@ -210,7 +210,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		calculateProductsButton.addActionListener(this);
 		taskButtons.add(calculateProductsButton);
 
-		calcPotentialAdditionals=new JButton("Calc best additionals");
+		calcPotentialAdditionals=new JButton("<html>Calc additionals maximizing<br/>the set of products");
 		calcPotentialAdditionals.setToolTipText("<html>Calculates the substances, which, thoghether with the given substances, maximize the scope (number of reachable substances) of the given substances</html>");
 		calcPotentialAdditionals.addActionListener(this);
 		taskButtons.add(calcPotentialAdditionals);
@@ -333,9 +333,10 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		TreeSet<Integer> decompositionList = substancesTab.degradeList();
 		if (decompositionList!=null && !decompositionList.isEmpty()){
 			TreeSet<Integer> buildList = substancesTab.produceList();
+			
 			if (buildList!=null && !buildList.isEmpty()){
 				if (method==1){
-					actionHandler.optimizeSeeds(compartmentTab.getUserList().getListed(),decompositionList,buildList,substancesTab.ignoreList(),parametersTab.optimizationParameterSet(),skipUnbalancedReactions.isSelected());
+					actionHandler.optimizeSeeds(compartmentTab.getUserList().getListed(),decompositionList,buildList,substancesTab.ignoreList(),substancesTab.noOutflowList(),parametersTab.optimizationParameterSet(),skipUnbalancedReactions.isSelected());
 				} else {
 					actionHandler.evovleSeeds(compartmentTab.getUserList().getListed(), decompositionList, buildList,substancesTab.ignoreList());
 				}

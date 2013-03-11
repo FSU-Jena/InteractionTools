@@ -304,6 +304,7 @@ public class ActionHandler extends Master {
 	 * @param compartments the set of compartments, for which the calculation shall be performed
 	 * @param decompose the set of substances, which shall be processed by those compartments
 	 * @param build the set of substances, which shall be built be the respective compartments
+	 * @param noOutflow set of substance ids, for which outflow shall be supressed
 	 * @param optimizationParameterSet 
 	 * @param b 
 	 * @param rateOfOutflowReactionsImportance 
@@ -314,10 +315,10 @@ public class ActionHandler extends Master {
 	 * @param minimizeInternalReactions determines, whether the use of internal reactions shall be minimized
 	 * @throws IOException
 	 */
-	public void optimizeSeeds(TreeSet<CompartmentNode> compartments, TreeSet<Integer> decompose, TreeSet<Integer> build, TreeSet<Integer> ignore, OptimizationParameterSet optimizationParameterSet, boolean ignoreUnbalanced) throws IOException {
+	public void optimizeSeeds(TreeSet<CompartmentNode> compartments, TreeSet<Integer> decompose, TreeSet<Integer> build, TreeSet<Integer> ignore, TreeSet<Integer> noOutflow, OptimizationParameterSet optimizationParameterSet, boolean ignoreUnbalanced) throws IOException {
 		for (Iterator<CompartmentNode> it = compartments.iterator();it.hasNext();){
 			int cid=it.next().compartment().id();
-			sendTask(new OptimizeBuildTask(cid,decompose,build,ignore, optimizationParameterSet,ignoreUnbalanced));
+			sendTask(new OptimizeBuildTask(cid,decompose,build,ignore, optimizationParameterSet,ignoreUnbalanced,noOutflow));
 		}
 	}
 

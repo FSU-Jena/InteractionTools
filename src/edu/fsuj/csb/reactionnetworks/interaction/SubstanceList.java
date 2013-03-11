@@ -44,11 +44,13 @@ public class SubstanceList extends VerticalPanel implements ChangeListener,TreeS
 	private JCheckBox degradeButton;
 	private JCheckBox produceButton;
 	private JCheckBox ignoreButton;
+	private JCheckBox noOutflowButton;
 	private JScrollPane scp;
 	private HorizontalPanel buttonPane;
 	private static SubstanceList degradeList;
 	private static SubstanceList produceList;
 	private static SubstanceList ignoreList;
+	private static SubstanceList noOutflowList;
 	private static final Dimension initialSize=new Dimension(150, 300);
 
 	public SubstanceList(String name,boolean showBoxes) {
@@ -69,6 +71,8 @@ public class SubstanceList extends VerticalPanel implements ChangeListener,TreeS
 			produceButton.addActionListener(this);
 			buttonPane.add(ignoreButton=new JCheckBox("<html>substances&nbsp;&nbsp;&nbsp;&nbsp;<br>to ignore"));
 			ignoreButton.addActionListener(this);
+			buttonPane.add(noOutflowButton=new JCheckBox("<html>forbid<br/>outflow"));
+			noOutflowButton.addActionListener(this);
 			buttonPane.scale();
 			add(buttonPane);
 			if (degradeList==null) {
@@ -77,6 +81,8 @@ public class SubstanceList extends VerticalPanel implements ChangeListener,TreeS
 				setProduceList(true);
 			} else if (ignoreList==null){
 				setIgnoreList(true);
+			} else if (noOutflowList==null){
+				setNoOutflowList(true);
 			}
 		}
 		add(scp);
@@ -275,13 +281,30 @@ public class SubstanceList extends VerticalPanel implements ChangeListener,TreeS
 		if (source==degradeButton) setDegradeList(degradeButton.isSelected());
 		if (source==produceButton) setProduceList(produceButton.isSelected());
 		if (source==ignoreButton) setIgnoreList(ignoreButton.isSelected());
+		if (source==noOutflowButton) setNoOutflowList(noOutflowButton.isSelected());
   }
+	
+	private void setNoOutflowList(boolean on) {
+		if (on){
+			noOutflowButton.setSelected(true);
+			setDegradeList(false);
+			setProduceList(false);
+			setIgnoreList(false);
+			if (noOutflowList!=null && noOutflowList!=this) noOutflowList.setNoOutflowList(false);
+			noOutflowList=this;
+		} else {
+			noOutflowButton.setSelected(false);
+			if (noOutflowList==this) noOutflowList=null;
+		}
+  }
+
 	
 	private void setDegradeList(boolean on) {
 		if (on){
 			degradeButton.setSelected(true);
 			setProduceList(false);
 			setIgnoreList(false);
+			setNoOutflowList(false);
 			if (degradeList!=null && degradeList!=this) degradeList.setDegradeList(false);
 			degradeList=this;
 		} else {
@@ -295,6 +318,8 @@ public class SubstanceList extends VerticalPanel implements ChangeListener,TreeS
 			ignoreButton.setSelected(true);
 			setDegradeList(false);
 			setProduceList(false);
+			setNoOutflowList(false);
+
 			if (ignoreList!=null && ignoreList!=this) ignoreList.setIgnoreList(false);
 			ignoreList=this;
 		} else {
@@ -308,6 +333,7 @@ public class SubstanceList extends VerticalPanel implements ChangeListener,TreeS
 			produceButton.setSelected(true);
 			setDegradeList(false);
 			setIgnoreList(false);
+			setNoOutflowList(false);
 			if (produceList!=null && produceList!=this) produceList.setProduceList(false);
 			produceList=this;
 		} else {
@@ -331,4 +357,8 @@ public class SubstanceList extends VerticalPanel implements ChangeListener,TreeS
 	public void scaleScrollPane(Dimension d){
 		scp.setPreferredSize(d);
 	}
+
+	public static SubstanceList getNoOutflowList() {
+	  return noOutflowList;
+  }
 }

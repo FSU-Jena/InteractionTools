@@ -7,6 +7,7 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.TreeSet;
@@ -15,6 +16,8 @@ import javax.swing.BorderFactory;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
+import edu.fsuj.csb.gui.GenericFileFilter;
+import edu.fsuj.csb.gui.PanelTools;
 import edu.fsuj.csb.reactionnetworks.interaction.CompartmentList;
 import edu.fsuj.csb.reactionnetworks.interaction.SubstanceList;
 import edu.fsuj.csb.tools.organisms.gui.CompartmentNode;
@@ -22,12 +25,13 @@ import edu.fsuj.csb.tools.organisms.gui.SubstanceNode;
 import edu.fsuj.csb.tools.organisms.gui.URLNode;
 import edu.fsuj.csb.tools.organisms.gui.UrnNode;
 import edu.fsuj.csb.tools.xml.ObjectComparator;
+import edu.fsuj.csb.tools.xml.XmlObject;
 
 public class PopupMenu extends JPopupMenu implements ActionListener {
 
   private static final long serialVersionUID = -7722530530571660850L;
 	private Object targetObject;
-	private String ObjectText;
+	private String objectText;
 	private JMenuItem search;
 	private JMenuItem clip;
 	private JMenuItem cListItem;	
@@ -60,19 +64,25 @@ public class PopupMenu extends JPopupMenu implements ActionListener {
 		}
 
 		if (targetObject instanceof CompartmentNode){
-			ObjectText=((CompartmentNode)targetObject).compartment().mainName();
+			objectText=((CompartmentNode)targetObject).compartment().mainName();
 			cListItem=new JMenuItem("add to \""+compartmentList.caption()+"\"");
 			cListItem.addActionListener(this);
 			add(cListItem);
 		}
 		if (targetObject instanceof SubstanceNode){
-			ObjectText=((SubstanceNode)targetObject).substance().mainName();
+			objectText=((SubstanceNode)targetObject).substance().mainName();
 			for (Iterator<SubstanceList> it = substanceLists.iterator();it.hasNext();){
 				SubstanceList sl = it.next();
 				ListMenuItem item = new ListMenuItem(sl);
 				item.addActionListener(this);
 				add(item);
 			}
+		}
+		
+		if (targetObject instanceof XmlObject){
+			JMenuItem item=new ExportXmlItem((XmlObject) targetObject);
+			item.addActionListener(this);
+			add(item);
 		}
 		
 		JMenuItem cancel = new JMenuItem("cancel");
@@ -86,13 +96,22 @@ public class PopupMenu extends JPopupMenu implements ActionListener {
 	public void actionPerformed(ActionEvent arg0) {
 		setVisible(false);
 		Object option = arg0.getSource();
-		if (option==search) searchFor(ObjectText);
-		if (option==clip) copyToClipboard(ObjectText);
+		if (option==search) searchFor(objectText);
+		if (option==clip) copyToClipboard(objectText);
 		if (option==cListItem) try {
 	    compartmentList.addCompartment(((CompartmentNode)targetObject).compartment());
     } catch (SQLException e) {
 	    e.printStackTrace();
     }
+		if (option instanceof ExportXmlItem){
+			try {
+	      ((ExportXmlItem) option).export(PanelTools.showSelectFileDialog("State output file", "output.sbml.xml", new GenericFileFilter("SBML file", "*.xml"), this));
+      } catch (URISyntaxException e) {
+	      e.printStackTrace();
+      } catch (IOException e) {
+	      e.printStackTrace();
+      }
+		}
     if (option instanceof ListMenuItem){
     	try {
 	      ((ListMenuItem) option).getList().addSubstance(((SubstanceNode)targetObject).substance());

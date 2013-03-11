@@ -211,7 +211,7 @@ public class FindPathTask extends CalculationTask {
 	public MutableTreeNode treeRepresentation() throws IOException, NoTokenException, AlreadyBoundException, SQLException {
 		DefaultMutableTreeNode result = new DefaultMutableTreeNode("Task: find paths");
 	  DefaultMutableTreeNode inputs=new DefaultMutableTreeNode("Substances to degrade");
-	  for (int sid:ignoreSids) inputs.add(new SubstanceNode(DbSubstance.load(sid)));
+	  for (int sid:degradeSids) inputs.add(new SubstanceNode(DbSubstance.load(sid)));
 	  DefaultMutableTreeNode targets=new DefaultMutableTreeNode("Substances to produce");
 	  for (int sid:produceSids) targets.add(new SubstanceNode(DbSubstance.load(sid)));
 	  DefaultMutableTreeNode ignore=new DefaultMutableTreeNode("ignored substances");

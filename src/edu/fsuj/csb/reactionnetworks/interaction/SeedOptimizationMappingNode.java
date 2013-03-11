@@ -30,7 +30,7 @@ public class SeedOptimizationMappingNode extends DefaultMutableTreeNode implemen
 	private class SBMLModel implements XmlObject {
 
 		public StringBuffer getCode() {
-			StringBuffer buffer = new StringBuffer("\n");
+			StringBuffer buffer = new StringBuffer("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 			try {
 				buffer.append("<sbml xmlns=\"http://www.sbml.org/sbml/level2\" level=\"2\" version=\"1\">");
 				buffer.append("\n\t<model id=\"Result\" name=\"Result\">");
@@ -49,13 +49,13 @@ public class SeedOptimizationMappingNode extends DefaultMutableTreeNode implemen
 			StringBuffer buffer = new StringBuffer();
 			buffer.append("\n<listOfReactions>");
 
-			for (Iterator<Integer> reactionIterator = solution.forwardReactions().iterator(); reactionIterator.hasNext();) {
-				Reaction react = Reaction.get(reactionIterator.next());
+			for (Integer reactionId : solution.forwardReactions().keySet()) {
+				Reaction react = Reaction.get(reactionId);
 				buffer.append(XMLWriter.shift(react.getCode(false), 1));
 			}
 
-			for (Iterator<Integer> reactionIterator = solution.backwardReactions().iterator(); reactionIterator.hasNext();) {
-				Reaction react = Reaction.get(reactionIterator.next());
+			for (Integer reactionId : solution.backwardReactions().keySet()) {
+				Reaction react = Reaction.get(reactionId);
 				buffer.append(XMLWriter.shift(react.getCode(true), 1));
 			}
 
@@ -66,10 +66,11 @@ public class SeedOptimizationMappingNode extends DefaultMutableTreeNode implemen
 		private StringBuffer speciesList() throws SQLException {
 			StringBuffer buffer = new StringBuffer();
 			buffer.append("\n<listOfSpecies>");
-
-			for (Iterator<Integer> speciesIterator = getAllSpecies().iterator(); speciesIterator.hasNext();) {
-				Substance subs = Substance.get(speciesIterator.next());
-				buffer.append(XMLWriter.shift(subs.getCode("c" + task.getCompartmentId()), 1));
+			TreeSet<Integer> ignored = task.ignoredSubstances();
+			for (Integer speciesId : getAllSpecies()) {
+				Substance subs = Substance.get(speciesId);
+				boolean boundary=ignored.contains(subs.id());
+				buffer.append(XMLWriter.shift(subs.getCode("c" + task.getCompartmentId(),boundary), 1));
 			}
 
 			buffer.append("\n</listOfSpecies>");
@@ -79,13 +80,13 @@ public class SeedOptimizationMappingNode extends DefaultMutableTreeNode implemen
 		private TreeSet<Integer> getAllSpecies() {
 
 			TreeSet<Integer> result = new TreeSet<Integer>(ObjectComparator.get());
-			for (Iterator<Integer> rit = solution.forwardReactions().iterator(); rit.hasNext();) {
-				Reaction r = Reaction.get(rit.next());
+			for (Integer rit : solution.forwardReactions().keySet()) {
+				Reaction r = Reaction.get(rit);
 				result.addAll(r.substrateIds());
 				result.addAll(r.productIds());
 			}
-			for (Iterator<Integer> rit = solution.backwardReactions().iterator(); rit.hasNext();) {
-				Reaction r = Reaction.get(rit.next());
+			for (Integer rit : solution.backwardReactions().keySet()) {
+				Reaction r = Reaction.get(rit);
 				result.addAll(r.substrateIds());
 				result.addAll(r.productIds());
 			}
@@ -94,7 +95,7 @@ public class SeedOptimizationMappingNode extends DefaultMutableTreeNode implemen
 
 		private StringBuffer compartmentList() {
 			StringBuffer buffer = new StringBuffer();
-			buffer.append("\n<listOfCompartments>\n\t<compartment id=\"c" + task.getCompartmentId() + "\" name=\"Compartment 1\"></compartment>\n</listOfCompartments>");
+			buffer.append("\n<listOfCompartments>\n\t<compartment id=\"c" + task.getCompartmentId() + "\" name=\"Compartment 1\" size=\"1\"></compartment>\n</listOfCompartments>");
 			return buffer;
 		}
 
@@ -112,19 +113,17 @@ public class SeedOptimizationMappingNode extends DefaultMutableTreeNode implemen
 		task = (OptimizeBuildTask) seedOptimizationResult.getTask();
 		solution = seedOptimizationResult.result();
 
-		DefaultMutableTreeNode inputs = new SubstanceListNode("Consumed substances", solution.inflows());
-		DefaultMutableTreeNode outputs = new SubstanceListNode("Produced substances", solution.outflows());
+		DefaultMutableTreeNode inputs = new SubstanceListNode("Consumed substances", solution.inflows().keySet());
+		DefaultMutableTreeNode outputs = new SubstanceListNode("Produced substances", solution.outflows().keySet());
 		DefaultMutableTreeNode reactions = new DefaultMutableTreeNode("Reactions (" + (solution.forwardReactions().size() + solution.backwardReactions().size()) + ")");
 
-		for (Iterator<Integer> reactionIterator = solution.forwardReactions().iterator(); reactionIterator.hasNext();){
-			Integer rId = reactionIterator.next();
-			DbReaction.load(rId);
-			reactions.add(ComponentNode.create(rId));
+		for (Integer reactionId: solution.forwardReactions().keySet()){
+			DbReaction.load(reactionId);
+			reactions.add(ComponentNode.create(reactionId));
 		}
-		for (Iterator<Integer> reactionIterator = solution.backwardReactions().iterator(); reactionIterator.hasNext();){
-			Integer rId = reactionIterator.next();
-			DbReaction.load(rId);
-			reactions.add(ComponentNode.create(rId));
+		for (Integer reactionId : solution.backwardReactions().keySet()){
+			DbReaction.load(reactionId);
+			reactions.add(ComponentNode.create(reactionId));
 		}
 		add(inputs);
 		add(reactions);
@@ -138,25 +137,25 @@ public class SeedOptimizationMappingNode extends DefaultMutableTreeNode implemen
 	public void writeDotFile(String filename) throws IOException, URISyntaxException, SQLException {
 		BufferedWriter writer = new BufferedWriter(new FileWriter(filename));
 		TreeSet<Integer> substanceIds = new TreeSet<Integer>(ObjectComparator.get());
-		for (Iterator<Integer> rit = solution.forwardReactions().iterator(); rit.hasNext();) {
-			Reaction r = Reaction.get(rit.next());
+		for (Integer rit : solution.forwardReactions().keySet()) {
+			Reaction r = Reaction.get(rit);
 			substanceIds.addAll(r.substrateIds());
 			substanceIds.addAll(r.productIds());
 		}
-		for (Iterator<Integer> rit = solution.backwardReactions().iterator(); rit.hasNext();) {
-			Reaction r = Reaction.get(rit.next());
+		for (Integer rit : solution.backwardReactions().keySet()) {
+			Reaction r = Reaction.get(rit);
 			substanceIds.addAll(r.substrateIds());
 			substanceIds.addAll(r.productIds());
 		}
 		Compartment c = DbCompartment.load(solution.compartmentId());
 		writer.write("digraph " + c.mainName().replace(" ", "_").replace(".", ".") + " {\n");
-		for (Iterator<Integer> sit = substanceIds.iterator(); sit.hasNext();) {
-			Substance s = Substance.get(sit.next());
-			writer.write("S" + s.id() + " [shape=ellipse, label=\"" + s.mainName().replace("\"", "'") + "\"];\n");
+		for (Integer sid : substanceIds) {
+			Substance s = Substance.get(sid);
+			writer.write("S" + sid + " [shape=ellipse, label=\"" + s.mainName().replace("\"", "'") + "\"];\n");
 		}
-		for (Iterator<Integer> rit = solution.forwardReactions().iterator(); rit.hasNext();) {
-			Reaction r = Reaction.get(rit.next());
-			writer.write("R" + r.id() + " [shape=box, label=\"" + r.mainName().replace("\"", "'") + "\"];\n");
+		for (Integer rid : solution.forwardReactions().keySet()) {
+			Reaction r = Reaction.get(rid);
+			writer.write("R" + rid + " [shape=box, label=\"" + r.mainName().replace("\"", "'") + "\"];\n");
 			for (Iterator<Entry<Integer, Integer>> substrateEntries = r.substrates().entrySet().iterator(); substrateEntries.hasNext();) {
 				Entry<Integer, Integer> substrateEntry = substrateEntries.next();
 				Substance s = Substance.get(substrateEntry.getKey());
@@ -174,7 +173,7 @@ public class SeedOptimizationMappingNode extends DefaultMutableTreeNode implemen
 				writer.write("\n");
 			}
 		}
-		for (Iterator<Integer> rit = solution.backwardReactions().iterator(); rit.hasNext();) {
+		for (Iterator<Integer> rit = solution.backwardReactions().keySet().iterator(); rit.hasNext();) {
 			Reaction r = Reaction.get(rit.next());
 			writer.write("R" + r.id() + " [shape=box, label=\"" + r.mainName().replace("\"", "'") + "\"];\n");
 			for (Iterator<Entry<Integer, Integer>> substrateEntries = r.substrates().entrySet().iterator(); substrateEntries.hasNext();) {

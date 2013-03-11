@@ -42,6 +42,7 @@ public class SubstancesTab extends HorizontalPanel implements ActionListener, Co
 	private SubstanceList list1;
 	private SubstanceList list2;
 	private SubstanceList list3;
+	private SubstanceList list4;
 	
 	public SubstancesTab() throws IOException, NoTokenException, AlreadyBoundException, SQLException {
 		lmp = new ListModificationPanel();
@@ -73,6 +74,10 @@ public class SubstancesTab extends HorizontalPanel implements ActionListener, Co
 	  PopupMenu.addSubstanceList(list3);
 	  list3.addActionListener(this);
 	  
+	  substanceLists.add(list4=new SubstanceList("Substances List 4",true));
+	  selectedSubstancesTabs.add(list4,"List 4");	  
+	  PopupMenu.addSubstanceList(list4);
+	  list4.addActionListener(this);
 	  return selectedSubstancesTabs;
   }
 
@@ -156,9 +161,9 @@ public class SubstancesTab extends HorizontalPanel implements ActionListener, Co
   }
 
 	public void compartmentListChanged(CompartmentList compartmentList) throws SQLException {
-		System.out.println(compartmentList);
+		//System.out.println(compartmentList);
 		TreeSet<CompartmentNode> list = compartmentList.getListed();
-		System.out.println(list);
+		//System.out.println(list);
 		//System.err.println("compartmentListChanged("+list+")");
 		TreeSet<Integer> substanceIds=new TreeSet<Integer>();		
 		for (Iterator<CompartmentNode> iter = list.iterator(); iter.hasNext();){
@@ -221,9 +226,17 @@ public class SubstancesTab extends HorizontalPanel implements ActionListener, Co
 		list1.scaleScrollPane(d);
 		list2.scaleScrollPane(d);
 		list3.scaleScrollPane(d);
+		list4.scaleScrollPane(d);
 		list1.scale();
 		list2.scale();
 		list3.scale();
+		list4.scale();
+  }
+
+	public TreeSet<Integer> noOutflowList() {
+		SubstanceList dummy =  SubstanceList.getNoOutflowList();
+		if (dummy==null) return null;
+	  return dummy.getListed();
   }
 
 }

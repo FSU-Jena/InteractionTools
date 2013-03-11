@@ -22,7 +22,9 @@ import edu.fsuj.csb.reactionnetworks.interaction.gui.OptimizationParametersTab.O
 import edu.fsuj.csb.reactionnetworks.interaction.results.SeedOptimizationResult;
 import edu.fsuj.csb.reactionnetworks.organismtools.DbCompartment;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPCondition;
+import edu.fsuj.csb.tools.LPSolverWrapper.LPConditionEqual;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPConditionEqualOrGreater;
+import edu.fsuj.csb.tools.LPSolverWrapper.LPConditionLessThan;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPSolveWrapper;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPSum;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPTerm;
@@ -45,9 +47,10 @@ public class OptimizeBuildTask extends OptimizationTask {
 	 * @param ignore the set of substances, which shall not be taken into account during calculation
 	 * @param optimizationParameterSet a set of optimization parameters
 	 * @param ignoreUnbalanced 
+	 * @param noOutflow 
 	 */
-	public OptimizeBuildTask(int cid, TreeSet<Integer> decompose, TreeSet<Integer> build, TreeSet<Integer> ignore, OptimizationParameterSet optimizationParameterSet, boolean ignoreUnbalanced) {
-		super(cid, decompose, build,ignore);
+	public OptimizeBuildTask(int cid, TreeSet<Integer> decompose, TreeSet<Integer> build, TreeSet<Integer> ignore, OptimizationParameterSet optimizationParameterSet, boolean ignoreUnbalanced, TreeSet<Integer> noOutflow) {
+		super(cid, decompose, build,ignore,noOutflow);
 		parameters=optimizationParameterSet;
 		this.ignoreUnbalanced=ignoreUnbalanced;
 	}
@@ -69,6 +72,8 @@ public class OptimizeBuildTask extends OptimizationTask {
 				int inflowSize = solution.inflows().size();
 				if (inflowSize > solutionSize) { // if the size of the solution increases, we're getting suboptimal solutions. so: quit!
 					System.out.println("found no more solution with size " + solutionSize);
+					System.out.println("next solution: #"+(number++)+": Inflows "+solution.inflows()+" / Outflows "+solution.outflows());
+					System.out.println("Reactions: "+solution.forwardReactions()+" - "+solution.backwardReactions());
 					break;
 				}
 				if (inflowSize < solutionSize) { // normaly the size of the solutions should not decrease, as this would mean, we have found suboptimal solutions before...
@@ -80,6 +85,7 @@ public class OptimizeBuildTask extends OptimizationTask {
 					}
 				}
 				System.out.println("solution #"+(number++)+": Inflows "+solution.inflows()+" / Outflows "+solution.outflows());
+				System.out.println("Reactions: "+solution.forwardReactions()+" - "+solution.backwardReactions());
 				solutions.add(solution); // don't allow inflow of the substances in the solution in the next turn
 				calculationClient.sendObject(new SeedOptimizationResult(this, solution));
 			}
@@ -141,15 +147,27 @@ public class OptimizeBuildTask extends OptimizationTask {
 		
 		LPTerm inflowTerm=null;
 		LPSum outflowTerm=null;
-		for (Integer substanceId:balances.substanceSet()) {			
+		for (Integer substanceId:balances.substanceSet()) {
 			inflowTerm=new LPSum(inflowTerm, Balances.inflow(substanceId));
 			outflowTerm=new LPSum(outflowTerm, Balances.outflow(substanceId));
 		}
 		
 		TreeSet<LPCondition> conditions=LPCondition.set();
 		
-		for (Integer sid:substancesThatShallBeBuilt()) conditions.add(new LPConditionEqualOrGreater(Balances.outflow(sid), 5.0));
-		for (Integer sid:substancesThatShallBeDecomposed())	conditions.add(new LPConditionEqualOrGreater(Balances.inflow(sid), 5.0));
+		for (Integer sid:substancesThatShallBeBuilt()) {
+			conditions.add(new LPConditionEqualOrGreater(Balances.outflow(sid), 5.0));
+			conditions.add(new LPConditionEqual(Balances.inflow(sid), 0.0));
+		}
+		for (Integer sid:substancesThatShallBeDecomposed())	{
+			conditions.add(new LPConditionEqualOrGreater(Balances.inflow(sid), 5.0));
+			conditions.add(new LPConditionEqual(Balances.outflow(sid), 0.0));
+		}
+		
+		for (Integer sid:noOutflowList){
+			conditions.add(new LPConditionEqual(new LPVariable("O"+sid),0.0));
+		}
+		
+		conditions.addAll(supressPreviousSolutions(solutions));
 
 		
 		LPTerm termToMinimize=new LPSum(reactionTerm, new LPSum(inflowTerm, outflowTerm));
@@ -175,16 +193,46 @@ public class OptimizeBuildTask extends OptimizationTask {
 			String name = entry.getKey().toString();
 			Double value=entry.getValue();			
 			if (value != 0) {
-				System.out.println(name+" : "+value);
-				if (name.startsWith("I")) result.addInflow(Integer.parseInt(name.substring(1))); // get values of the switches
-				if (name.startsWith("O")) result.outInflow(Integer.parseInt(name.substring(1))); // get values of the switches
-				if (name.startsWith("F")) result.addForwardReaction(Integer.parseInt(name.substring(1)));
-				if (name.startsWith("B")) result.addBackwardReaction(Integer.parseInt(name.substring(1)));
+				if (name.startsWith("I")) result.addInflow(Integer.parseInt(name.substring(1)),value); // get values of the switches
+				if (name.startsWith("O")) result.addOutflow(Integer.parseInt(name.substring(1)),value); // get values of the switches
+				if (name.startsWith("F")) result.addForwardReaction(Integer.parseInt(name.substring(1)),value);
+				if (name.startsWith("B")) result.addBackwardReaction(Integer.parseInt(name.substring(1)),value);
 			}
 		}
-		if (solutions.isEmpty())return result;
-		return null;
+		return result;
 	}
+
+	private TreeSet<LPCondition> supressPreviousSolutions(TreeSet<SeedOptimizationSolution> solutions) {
+		TreeSet<LPCondition> result=LPCondition.set();
+		for (SeedOptimizationSolution solution: solutions){
+			double sum=-0.1;
+			LPTerm term=null;
+			for (Entry<Integer, Double> inflow:solution.inflows().entrySet()){
+				term=new LPSum(term, new LPVariable("I"+inflow.getKey()));
+				sum+=inflow.getValue();				
+			}
+			for (Entry<Integer, Double> outflow:solution.outflows().entrySet()){
+				term=new LPSum(term, new LPVariable("O"+outflow.getKey()));
+				sum+=outflow.getValue();				
+			}
+			for (Entry<Integer, Double> forward:solution.forwardReactions().entrySet()){
+				term=new LPSum(term, new LPVariable("F"+forward.getKey()));
+				sum+=forward.getValue();				
+			}
+			for (Entry<Integer, Double> backward:solution.backwardReactions().entrySet()){
+				term=new LPSum(term, new LPVariable("B"+backward.getKey()));
+				sum+=backward.getValue();				
+			}
+			LPCondition c = new LPConditionLessThan(term, sum);
+			System.out.println(c);
+			try {
+	      Thread.sleep(1000);
+      } catch (InterruptedException e) {
+      }
+			result.add(c);
+		}
+	  return result;
+  }
 
 	public MutableTreeNode treeRepresentation() throws IOException, NoTokenException, AlreadyBoundException, SQLException {
 		DefaultMutableTreeNode result = new DefaultMutableTreeNode("Task: Calculate additionals with MILP ["+this.getClass().getSimpleName()+"]");

@@ -27,17 +27,18 @@ import edu.fsuj.csb.tools.xml.ObjectComparator;
 public abstract class OptimizationTask extends TaskContainingCompartmentAndSubtances {
 
 	private static final long serialVersionUID = -7358978173891618447L;
-	protected TreeSet<Integer> buildSubstancesList,ignoreSubstancesList;
+	protected TreeSet<Integer> buildSubstancesList,ignoreSubstancesList,noOutflowList;
 	protected static double limit = 1000.0;
 	public final static int FORWARD = 0;
 	public final static int BACKWARD = 1;
 	public final static int INFLOW = 2;
 	public final static int OUTFLOW = 3;
 
-	public OptimizationTask(int cid, TreeSet<Integer> decompose, TreeSet<Integer> build, TreeSet<Integer> ignore) {
+	public OptimizationTask(int cid, TreeSet<Integer> decompose, TreeSet<Integer> build, TreeSet<Integer> ignore, TreeSet<Integer> noOutflow) {
 		super(cid, decompose);
 		buildSubstancesList = build;
 		ignoreSubstancesList=ignore;
+		noOutflowList=noOutflow;
 	}
 
 	/**
@@ -203,4 +204,8 @@ public abstract class OptimizationTask extends TaskContainingCompartmentAndSubta
 	public DefaultMutableTreeNode outputTree() throws SQLException {
 		return new SubstanceListNode("desired output substances",buildSubstancesList);
   }
+	
+	public TreeSet<Integer> ignoredSubstances(){
+		return new TreeSet<Integer>(ignoreSubstancesList);
+	}
 }

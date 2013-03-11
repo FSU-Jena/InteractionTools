@@ -44,7 +44,7 @@ public class Balances {
 		
 		for(Entry<Integer,LPTerm> entry:mappingFromSubstancesToTerms.entrySet()){	/* add inflows and outflows */
 			int substanceId=entry.getKey();
-			LPTerm newBalance=new LPSum(new LPDiff(inflow(substanceId), outflow(substanceId)),entry.getValue());
+			LPTerm newBalance=new LPSum(entry.getValue(),new LPDiff(inflow(substanceId), outflow(substanceId)));
 			mappingFromSubstancesToTerms.put(substanceId, newBalance);
 		}
 		
@@ -59,19 +59,19 @@ public class Balances {
 	private void addBackwardVelocity(Reaction reaction, TreeMap<Integer, LPTerm> mappingFromSubstancesToTerms) {
 		LPVariable velocity =new LPVariable("B"+reaction.id());
 		reactions.add(velocity);
-		for (Entry<Integer,Integer> entry:reaction.products().entrySet()){
-			int substanceId=entry.getKey();
-			double stoich=entry.getValue();
-			if (ignoredSubstances.contains(substanceId)) continue;
-			LPTerm balanceForSubstance=mappingFromSubstancesToTerms.get(substanceId);
-			mappingFromSubstancesToTerms.put(substanceId, new LPDiff(balanceForSubstance, stoich, velocity));
-		}
 		for (Entry<Integer,Integer> entry:reaction.substrates().entrySet()){
 			int substanceId=entry.getKey();
 			double stoich=entry.getValue();
 			if (ignoredSubstances.contains(substanceId)) continue;
 			LPTerm balanceForSubstance=mappingFromSubstancesToTerms.get(substanceId);
 			mappingFromSubstancesToTerms.put(substanceId, new LPSum(balanceForSubstance, stoich, velocity));
+		}
+		for (Entry<Integer,Integer> entry:reaction.products().entrySet()){
+			int substanceId=entry.getKey();
+			double stoich=entry.getValue();
+			if (ignoredSubstances.contains(substanceId)) continue;
+			LPTerm balanceForSubstance=mappingFromSubstancesToTerms.get(substanceId);
+			mappingFromSubstancesToTerms.put(substanceId, new LPDiff(balanceForSubstance, stoich, velocity));
 		}
   }
 
@@ -79,19 +79,19 @@ public class Balances {
 	private void addForwardVelocity(Reaction reaction, TreeMap<Integer, LPTerm> mappingFromSubstancesToTerms) {
 		LPVariable velocity =new LPVariable("F"+reaction.id());
 		reactions.add(velocity);
-		for (Entry<Integer,Integer> entry:reaction.substrates().entrySet()){
-			int substanceId=entry.getKey();
-			double stoich=entry.getValue();
-			if (ignoredSubstances.contains(substanceId)) continue;
-			LPTerm balanceForSubstance=mappingFromSubstancesToTerms.get(substanceId);
-			mappingFromSubstancesToTerms.put(substanceId, new LPDiff(balanceForSubstance, stoich, velocity));
-		}
 		for (Entry<Integer,Integer> entry:reaction.products().entrySet()){
 			int substanceId=entry.getKey();
 			double stoich=entry.getValue();
 			if (ignoredSubstances.contains(substanceId)) continue;
 			LPTerm balanceForSubstance=mappingFromSubstancesToTerms.get(substanceId);
 			mappingFromSubstancesToTerms.put(substanceId, new LPSum(balanceForSubstance, stoich, velocity));
+		}
+		for (Entry<Integer,Integer> entry:reaction.substrates().entrySet()){
+			int substanceId=entry.getKey();
+			double stoich=entry.getValue();
+			if (ignoredSubstances.contains(substanceId)) continue;
+			LPTerm balanceForSubstance=mappingFromSubstancesToTerms.get(substanceId);
+			mappingFromSubstancesToTerms.put(substanceId, new LPDiff(balanceForSubstance, stoich, velocity));
 		}
   }
 
