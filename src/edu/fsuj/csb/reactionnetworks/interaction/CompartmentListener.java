@@ -2,6 +2,8 @@ package edu.fsuj.csb.reactionnetworks.interaction;
 
 import java.sql.SQLException;
 
+import edu.fsuj.csb.reactionnetworks.interaction.gui.CompartmentList;
+
 /**
  * defines the methods of classes implementing a compartment listener
  * @author Stephan Richter
