@@ -85,8 +85,8 @@ public class ActionHandler extends Master {
 	 * @param resultTree the JTree, to which result trees shall be added in order to display them
 	 * @throws IOException 
 	 */
-	public ActionHandler(JTree resultTree) throws IOException {
-		super();
+	public ActionHandler(JTree resultTree,int port) throws IOException {
+		super(port);
 		this.resultTree = resultTree;
 	}
 

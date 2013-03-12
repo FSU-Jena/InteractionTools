@@ -22,10 +22,12 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import edu.fsuj.csb.distributedcomputing.tools.Ports;
 import edu.fsuj.csb.gui.HorizontalPanel;
 import edu.fsuj.csb.gui.StatusPanel;
 import edu.fsuj.csb.gui.VerticalPanel;
 import edu.fsuj.csb.reactionnetworks.interaction.ActionHandler;
+import edu.fsuj.csb.tools.configuration.Configuration;
 import edu.fsuj.csb.tools.newtork.pagefetcher.PageFetcher;
 import edu.fsuj.csb.tools.xml.NoTokenException;
 import edu.fsuj.csb.tools.xml.Tools;
@@ -57,6 +59,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	private HorizontalPanel taskPane;
 	private VerticalPanel taskButtonPanel;
 	private JButton findPath;
+	private Configuration configuration;
 	/**
 	 * create a new window instance
 	 * @param splash
@@ -69,6 +72,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	 */
 	public InteractionToolbox() throws IOException, NoTokenException, AlreadyBoundException, SQLException, DataFormatException {
 		super("Interaction Toolbox");
+		configuration=new Configuration("InteractionTools");
 		System.out.println("Creating GUI components:");
 		createComponents();
 		popUp();
@@ -152,7 +156,8 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	private ResultPanel createResultPane() throws IOException {
 		ResultPanel resultPane=new ResultPanel();
 		System.out.print("- trying to start server: ");
-		actionHandler = new ActionHandler(resultPane.getTree());
+		int port=Integer.parseInt(configuration.get("port",""+Ports.registrationPort()));
+		actionHandler = new ActionHandler(resultPane.getTree(),port);
 		System.out.println();
 		return resultPane;
 	}

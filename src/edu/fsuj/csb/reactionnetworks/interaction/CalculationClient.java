@@ -8,6 +8,7 @@ import edu.fsuj.csb.distributedcomputing.tools.Client;
 import edu.fsuj.csb.distributedcomputing.tools.Ports;
 import edu.fsuj.csb.distributedcomputing.tools.Signal;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.CalculationTask;
+import edu.fsuj.csb.tools.configuration.Configuration;
 import edu.fsuj.csb.tools.xml.NoTokenException;
 import edu.fsuj.csb.tools.xml.Tools;
 
@@ -18,6 +19,8 @@ import edu.fsuj.csb.tools.xml.Tools;
  *
  */
 public class CalculationClient extends Client{
+
+	private static Configuration configuration;
 
 	/**
 	 * launches a new isntance of the calculation program
@@ -43,9 +46,11 @@ public class CalculationClient extends Client{
 	 */
 	public static void main(String[] args) throws UnknownHostException, IOException, InterruptedException, ClassNotFoundException {
 		Tools.disableLogging();
-		String host=(args.length>0)?args[0]:"quad";
+	  configuration=new Configuration("InteractionTools");
+
+		String host=(args.length>0)?args[0]:configuration.get("hostname","localhost");
 		for (int i=0; i<args.length; i++) System.out.println(args[i]);
-		int port=Ports.registrationPort();
+		int port=Integer.parseInt(configuration.get("port",""+Ports.registrationPort()));
 		
 	  try {
 	    new CalculationClient(host,port);
