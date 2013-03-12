@@ -3,7 +3,6 @@ package edu.fsuj.csb.reactionnetworks.interaction.gui;
 import java.awt.Dimension;
 
 import edu.fsuj.csb.gui.HorizontalPanel;
-import edu.fsuj.csb.reactionnetworks.interaction.CompartmentList;
 
 
 public class SpeciesSelector extends HorizontalPanel {

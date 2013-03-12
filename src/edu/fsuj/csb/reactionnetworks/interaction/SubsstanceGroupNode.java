@@ -5,7 +5,7 @@ import java.util.TreeSet;
 
 import javax.swing.tree.MutableTreeNode;
 
-import edu.fsuj.csb.tools.organisms.gui.ComponentNode;
+import edu.fsuj.csb.reactionnetworks.organismtools.gui.DbComponentNode;
 import edu.fsuj.csb.tools.organisms.gui.SortedTreeNode;
 import edu.fsuj.csb.tools.organisms.gui.SubstanceNode;
 
@@ -27,7 +27,7 @@ public class SubsstanceGroupNode extends SortedTreeNode {
 
 	public void add(int sid) {
 		if (!sids.contains(sid)){
-			MutableTreeNode sn = ComponentNode.create(sid);
+			MutableTreeNode sn = DbComponentNode.create(sid);
 			//System.err.println("adding sid="+sid);
 			sids.add(sid);
 			super.add(sn);

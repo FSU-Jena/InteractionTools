@@ -1,4 +1,4 @@
-package edu.fsuj.csb.reactionnetworks.interaction;
+package edu.fsuj.csb.reactionnetworks.interaction.gui;
 
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -29,10 +29,9 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import edu.fsuj.csb.gui.VerticalPanel;
-import edu.fsuj.csb.reactionnetworks.interaction.gui.PopupMenu;
-import edu.fsuj.csb.tools.organisms.Compartment;
+import edu.fsuj.csb.reactionnetworks.organismtools.DbCompartment;
+import edu.fsuj.csb.reactionnetworks.organismtools.gui.DbComponentNode;
 import edu.fsuj.csb.tools.organisms.gui.CompartmentNode;
-import edu.fsuj.csb.tools.organisms.gui.ComponentNode;
 import edu.fsuj.csb.tools.organisms.gui.SortedTreeNode;
 import edu.fsuj.csb.tools.xml.ObjectComparator;
 
@@ -200,7 +199,15 @@ public class CompartmentList extends VerticalPanel implements ChangeListener, Mo
 	private void showPopupForComponentAt(Point pos1) {
     TreePath path = compartmentTree.getPathForLocation(pos1.x,pos1.y);
 		if (path == null) return;
-		PopupMenu.showPopupFor(path.getLastPathComponent(),pos1,compartmentTree);
+		try {
+	    PopupMenu.showPopupFor(path.getLastPathComponent(),pos1,compartmentTree);
+    } catch (SQLException e) {
+	    e.printStackTrace();
+    } catch (DataFormatException e) {
+	    e.printStackTrace();
+    } catch (IOException e) {
+	    e.printStackTrace();
+    }
 	}  
 
 	/**
@@ -260,10 +267,10 @@ public class CompartmentList extends VerticalPanel implements ChangeListener, Mo
 		}		
   }
 
-	public void addCompartment(Compartment compartment) throws SQLException {
+	public void addCompartment(DbCompartment compartment) throws SQLException {
 		JFrame frame = (JFrame) SwingUtilities.getRoot(this);
 		frame.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-		root.add(ComponentNode.create(compartment));
+		root.add(DbComponentNode.create(compartment));
 		alert(new ChangeEvent(this));
 		frame.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));		
   }

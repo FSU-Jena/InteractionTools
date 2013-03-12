@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.sql.SQLException;
 import java.util.Enumeration;
@@ -246,7 +247,15 @@ public class SubstanceList extends VerticalPanel implements ChangeListener,TreeS
 	private void showPopupForComponentAt(Point pos1) {
     TreePath path = substancesTree.getPathForLocation(pos1.x,pos1.y);
 		if (path == null) return;
-		PopupMenu.showPopupFor(path.getLastPathComponent(),pos1,substancesTree);
+		try {
+	    PopupMenu.showPopupFor(path.getLastPathComponent(),pos1,substancesTree);
+    } catch (SQLException e) {
+	    e.printStackTrace();
+    } catch (DataFormatException e) {
+	    e.printStackTrace();
+    } catch (IOException e) {
+	    e.printStackTrace();
+    }
 	}  
 
 	private void fireEvent(ActionEvent actionEvent) {

@@ -8,9 +8,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.TreeSet;
+import java.util.zip.DataFormatException;
 
 import javax.swing.BorderFactory;
 import javax.swing.JMenuItem;
@@ -18,8 +20,8 @@ import javax.swing.JPopupMenu;
 
 import edu.fsuj.csb.gui.GenericFileFilter;
 import edu.fsuj.csb.gui.PanelTools;
-import edu.fsuj.csb.reactionnetworks.interaction.CompartmentList;
 import edu.fsuj.csb.reactionnetworks.interaction.SubstanceList;
+import edu.fsuj.csb.reactionnetworks.organismtools.gui.DbCompartmentNode;
 import edu.fsuj.csb.tools.organisms.gui.CompartmentNode;
 import edu.fsuj.csb.tools.organisms.gui.SubstanceNode;
 import edu.fsuj.csb.tools.organisms.gui.URLNode;
@@ -38,11 +40,12 @@ public class PopupMenu extends JPopupMenu implements ActionListener {
 	private static CompartmentList compartmentList=null;
 	private static TreeSet<SubstanceList> substanceLists=new TreeSet<SubstanceList>(ObjectComparator.get());
 
-	public PopupMenu(Object targetObject, Point pos,Object parent) {
+	public PopupMenu(Object targetObject, Point pos,Object parent) throws SQLException, DataFormatException, IOException {
 		super();
 		setLocation(pos);
 		
 		objectText=targetObject.toString();
+		System.out.println(targetObject.getClass());
 
 		search = new JMenuItem("Search on Google");
 		search.addActionListener(this);
@@ -99,13 +102,18 @@ public class PopupMenu extends JPopupMenu implements ActionListener {
 		if (option==search) searchFor(objectText);
 		if (option==clip) copyToClipboard(objectText);
 		if (option==cListItem) try {
-	    compartmentList.addCompartment(((CompartmentNode)targetObject).compartment());
+			DbCompartmentNode dbComp = (DbCompartmentNode)targetObject;
+	    compartmentList.addCompartment(dbComp.compartment());
     } catch (SQLException e) {
 	    e.printStackTrace();
     }
 		if (option instanceof ExportXmlItem){
 			try {
-	      ((ExportXmlItem) option).export(PanelTools.showSelectFileDialog("State output file", "output.sbml.xml", new GenericFileFilter("SBML file", "*.xml"), this));
+				URL filename = PanelTools.showSelectFileDialog("State output file", "network.sbml.xml", new GenericFileFilter("SBML file", "*.xml"), this);
+				if (filename!=null){
+					((ExportXmlItem) option).export(filename);
+					System.out.println("Exported to "+filename);
+				}
       } catch (URISyntaxException e) {
 	      e.printStackTrace();
       } catch (IOException e) {
@@ -134,7 +142,7 @@ public class PopupMenu extends JPopupMenu implements ActionListener {
 		java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(targetObject.toString()), null);
   }
 
-	public static void showPopupFor(Object source, Point pos,Component parent){
+	public static void showPopupFor(Object source, Point pos,Component parent) throws SQLException, DataFormatException, IOException{
 		//System.err.println("showPopupFor("+source.getClass().getSimpleName()+")");
 		PopupMenu popup = new PopupMenu(source,pos,parent);
 		popup.show(parent,pos.x,pos.y);

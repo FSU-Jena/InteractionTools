@@ -26,7 +26,6 @@ import edu.fsuj.csb.gui.HorizontalPanel;
 import edu.fsuj.csb.gui.StatusPanel;
 import edu.fsuj.csb.gui.VerticalPanel;
 import edu.fsuj.csb.reactionnetworks.interaction.ActionHandler;
-import edu.fsuj.csb.reactionnetworks.interaction.CompartmentList;
 import edu.fsuj.csb.tools.newtork.pagefetcher.PageFetcher;
 import edu.fsuj.csb.tools.xml.NoTokenException;
 import edu.fsuj.csb.tools.xml.Tools;

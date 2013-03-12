@@ -18,13 +18,11 @@ import javax.swing.JTabbedPane;
 import edu.fsuj.csb.gui.HorizontalPanel;
 import edu.fsuj.csb.gui.VerticalPanel;
 import edu.fsuj.csb.reactionnetworks.database.InteractionDB;
-import edu.fsuj.csb.reactionnetworks.interaction.CompartmentList;
 import edu.fsuj.csb.reactionnetworks.interaction.CompartmentListNode;
 import edu.fsuj.csb.reactionnetworks.interaction.CompartmentListener;
 import edu.fsuj.csb.reactionnetworks.organismtools.DbCompartment;
-import edu.fsuj.csb.tools.organisms.Compartment;
+import edu.fsuj.csb.reactionnetworks.organismtools.gui.DbCompartmentNode;
 import edu.fsuj.csb.tools.organisms.gui.CompartmentNode;
-import edu.fsuj.csb.tools.organisms.gui.ComponentNode;
 import edu.fsuj.csb.tools.organisms.gui.SortedTreeNode;
 
 /**
@@ -97,8 +95,7 @@ public class CompartmentsTab extends HorizontalPanel implements ActionListener {
     	TreeSet<Integer> compartmentGroups = InteractionDB.getCompartmentGroupIds();
 	    Statement compRequest = InteractionDB.createStatement();
     	
-    	for (Iterator<Integer> it = compartmentGroups.iterator();it.hasNext();){
-    		int groupId=it.next();
+    	for (Integer groupId: compartmentGroups){
     		String groupName=InteractionDB.getName(groupId);
 	    	SortedTreeNode group=new SortedTreeNode(groupName);
 	    	
@@ -128,10 +125,10 @@ public class CompartmentsTab extends HorizontalPanel implements ActionListener {
 
 	private CompartmentNode compartmentTree(int cid) throws SQLException {
 		//System.err.println("CompartmentTabs.compartmentTree("+cid+")");
-		Compartment c=DbCompartment.load(cid);
-		CompartmentNode compartmentNode=null;
+		DbCompartment c=DbCompartment.load(cid);
+		DbCompartmentNode compartmentNode=null;
 		try {
-			compartmentNode=(CompartmentNode) ComponentNode.create(c);
+			compartmentNode=new DbCompartmentNode(c);
 		} catch (NoSuchElementException e){
 			System.err.println(cid);			
 			throw e;

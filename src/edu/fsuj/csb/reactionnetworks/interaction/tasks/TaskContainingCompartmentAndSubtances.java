@@ -9,7 +9,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 
 import edu.fsuj.csb.reactionnetworks.interaction.SubstanceListNode;
-import edu.fsuj.csb.tools.organisms.gui.ComponentNode;
+import edu.fsuj.csb.reactionnetworks.organismtools.gui.DbComponentNode;
 import edu.fsuj.csb.tools.xml.NoTokenException;
 
 
@@ -44,7 +44,7 @@ public abstract class TaskContainingCompartmentAndSubtances extends CalculationT
 	public DefaultMutableTreeNode treeRepresentation(String text) throws IOException, NoTokenException, AlreadyBoundException, SQLException {
 		DefaultMutableTreeNode result = new DefaultMutableTreeNode(text);
 		DefaultMutableTreeNode inputs = inputTree();
-		result.add(ComponentNode.create(compartmentId));
+		result.add(DbComponentNode.create(compartmentId));
 		result.add(inputs);
 		return result;
 	} 

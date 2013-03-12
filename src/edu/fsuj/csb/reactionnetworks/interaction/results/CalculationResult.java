@@ -12,6 +12,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.CalculationTask;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.ProductCalculationTask;
+import edu.fsuj.csb.reactionnetworks.organismtools.gui.DbComponentNode;
 import edu.fsuj.csb.tools.organisms.gui.ComponentNode;
 import edu.fsuj.csb.tools.xml.NoTokenException;
 
@@ -79,7 +80,7 @@ public class CalculationResult implements Serializable {
 			DefaultMutableTreeNode node=new DefaultMutableTreeNode("newly produced substances ("+(resultset.size()-((ProductCalculationTask)task).getSubstances().size())+" items)");
 			for (Iterator<Integer> it = resultset.iterator();it.hasNext();){
 				int sid=it.next();
-				if (!((ProductCalculationTask)task).getSubstances().contains(sid)) node.add(ComponentNode.create(sid));
+				if (!((ProductCalculationTask)task).getSubstances().contains(sid)) node.add(DbComponentNode.create(sid));
 			}
 			return node;
 		} 

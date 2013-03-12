@@ -16,8 +16,8 @@ import edu.fsuj.csb.reactionnetworks.database.InteractionDB;
 import edu.fsuj.csb.reactionnetworks.interaction.CalculationClient;
 import edu.fsuj.csb.reactionnetworks.interaction.results.ProcessorCalculationResult;
 import edu.fsuj.csb.reactionnetworks.organismtools.DbReaction;
+import edu.fsuj.csb.reactionnetworks.organismtools.gui.DbComponentNode;
 import edu.fsuj.csb.tools.organisms.Reaction;
-import edu.fsuj.csb.tools.organisms.gui.ComponentNode;
 import edu.fsuj.csb.tools.xml.NoTokenException;
 import edu.fsuj.csb.tools.xml.ObjectComparator;
 
@@ -261,7 +261,7 @@ public class ProcessorSearchTask extends CalculationTask {
 		DefaultMutableTreeNode spontaneouslyAddedSubstances = null;
 		for (Iterator<Integer> it = sids.iterator();it.hasNext();){			
 			Integer sid=it.next();
-			MutableTreeNode substanceNode = ComponentNode.create(sid);
+			MutableTreeNode substanceNode = DbComponentNode.create(sid);
 			if (spontaneouslyReached != null && spontaneouslyReached.contains(sid)){
 				if (spontaneouslyAddedSubstances==null) spontaneouslyAddedSubstances=new DefaultMutableTreeNode("spontaneously formed");
 				spontaneouslyAddedSubstances.add(substanceNode);

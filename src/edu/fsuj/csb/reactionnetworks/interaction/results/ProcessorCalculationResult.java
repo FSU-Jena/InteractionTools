@@ -13,7 +13,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import edu.fsuj.csb.reactionnetworks.interaction.CompartmentListNode;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.ProcessorSearchTask;
-import edu.fsuj.csb.tools.organisms.gui.CompartmentNode;
+import edu.fsuj.csb.reactionnetworks.organismtools.gui.DbCompartmentNode;
+import edu.fsuj.csb.reactionnetworks.organismtools.gui.DbComponentNode;
 import edu.fsuj.csb.tools.organisms.gui.ComponentNode;
 import edu.fsuj.csb.tools.xml.NoTokenException;
 
@@ -45,7 +46,7 @@ public class ProcessorCalculationResult extends CalculationResult implements Ser
 				Entry<Integer, TreeSet<Integer>> entry = entryIt.next();
 				TreeSet<Integer> substances = entry.getValue();
 				if (substances.size() == largest) {
-					CompartmentNode compNode = (CompartmentNode) ComponentNode.create(entry.getKey());
+					DbCompartmentNode compNode = (DbCompartmentNode) DbComponentNode.create(entry.getKey());
 /*					try {
 	          compNode.loadDetails();
           } catch (MalformedURLException e) {

@@ -48,8 +48,8 @@ import edu.fsuj.csb.reactionnetworks.databasefiller.SBMLLoader;
 import edu.fsuj.csb.reactionnetworks.databasefiller.dbtool;
 import edu.fsuj.csb.reactionnetworks.interaction.UnificationNode;
 import edu.fsuj.csb.reactionnetworks.organismtools.DbSubstance;
+import edu.fsuj.csb.reactionnetworks.organismtools.gui.DbComponentNode;
 import edu.fsuj.csb.tools.organisms.Substance;
-import edu.fsuj.csb.tools.organisms.gui.ComponentNode;
 import edu.fsuj.csb.tools.organisms.gui.SubstanceNode;
 import edu.fsuj.csb.tools.organisms.gui.URLNode;
 import edu.fsuj.csb.tools.organisms.gui.UrnNode;
@@ -417,9 +417,17 @@ public class DatabasePane extends HorizontalPanel implements ActionListener, Mou
 		return path.getLastPathComponent();
 	}
 	
-	private void showPopupForComponentAt(Point pos1) {
+	private void showPopupForComponentAt(Point pos1)  {
 		Object o=getComponent(pos1);
-		if (o!=null) PopupMenu.showPopupFor(o,pos1,unificationTree);
+		 try {
+			 if (o!=null) PopupMenu.showPopupFor(o,pos1,unificationTree);
+    } catch (SQLException e) {
+	    e.printStackTrace();
+    } catch (DataFormatException e) {
+	    e.printStackTrace();
+    } catch (IOException e) {
+	    e.printStackTrace();
+    }
 	}  
 
 
@@ -468,7 +476,7 @@ public class DatabasePane extends HorizontalPanel implements ActionListener, Mou
 	    	System.out.println("<"+id+">");
         try {
   	    	Substance substance = DbSubstance.load(id);  	    	
-		    	node.insert(ComponentNode.create(substance), 0);
+		    	node.insert(DbComponentNode.create(substance), 0);
         } catch (SQLException e1) {
 	        e1.printStackTrace();
         }

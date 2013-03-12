@@ -15,10 +15,10 @@ import edu.fsuj.csb.reactionnetworks.interaction.results.SeedOptimizationResult;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.OptimizeBuildTask;
 import edu.fsuj.csb.reactionnetworks.organismtools.DbCompartment;
 import edu.fsuj.csb.reactionnetworks.organismtools.DbReaction;
+import edu.fsuj.csb.reactionnetworks.organismtools.gui.DbComponentNode;
 import edu.fsuj.csb.tools.organisms.Compartment;
 import edu.fsuj.csb.tools.organisms.Reaction;
 import edu.fsuj.csb.tools.organisms.Substance;
-import edu.fsuj.csb.tools.organisms.gui.ComponentNode;
 import edu.fsuj.csb.tools.xml.ObjectComparator;
 import edu.fsuj.csb.tools.xml.XMLWriter;
 import edu.fsuj.csb.tools.xml.XmlObject;
@@ -119,11 +119,11 @@ public class SeedOptimizationMappingNode extends DefaultMutableTreeNode implemen
 
 		for (Integer reactionId: solution.forwardReactions().keySet()){
 			DbReaction.load(reactionId);
-			reactions.add(ComponentNode.create(reactionId));
+			reactions.add(DbComponentNode.create(reactionId));
 		}
 		for (Integer reactionId : solution.backwardReactions().keySet()){
 			DbReaction.load(reactionId);
-			reactions.add(ComponentNode.create(reactionId));
+			reactions.add(DbComponentNode.create(reactionId));
 		}
 		add(inputs);
 		add(reactions);

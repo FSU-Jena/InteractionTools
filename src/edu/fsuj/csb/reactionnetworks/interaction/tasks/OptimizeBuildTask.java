@@ -21,6 +21,7 @@ import edu.fsuj.csb.reactionnetworks.interaction.SubstanceListNode;
 import edu.fsuj.csb.reactionnetworks.interaction.gui.OptimizationParametersTab.OptimizationParameterSet;
 import edu.fsuj.csb.reactionnetworks.interaction.results.SeedOptimizationResult;
 import edu.fsuj.csb.reactionnetworks.organismtools.DbCompartment;
+import edu.fsuj.csb.reactionnetworks.organismtools.gui.DbComponentNode;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPCondition;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPConditionEqual;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPConditionEqualOrGreater;
@@ -29,7 +30,6 @@ import edu.fsuj.csb.tools.LPSolverWrapper.LPSolveWrapper;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPSum;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPTerm;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPVariable;
-import edu.fsuj.csb.tools.organisms.gui.ComponentNode;
 import edu.fsuj.csb.tools.xml.NoTokenException;
 
 public class OptimizeBuildTask extends OptimizationTask {
@@ -236,7 +236,7 @@ public class OptimizeBuildTask extends OptimizationTask {
 
 	public MutableTreeNode treeRepresentation() throws IOException, NoTokenException, AlreadyBoundException, SQLException {
 		DefaultMutableTreeNode result = new DefaultMutableTreeNode("Task: Calculate additionals with MILP ["+this.getClass().getSimpleName()+"]");
-		result.add(ComponentNode.create(compartmentId));
+		result.add(DbComponentNode.create(compartmentId));
 		DefaultMutableTreeNode inputs = inputTree();
 		result.add(inputs);
 		result.add(new SubstanceListNode("ignored substances", ignoreSubstancesList));

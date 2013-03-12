@@ -11,8 +11,8 @@ import javax.swing.tree.MutableTreeNode;
 import edu.fsuj.csb.reactionnetworks.interaction.CalculationClient;
 import edu.fsuj.csb.reactionnetworks.interaction.results.ProductCalculationResult;
 import edu.fsuj.csb.reactionnetworks.organismtools.DbCompartment;
+import edu.fsuj.csb.reactionnetworks.organismtools.gui.DbComponentNode;
 import edu.fsuj.csb.tools.organisms.Compartment;
-import edu.fsuj.csb.tools.organisms.gui.ComponentNode;
 import edu.fsuj.csb.tools.xml.NoTokenException;
 
 public class ProductCalculationTask extends TaskContainingCompartmentAndSubtances {
@@ -35,7 +35,7 @@ public class ProductCalculationTask extends TaskContainingCompartmentAndSubtance
 		
 	public MutableTreeNode treeRepresentation() throws IOException, NoTokenException, AlreadyBoundException, SQLException {
 		DefaultMutableTreeNode result = new DefaultMutableTreeNode("Task: Calculate products ["+this.getClass().getSimpleName()+"]");
-		result.add(ComponentNode.create(compartmentId));
+		result.add(DbComponentNode.create(compartmentId));
 		DefaultMutableTreeNode inputs=super.inputTree();
 		result.add(inputs);
 		return result;

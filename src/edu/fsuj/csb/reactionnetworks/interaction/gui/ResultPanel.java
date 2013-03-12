@@ -382,7 +382,15 @@ public class ResultPanel extends VerticalPanel implements ActionListener, TreeSe
 	private void showPopupForComponentAt(Point pos1,Point pos2) {
     TreePath path = tree.getPathForLocation(pos1.x,pos1.y);
 		if (path == null) return;
-		PopupMenu.showPopupFor(path.getLastPathComponent(),pos2,this);
+		try {
+	    PopupMenu.showPopupFor(path.getLastPathComponent(),pos2,this);
+    } catch (SQLException e) {
+	    e.printStackTrace();
+    } catch (DataFormatException e) {
+	    e.printStackTrace();
+    } catch (IOException e) {
+	    e.printStackTrace();
+    }
 	}  
 
 	public void mouseEntered(MouseEvent arg0) {

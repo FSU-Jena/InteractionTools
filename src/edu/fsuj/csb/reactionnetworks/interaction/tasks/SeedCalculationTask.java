@@ -19,6 +19,7 @@ import edu.fsuj.csb.reactionnetworks.interaction.SubstanceListNode;
 import edu.fsuj.csb.reactionnetworks.interaction.results.SeedCalculationResult;
 import edu.fsuj.csb.reactionnetworks.organismtools.DbCompartment;
 import edu.fsuj.csb.reactionnetworks.organismtools.SeedCalculationIntermediate;
+import edu.fsuj.csb.reactionnetworks.organismtools.gui.DbComponentNode;
 import edu.fsuj.csb.tools.LPSolverWrapper.CplexWrapper;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPCondition;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPConditionLessThan;
@@ -27,7 +28,6 @@ import edu.fsuj.csb.tools.LPSolverWrapper.LPTerm;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPVariable;
 import edu.fsuj.csb.tools.organisms.CalculationIntermediate;
 import edu.fsuj.csb.tools.organisms.Compartment;
-import edu.fsuj.csb.tools.organisms.gui.ComponentNode;
 import edu.fsuj.csb.tools.xml.NoTokenException;
 import edu.fsuj.csb.tools.xml.ObjectComparator;
 
@@ -247,7 +247,7 @@ public class SeedCalculationTask extends StructuredTask {
 	
 	public MutableTreeNode treeRepresentation() throws IOException, NoTokenException, AlreadyBoundException, SQLException {
 		DefaultMutableTreeNode result = new DefaultMutableTreeNode("Task: Calculate Seeds for given Substances with MILP ["+this.getClass().getSimpleName()+"]");
-		result.add(ComponentNode.create(DbCompartment.load(compartmentId)));
+		result.add(DbComponentNode.create(DbCompartment.load(compartmentId)));
 		result.add(new SubstanceListNode("given target substances",targets));
 		result.add(new SubstanceListNode("ignored substances",ignoredSubstances));
 		return result;

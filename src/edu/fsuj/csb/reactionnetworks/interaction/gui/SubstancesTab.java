@@ -19,7 +19,6 @@ import javax.swing.event.ChangeListener;
 
 import edu.fsuj.csb.gui.HorizontalPanel;
 import edu.fsuj.csb.gui.VerticalPanel;
-import edu.fsuj.csb.reactionnetworks.interaction.CompartmentList;
 import edu.fsuj.csb.reactionnetworks.interaction.CompartmentListener;
 import edu.fsuj.csb.reactionnetworks.interaction.SubstanceList;
 import edu.fsuj.csb.reactionnetworks.organismtools.DbCompartment;
