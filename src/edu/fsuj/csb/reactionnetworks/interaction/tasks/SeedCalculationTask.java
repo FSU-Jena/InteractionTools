@@ -14,15 +14,16 @@ import java.util.zip.DataFormatException;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 
+import edu.fsuj.csb.reactionnetworks.interaction.Balances;
 import edu.fsuj.csb.reactionnetworks.interaction.CalculationClient;
 import edu.fsuj.csb.reactionnetworks.interaction.SubstanceListNode;
 import edu.fsuj.csb.reactionnetworks.interaction.results.SeedCalculationResult;
 import edu.fsuj.csb.reactionnetworks.organismtools.DbCompartment;
 import edu.fsuj.csb.reactionnetworks.organismtools.SeedCalculationIntermediate;
 import edu.fsuj.csb.reactionnetworks.organismtools.gui.DbComponentNode;
-import edu.fsuj.csb.tools.LPSolverWrapper.CplexWrapper;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPCondition;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPConditionLessThan;
+import edu.fsuj.csb.tools.LPSolverWrapper.LPSolveWrapper;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPSum;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPTerm;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPVariable;
@@ -172,29 +173,35 @@ public class SeedCalculationTask extends StructuredTask {
   	double inflowOutflowWeight = 10.0;
 
   	
-  	CplexWrapper cpw=new CplexWrapper(); // create program wrapper
+  	LPSolveWrapper solver=new LPSolveWrapper(); // create program wrapper
   	Compartment compartment=DbCompartment.load(compartmentId); // load the compartment
 
-  	TreeMap<Integer, LPTerm> balances = OptimizationTask.createBasicBalances(cpw, ignoredSubstances, ignoreUnbalanced, compartment); // create balances for all substances in the compartment
+  	Balances balances=new Balances(ignoredSubstances,ignoreUnbalanced,compartment);
   	TreeSet<Integer> utilizedSubstances = compartment.utilizedSubstances(); // get the list of all substances utilized by this compartment
-		OptimizationTask.addInflowReactionsFor(potentialPrecursors, balances, cpw);
-		OptimizationTask.addOutflowReactionsFor(targets, balances, cpw);
-		OptimizationTask.writeBalances(balances, cpw);
-		
+  	
+		LPTerm inflowTerm=null;
+		LPSum outflowTerm=null;
+		for (Integer substanceId:potentialPrecursors) {
+			inflowTerm=new LPSum(inflowTerm, Balances.inflow(substanceId));
+		}
+		for (Integer substanceId:targets){
+			outflowTerm=new LPSum(outflowTerm, Balances.outflow(substanceId));
+		}
+
+  	TreeSet<LPCondition> conditions=LPCondition.set();
 		LPTerm termToMinimize = null; // start creating the directive
 		
-		for (Iterator<Integer> it = utilizedSubstances.iterator(); it.hasNext();) { // iterate through all the compartment's substances:
-			int sid = it.next(); // get substance id
+		for (Integer sid:utilizedSubstances) { // iterate through all the compartment's substances:
 
 			LPVariable inflow = new LPVariable("sRi_" + sid);
 			LPVariable outflow = new LPVariable("sRo_" + sid);
 
-			OptimizationTask.addCondition(sid, cpw, OptimizationTask.INFLOW); // connect inflow switch and velocity
-			OptimizationTask.addCondition(sid, cpw, OptimizationTask.OUTFLOW); // connect outflow switch and velocity
+			OptimizationTask.addCondition(solver, sid, OptimizationTask.INFLOW); // connect inflow switch and velocity
+			OptimizationTask.addCondition(solver, sid, OptimizationTask.OUTFLOW); // connect outflow switch and velocity
 
 			if (targets.contains(sid)) { // activate outflow for all substances, that shall be produced
-				cpw.setEqual(outflow, 1.0, "force outflow for substance to be built");
-				cpw.setEqual(inflow, 0.0, "forbid inflow of substances to be built");
+				solver.setEqual(outflow, 1.0, "force outflow for substance to be built");
+				solver.setEqual(inflow, 0.0, "forbid inflow of substances to be built");
 			} else termToMinimize = new LPSum(termToMinimize, inflowOutflowWeight, outflow); // minimize other outflows
 
 		}
@@ -212,19 +219,19 @@ public class SeedCalculationTask extends StructuredTask {
 			}
 			LPCondition lpc = new LPConditionLessThan(inflowSwitchSum, sum);
 			lpc.setComment("Forbid solution " + solutionNumber);
-			cpw.addCondition(lpc);
+			solver.addCondition(lpc);
 		}
 		
-  	cpw.minimize(termToMinimize);
+  	solver.minimize(termToMinimize);
   	
   	System.out.print("done.\nStarting solver: ");
   	SimpleDateFormat formatter = new SimpleDateFormat("yy-MM-dd HH.mm.ss");
   	String filename=("seedCalculation " + getNumber() + " " + formatter.format(new Date()) + ".lp").replace(" ", "_").replace(":", ".");
-		cpw.setTaskfileName(filename);
-  	cpw.start("sR*");  	
+		solver.setTaskfileName(filename);
+  	solver.start();  	
   	TreeMap<Integer,Double> result=new TreeMap<Integer, Double>(ObjectComparator.get()); // mapping from substance id to value for substance in the solution
 
-  	TreeMap<LPVariable, Double> solution = cpw.getSolution();
+  	TreeMap<LPVariable, Double> solution = solver.getSolution();
   	if (solution==null) return null;
   	for (Iterator<Entry<LPVariable, Double>> values = solution.entrySet().iterator();values.hasNext();){
   		Entry<LPVariable, Double> entry = values.next();

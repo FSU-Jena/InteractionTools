@@ -16,6 +16,7 @@ import edu.fsuj.csb.tools.LPSolverWrapper.LPCondition;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPConditionEqual;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPConditionEqualOrLess;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPDiff;
+import edu.fsuj.csb.tools.LPSolverWrapper.LPSolveWrapper;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPSum;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPTerm;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPVariable;
@@ -66,13 +67,13 @@ public abstract class OptimizationTask extends TaskContainingCompartmentAndSubta
 			/* in the following, basic reaction parameters are set */
 			LPVariable forwardVelocity = null;
 			if (reaction.firesForwardIn(compartment)) {
-				forwardVelocity = addCondition(reactionID, cpw,FORWARD);
+				forwardVelocity = addCondition(cpw,reactionID, FORWARD);
 				addSubstrateBalances(forwardVelocity, reaction.substrates(), mappingFromSIDtoBalanceTerm,ignoredSubstances);
 				addProductBalances(forwardVelocity, reaction.products(), mappingFromSIDtoBalanceTerm,ignoredSubstances);
 			}
 
 			if (reaction.firesBackwardIn(compartment)) {
-				LPVariable backwardVelocity = addCondition(reactionID, cpw,BACKWARD);
+				LPVariable backwardVelocity = addCondition(cpw,reactionID, BACKWARD);
 				addSubstrateBalances(backwardVelocity, reaction.products(), mappingFromSIDtoBalanceTerm,ignoredSubstances);
 				addProductBalances(backwardVelocity, reaction.substrates(), mappingFromSIDtoBalanceTerm,ignoredSubstances);
 
@@ -153,14 +154,14 @@ public abstract class OptimizationTask extends TaskContainingCompartmentAndSubta
 		return null;
 	}
 
-	protected static LPVariable addCondition(int reactionID, CplexWrapper solver,int direction) {
+	protected static LPVariable addCondition(LPSolveWrapper solver, int reactionID, int direction) {
 		LPVariable forwardSwitch = reactionSwitch(reactionID, direction);
 		LPVariable forwardVelocity = reactionVariable(reactionID, direction);
 		couple(forwardSwitch, forwardVelocity, solver);
 		return forwardVelocity;
 	}
 
-	private static void couple(LPVariable reactionSwitch, LPVariable velocity, CplexWrapper solver) {
+	private static void couple(LPVariable reactionSwitch, LPVariable velocity, LPSolveWrapper solver) {
 		LPCondition condition = new LPConditionEqualOrLess(new LPDiff(reactionSwitch, velocity), 0.0);
 		condition.setComment("force velocity>1 if switch=1");
 		solver.addCondition(condition);

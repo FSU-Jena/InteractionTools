@@ -29,6 +29,13 @@ public class Balances {
 	private Vector<LPVariable> reactions=new Vector<LPVariable>();
 	private Set<Integer> substances=new TreeSet<Integer>();
 	
+	/**
+	 * creates for all substances the balances with respect of consumption and production in reactions and inflows and outflows
+	 * @param ignoredSubstances
+	 * @param ignoreUnbalanced
+	 * @param compartment
+	 * @throws DataFormatException
+	 */
 	public Balances(TreeSet<Integer> ignoredSubstances, boolean ignoreUnbalanced, Compartment compartment) throws DataFormatException {
 		this.ignoredSubstances=ignoredSubstances;
 		
