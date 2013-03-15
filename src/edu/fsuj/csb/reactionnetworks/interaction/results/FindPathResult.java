@@ -22,7 +22,8 @@ public class FindPathResult extends CalculationResult {
 
 	public DefaultMutableTreeNode resultTreeRepresentation() throws SQLException {
 		DefaultMutableTreeNode rep = super.resultTreeRepresentation();
-		TreeSet<Vector<Integer>> traces=(TreeSet<Vector<Integer>>) result;
+		@SuppressWarnings("unchecked")
+    TreeSet<Vector<Integer>> traces=(TreeSet<Vector<Integer>>) result;
 		for (Vector<Integer> trace:traces){
 			DefaultMutableTreeNode traceNode=new DefaultMutableTreeNode("Trace");
 			boolean substance=true;

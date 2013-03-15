@@ -24,7 +24,6 @@ import edu.fsuj.csb.reactionnetworks.interaction.tasks.CalculationTask;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.EvolveSeedsTask;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.FindPathTask;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.OptimizeBuildTask;
-import edu.fsuj.csb.reactionnetworks.interaction.tasks.PrecursorCalculationTask;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.ProcessorSearchTask;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.ProductCalculationTask;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.SeedCalculationTask;
@@ -131,14 +130,7 @@ public class ActionHandler extends Master {
 	 */
 	private void calcSeeds(int compartmentId, TreeSet<Integer> targetSubstanceIds, TreeSet<Integer> ignoredSubstances,boolean ignoreUnbalanced) throws IOException {
 		SeedCalculationTask sct=new SeedCalculationTask(compartmentId,targetSubstanceIds,ignoredSubstances,ignoreUnbalanced);
-		
-		// before the seed calculation can be started, a number of precursor calculations have to be done:
-		for (Iterator<Integer> substanceIterator=targetSubstanceIds.iterator(); substanceIterator.hasNext();){
-			PrecursorCalculationTask pct = new PrecursorCalculationTask(compartmentId, ignoredSubstances,substanceIterator.next());
-			mappingFromSubtasktToOwner.put(pct.getNumber(), sct);
-			sct.increaseSubtaskCounter();
-			sendTask(pct);
-		}
+		sendTask(sct);
   }
 
 	/**

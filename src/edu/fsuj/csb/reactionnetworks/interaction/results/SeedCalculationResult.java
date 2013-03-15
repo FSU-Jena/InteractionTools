@@ -50,7 +50,7 @@ public class SeedCalculationResult extends CalculationResult {
 	 */
 	public DefaultMutableTreeNode superTreeRepresentation() throws IOException, NoTokenException, AlreadyBoundException, SQLException {
 		SeedCalculationTask task = (SeedCalculationTask) getTask();
-		DefaultMutableTreeNode node=new DefaultMutableTreeNode("Task "+leadingZeros(task.getNumber())+"-"+leadingZeros(task.maxTaskNumber()));
+		DefaultMutableTreeNode node=new DefaultMutableTreeNode("Task "+leadingZeros(task.getNumber()));
 		node.insert(task.treeRepresentation(), 0);
 		return node;
 	}

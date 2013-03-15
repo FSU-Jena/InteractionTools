@@ -9,7 +9,6 @@ import java.util.Vector;
 import java.util.zip.DataFormatException;
 
 import edu.fsuj.csb.tools.LPSolverWrapper.LPCondition;
-import edu.fsuj.csb.tools.LPSolverWrapper.LPConditionEqual;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPDiff;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPSolveWrapper;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPSum;
@@ -58,7 +57,7 @@ public class Balances {
 		substances=mappingFromSubstancesToTerms.keySet();
 		
 		for (LPTerm term:mappingFromSubstancesToTerms.values()){ /* set all substance terms to be zero */
-			conditions.add(new LPConditionEqual(term, 0.0));
+			conditions.add(new LPCondition(term,LPCondition.EQUAL, 0.0));
 		}
 	}
 
