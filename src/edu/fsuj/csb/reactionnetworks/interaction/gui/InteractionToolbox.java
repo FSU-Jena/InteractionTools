@@ -49,7 +49,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	private JButton calculateProductsButton,calcPotentialAdditionals,searchProcessors;
 	private JTabbedPane taskTabs;
 	private JButton optimizeSeeds,evolveSeeds;
-	private JCheckBox onlyOdle,skipUnbalancedReactions;
+	private JCheckBox onlyOdle,skipUnbalancedReactions,useMilp;
 	private OptimizationParametersTab parametersTab;
 	private StatusPanel statusPanel;
 	private DatabasePane databasePane;
@@ -189,15 +189,21 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		VerticalPanel buttonPane = new VerticalPanel();
 		VerticalPanel taskButtons=new VerticalPanel("Tasks");
 
+		VerticalPanel milpPanel=new VerticalPanel("Optimizations");
 		calculateSeedsButton = new JButton("<html>Calculate Seeds<br/>with MILP (buggy)");
 		calculateSeedsButton.setToolTipText("<html>This method should calculate the minimum sets of substances which can be supplied to form<ul><li>all Substances in the compartment (organism) <i>if no target substances are specified</i></li><li>for the specified target substances <i>otherwise</i></li></ul><font color=\"red\">not implemented, yet.</font></html>");
 		calculateSeedsButton.addActionListener(this);
-		taskButtons.add(calculateSeedsButton);
+		milpPanel.add(calculateSeedsButton);
 		
 		optimizeSeeds=new JButton("<html>Calculate Flow<br/>Distributions for given<br/>Input/Output<br/>using linear programming");
 		optimizeSeeds.setToolTipText("<html>Takes one substance list as targets<br/>and the other as \"desired nutrients\"<br/>and tries to optimize (maximize) flow<br/>towards targets and decomposition<br/>of the <i>desired nutrients</i> while keeping<br/>all other inflow reactions low.</html>");
 		optimizeSeeds.addActionListener(this);
-		taskButtons.add(optimizeSeeds);
+		milpPanel.add(optimizeSeeds);
+		
+		useMilp=new JCheckBox("<html>Use MILP<br/>(boolean switches;<br/>slower, more accurate)");
+		milpPanel.add(useMilp);
+		
+		taskButtons.add(milpPanel);
 		
 		findPath=new JButton("<html>Find paths from<br/>substances-to-degrade<br/>to substances-to-produce");
 		findPath.setToolTipText("<html>Tries to find connections between the substances to degrade<br/>and the substances that shall be built.");
@@ -340,7 +346,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 			
 			if (buildList!=null && !buildList.isEmpty()){
 				if (method==1){
-					actionHandler.optimizeSeeds(compartmentTab.getUserList().getListed(),decompositionList,buildList,substancesTab.ignoreList(),substancesTab.noOutflowList(),parametersTab.optimizationParameterSet(),skipUnbalancedReactions.isSelected());
+					actionHandler.optimizeSeeds(compartmentTab.getUserList().getListed(),decompositionList,buildList,substancesTab.ignoreList(),substancesTab.noOutflowList(),parametersTab.optimizationParameterSet(),skipUnbalancedReactions.isSelected(),useMilp.isSelected());
 				} else {
 					actionHandler.evovleSeeds(compartmentTab.getUserList().getListed(), decompositionList, buildList,substancesTab.ignoreList());
 				}
@@ -406,7 +412,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		Component frame=SwingUtilities.getRoot(this);
 		frame.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 		try {
-			if (source == calculateSeedsButton) actionHandler.calcSeeds(compartmentTab.getUserList().getListed(),substancesTab.produceList(),substancesTab.ignoreList(),skipUnbalancedReactions.isSelected());
+			if (source == calculateSeedsButton) actionHandler.calcSeeds(compartmentTab.getUserList().getListed(),substancesTab.produceList(),substancesTab.ignoreList(),skipUnbalancedReactions.isSelected(),useMilp.isSelected());
 			if (source == calculateProductsButton){
 						TreeSet<Integer> nutrients = substancesTab.degradeList();
 						nutrients.addAll(substancesTab.ignoreList());

@@ -111,13 +111,14 @@ public class ActionHandler extends Master {
 	 * @param targetSubstanceIds the ids of the targeted substances
 	 * @param ignoredSubstances 
 	 * @param ignoreUnbalanced 
+	 * @param useMilp 
 	 * @throws IOException
 	 */
-	public void calcSeeds(TreeSet<CompartmentNode> compartmentNodes, TreeSet<Integer> targetSubstanceIds, TreeSet<Integer> ignoredSubstances, boolean ignoreUnbalanced) throws IOException {
+	public void calcSeeds(TreeSet<CompartmentNode> compartmentNodes, TreeSet<Integer> targetSubstanceIds, TreeSet<Integer> ignoredSubstances, boolean ignoreUnbalanced, boolean useMilp) throws IOException {
 		if (warnforEmptyList(targetSubstanceIds)) return;
 		for (Iterator<CompartmentNode> it = compartmentNodes.iterator(); it.hasNext();) {	// loop through the set of compartments		
 			int cid = it.next().compartment().id();
-			calcSeeds(cid,targetSubstanceIds,ignoredSubstances,ignoreUnbalanced); // calculate seed for specific compartment
+			calcSeeds(cid,targetSubstanceIds,ignoredSubstances,ignoreUnbalanced,useMilp); // calculate seed for specific compartment
 		}
 	}
 
@@ -128,8 +129,8 @@ public class ActionHandler extends Master {
 	 * @param ignoredSubstances 
 	 * @throws IOException
 	 */
-	private void calcSeeds(int compartmentId, TreeSet<Integer> targetSubstanceIds, TreeSet<Integer> ignoredSubstances,boolean ignoreUnbalanced) throws IOException {
-		SeedCalculationTask sct=new SeedCalculationTask(compartmentId,targetSubstanceIds,ignoredSubstances,ignoreUnbalanced);
+	private void calcSeeds(int compartmentId, TreeSet<Integer> targetSubstanceIds, TreeSet<Integer> ignoredSubstances,boolean ignoreUnbalanced,boolean useMilp) throws IOException {
+		SeedCalculationTask sct=new SeedCalculationTask(compartmentId,targetSubstanceIds,ignoredSubstances,useMilp,ignoreUnbalanced);
 		sendTask(sct);
   }
 
@@ -298,6 +299,7 @@ public class ActionHandler extends Master {
 	 * @param build the set of substances, which shall be built be the respective compartments
 	 * @param noOutflow set of substance ids, for which outflow shall be supressed
 	 * @param optimizationParameterSet 
+	 * @param useMilp 
 	 * @param b 
 	 * @param rateOfOutflowReactionsImportance 
 	 * @param numberOfOutflowReactionsImportance 
@@ -307,10 +309,10 @@ public class ActionHandler extends Master {
 	 * @param minimizeInternalReactions determines, whether the use of internal reactions shall be minimized
 	 * @throws IOException
 	 */
-	public void optimizeSeeds(TreeSet<CompartmentNode> compartments, TreeSet<Integer> decompose, TreeSet<Integer> build, TreeSet<Integer> ignore, TreeSet<Integer> noOutflow, OptimizationParameterSet optimizationParameterSet, boolean ignoreUnbalanced) throws IOException {
+	public void optimizeSeeds(TreeSet<CompartmentNode> compartments, TreeSet<Integer> decompose, TreeSet<Integer> build, TreeSet<Integer> ignore, TreeSet<Integer> noOutflow, OptimizationParameterSet optimizationParameterSet, boolean ignoreUnbalanced, boolean useMilp) throws IOException {
 		for (Iterator<CompartmentNode> it = compartments.iterator();it.hasNext();){
 			int cid=it.next().compartment().id();
-			sendTask(new OptimizeBuildTask(cid,decompose,build,ignore, optimizationParameterSet,ignoreUnbalanced,noOutflow));
+			sendTask(new OptimizeBuildTask(cid,decompose,build,ignore, optimizationParameterSet,ignoreUnbalanced,noOutflow,useMilp));
 		}
 	}
 

@@ -37,8 +37,9 @@ public class OptimizeBuildTask extends OptimizationTask {
 	 * @param optimizationParameterSet a set of optimization parameters
 	 * @param ignoreUnbalanced 
 	 * @param noOutflow 
+	 * @param useMilp 
 	 */
-	public OptimizeBuildTask(int cid, TreeSet<Integer> decompose, TreeSet<Integer> build, TreeSet<Integer> ignore, OptimizationParameterSet optimizationParameterSet, boolean ignoreUnbalanced, TreeSet<Integer> noOutflow) {
+	public OptimizeBuildTask(int cid, TreeSet<Integer> decompose, TreeSet<Integer> build, TreeSet<Integer> ignore, OptimizationParameterSet optimizationParameterSet, boolean ignoreUnbalanced, TreeSet<Integer> noOutflow, boolean useMilp) {
 		super(cid, decompose, build, null, noOutflow, ignore, false, ignoreUnbalanced);
 	}
 

@@ -12,9 +12,10 @@ public class SeedCalculationTask extends OptimizationTask {
 	 * @param compartmentId the database id of the compartment
 	 * @param targetSubstanceIds the set of (database related) substance ids, which shall be built
 	 * @param ignoreUnbalanced 
+	 * @param useMilp 
 	 */
-	public SeedCalculationTask(int compartmentId, TreeSet<Integer> targetSubstanceIds,TreeSet<Integer> ignoredSubstances, boolean ignoreUnbalanced) {
-		super(compartmentId, null, targetSubstanceIds, null, null, ignoredSubstances, true, ignoreUnbalanced);
+	public SeedCalculationTask(int compartmentId, TreeSet<Integer> targetSubstanceIds,TreeSet<Integer> ignoredSubstances, boolean useMilp, boolean ignoreUnbalanced) {
+		super(compartmentId, null, targetSubstanceIds, null, null, ignoredSubstances, useMilp, ignoreUnbalanced);
   }
 	
 	@Override
