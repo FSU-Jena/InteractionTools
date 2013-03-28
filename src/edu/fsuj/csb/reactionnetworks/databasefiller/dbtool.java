@@ -558,6 +558,16 @@ public class dbtool {
 			System.exit(0);
 		}
 	}
+	
+	private class OrgInfo{
+		String code;
+		String name;
+		public OrgInfo(String line) {
+			String[] dummy=line.split("\t");
+			code=dummy[1];
+			name=dummy[2];
+		}
+	}
 
 	/**
 	 * read the kegg species list
@@ -567,7 +577,7 @@ public class dbtool {
 	 * @throws DataFormatException
 	 */
 	private TreeMap<String, Integer> readKeggOrganisms() throws IOException, SQLException, DataFormatException {
-		URL listSource = new URL("http://www.genome.jp/kegg/catalog/org_list.html");
+		URL listSource = new URL("http://rest.kegg.jp/list/organism");
 		String[] code = PageFetcher.fetchLines(listSource);
 		System.out.print("Reading KEGG organism list...");
 		TreeMap<String, Integer> mappingFromKeggIdsToDbIds = new TreeMap<String, Integer>(ObjectComparator.get());
@@ -576,36 +586,19 @@ public class dbtool {
 		int currentKeggGroup = keggEukaryotes;
 		for (int index = 0; index < code.length; index++) {
 			String line = code[index];
-			String speciesName = null;
-			if (line.contains("<td align=center><a href='/kegg-bin/show_organism?org=")) {
-
-				speciesName = code[index + 1];
-				int position = speciesName.indexOf("'>");
-				if (position < 0) {
-					position = speciesName.indexOf(">");
-					if (position < 0) throw new IOException("file format error in dbtool.readKeggSpecies() line " + (index + 1) + " (" + speciesName + ")");
-				}
-				speciesName = speciesName.substring(position + 2);
-				speciesName = speciesName.substring(0, speciesName.indexOf("<"));
-				position = line.indexOf(">", 58) + 1;
-				int position2 = line.indexOf("<", 58);
-				String keggId = line.substring(position, position2).toLowerCase();
-				String sql = null;
-				try {
-					KeggGenomeUrn urn = new KeggGenomeUrn(keggId);
-
-					Integer cid = InteractionDB.createCompartment(speciesName, urn, currentKeggGroup, listSource);
-					Tools.indent("");
-
-					// Integer cid = InteractionDB.getOrCreateCompartment(urn, currentKeggGroup,urn);
-					// InteractionDB.insertName(cid, speciesName);
-					mappingFromKeggIdsToDbIds.put(keggId, cid);
-				} catch (SQLException e) {
-					System.err.println(sql);
-					e.printStackTrace();
-					System.exit(0);
-				}
-			} else if (line.contains("Prokaryotes")) {
+			OrgInfo org = new OrgInfo(line);
+			
+			String sql = null;
+			try {
+				KeggGenomeUrn urn = new KeggGenomeUrn(org.code);
+				Integer cid = InteractionDB.createCompartment(org.name, urn, currentKeggGroup, listSource);
+				mappingFromKeggIdsToDbIds.put(org.code, cid);
+			} catch (SQLException e) {
+				System.err.println(sql);
+				e.printStackTrace();
+				System.exit(0);
+			}
+			if (line.contains("Prokaryotes")) {
 				currentKeggGroup = keggProkaryotes;
 			}
 		}
