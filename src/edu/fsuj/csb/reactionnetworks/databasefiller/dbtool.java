@@ -504,9 +504,9 @@ public class dbtool {
 	private void readKeggPathways(Set<String> keggOrganismCodes) throws IOException, SQLException, DataFormatException {
 		int count = 0;
 		int number = keggOrganismCodes.size();
-		for (Iterator<String> it = keggOrganismCodes.iterator(); it.hasNext();) {
+		for (String orgCode:keggOrganismCodes) {
 			count++;
-			analyzeKeggPathwayMap(it.next());
+			analyzeKeggPathwayMap(orgCode);
 			System.out.print((100 * count / number) + "% - ");
 		}
 		InteractionDB.setDateMark("Read KEGG pathways");
@@ -525,31 +525,16 @@ public class dbtool {
 		KeggGenomeUrn orgUrn = new KeggGenomeUrn(keggOrganismCode); // miriam:kegg.genome:xxx
 		Integer compartmentId = InteractionDB.getOrCreateIdFor(orgUrn, InteractionDB.COMPARTMENT);
 		if (compartmentId != null) {
-			String[] pathwayMap = orgUrn.fetchLines();
+			String[] pathwayMap = orgUrn.getFromApi();
 			System.out.print("collecting pathway information for organism " + keggOrganismCode + "...");
 			Statement st = InteractionDB.createStatement();
-			for (int i = 0; i < pathwayMap.length; i++) {
-				if (pathwayMap[i].length() > 5) {
-					String keggPathwayId = pathwayMap[i].substring(0, 5);
-					try {
-						Integer.parseInt(keggPathwayId);
-						int k = pathwayMap[i].indexOf(">");
-						int l = pathwayMap[i].indexOf("<", k);
-						String name = pathwayMap[i].substring(k + 1, l);
-						KeggPathwayUrn urn = new KeggPathwayUrn(keggOrganismCode + keggPathwayId);
-
-						Integer pid = InteractionDB.createPathway(urn, name, orgUrn.url());
-						InteractionDB.linkPathway(pid, compartmentId);
-						Tools.indent("");
-
-						// try {
-						// st.execute("INSERT INTO compartment_pathways VALUES(" + compartmentId + ", " + pid + ")");
-						// } catch (SQLException e) {
-						// if (!e.getMessage().contains("Duplicate key")) throw e;
-						// }
-						// InteractionDB.insertName(pid, name);
-					} catch (NumberFormatException nfe) {}
-				}
+			for (String line:pathwayMap) {
+				String[] parts=line.split("\t");
+				String name = parts[1].split(" - ")[0];
+				KeggPathwayUrn urn = new KeggPathwayUrn(parts[0]);
+				Integer pid = InteractionDB.createPathway(urn, name, orgUrn.url());
+				InteractionDB.linkPathway(pid, compartmentId);
+				Tools.indent("");
 			}
 			st.close();
 			System.out.println("done.");
