@@ -569,10 +569,8 @@ public class dbtool {
 		Statement st = InteractionDB.createStatement();
 
 		int currentKeggGroup = keggEukaryotes;
-		for (int index = 0; index < code.length; index++) {
-			String line = code[index];
-			OrgInfo org = new OrgInfo(line);
-			
+		for (String line:code) {
+			OrgInfo org = new OrgInfo(line);			
 			String sql = null;
 			try {
 				KeggGenomeUrn urn = new KeggGenomeUrn(org.code);
