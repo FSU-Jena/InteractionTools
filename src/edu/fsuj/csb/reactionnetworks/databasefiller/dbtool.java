@@ -564,10 +564,13 @@ public class dbtool {
 	private TreeMap<String, Integer> readKeggOrganisms() throws IOException, SQLException, DataFormatException {
 		URL listSource = new URL("http://rest.kegg.jp/list/organism");
 		String[] code = PageFetcher.fetchLines(listSource);
-		System.out.print("Reading KEGG organism list...");
+		System.out.print("Reading KEGG organism list...[");
 		TreeMap<String, Integer> mappingFromKeggIdsToDbIds = new TreeMap<String, Integer>(ObjectComparator.get());
 		Statement st = InteractionDB.createStatement();
-
+		
+		int count=code.length;
+		int step=count/20;		
+		count=0;
 		int currentKeggGroup = keggEukaryotes;
 		for (String line:code) {
 			OrgInfo org = new OrgInfo(line);			
@@ -576,15 +579,17 @@ public class dbtool {
 				KeggGenomeUrn urn = new KeggGenomeUrn(org.code);
 				Integer cid = InteractionDB.createCompartment(org.name, urn, currentKeggGroup, listSource);
 				mappingFromKeggIdsToDbIds.put(org.code, cid);
+				if ((++count % step)==0) System.out.print("❚");
 			} catch (SQLException e) {
 				System.err.println(sql);
 				e.printStackTrace();
-				System.exit(0);
+				System.exit(-1);
 			}
 			if (line.contains("Prokaryotes")) {
 				currentKeggGroup = keggProkaryotes;
 			}
 		}
+		System.out.println("]");
 		st.close();
 		InteractionDB.setDateMark("Read KEGG organisms");
 		System.out.println("done, found " + mappingFromKeggIdsToDbIds.size() + " species entries.");
@@ -597,45 +602,14 @@ public class dbtool {
 	 * @return the set of the ids of the enzymes in the local database
 	 * @throws IOException
 	 */
-	private Stack<String> getKeggEnzymeIds() throws IOException {
-		StringBuffer data = PageFetcher.fetch("http://www.genome.jp/dbget-bin/www_bfind_sub?max_hit=nolimit&dbkey=enzyme&keywords=ec");
+	private Stack<String> getKeggIds(String key) throws IOException {
+		String[] data = PageFetcher.fetchLines("http://rest.kegg.jp/list/"+key);
 		Stack<String> result = new Stack<String>();
-		int pos = 0;
-		String keggEnzymeId = null;
-		while ((pos = data.indexOf("?ec:", pos)) > 0) {
-			pos += 4;
-			int endpos = data.indexOf("\"", pos);
-			keggEnzymeId = data.substring(pos, endpos);
-			result.push(keggEnzymeId);
-		}
-		System.out.println("found " + result.size() + " enzymes.");
+		for (String line:data) result.push(line.split("\t")[0].substring(3));
+		System.out.println("found " + result.size() + " "+key+"s.");
 		return result;
 	}
-
-	/*
-	 * reads all kegg reactions from the kegg website, writes the reaction info to the local database and returns a set of ids of the reactions
-	 * 
-	 * @return the set of the ids of the reactions in the local database
-	 * 
-	 * @throws IOException
-	 */
-	private Stack<String> getKeggReactionIds() throws IOException {
-		StringBuffer data = PageFetcher.fetch("http://www.genome.jp/dbget-bin/www_bfind_sub?max_hit=nolimit&dbkey=reaction&keywords=R");
-		Stack<String> result = new Stack<String>();
-		int pos = 0;
-		String keggReactionId = null;
-		while ((pos = data.indexOf("rn:", pos)) > 0) {
-			pos += 4;
-			try {
-				keggReactionId = data.substring(pos, pos + 5);
-				Integer.parseInt(keggReactionId); // just to check, whether this is a number
-				result.push("R" + keggReactionId);
-			} catch (NumberFormatException e) {}
-		}
-		System.out.println("found " + result.size() + " reactions.");
-		return result;
-	}
-
+	
 	/**
 	 * reads all kegg substances from the kegg website, writes the substance info to the local database and returns a set of ids of the substances
 	 * 
@@ -643,43 +617,16 @@ public class dbtool {
 	 * @throws IOException
 	 */
 	private Stack<String> getKeggSubstanceIds() throws IOException {
-		Stack<String> result = new Stack<String>();
-
 		/*
 		 * Glykane werden vor den Compounds eingelesen, so dass die Compounds OBEN auf dem Stack liegen. Das bewirkt wiederum, dass die Substanzen zuerst eingelesen werden, so dass auch deren Formeln genutzt werden
 		 */
-		int glycans = 0;
-		StringBuffer data = PageFetcher.fetch("http://www.genome.jp/dbget-bin/www_bfind_sub?max_hit=nolimit&dbkey=glycan&keywords=G");
-		int pos = 0;
-		String keggId = null;
-		while ((pos = data.indexOf("gl:", pos)) > 0) {
-			pos += 4;
-			try {
-				keggId = data.substring(pos, pos + 5);
-				Integer.parseInt(keggId); // just to check, whether this is a number
-				result.push("G" + keggId);
-				glycans++;
-			} catch (NumberFormatException e) {}
-		}
-		Tools.indent("found " + glycans + " glycans.");
+		Stack<String> result = getKeggIds("glycan");
 
-		if (!skipKeggCompounds) {
-			int compounds = 0;
-			data = PageFetcher.fetch("http://www.genome.jp/dbget-bin/www_bfind_sub?max_hit=nolimit&dbkey=compound&keywords=C");
-			pos = 0;
-			keggId = null;
-			while ((pos = data.indexOf("cpd:", pos)) > 0) {
-				pos += 5;
-				try {
-					keggId = data.substring(pos, pos + 5);
-					Integer.parseInt(keggId); // just to check, whether this is a number
-					result.push("C" + keggId);
-					compounds++;
-				} catch (NumberFormatException e) {}
-			}
-			Tools.indent("found " + compounds + " substances.");
-		}
-
+		if (skipKeggCompounds) return result;
+		
+		String[] lines = PageFetcher.fetchLines("http://rest.kegg.jp/list/compound");
+		for (String line:lines) result.push(line.substring(4,10));
+		Tools.indent("found " + lines.length + " substances.");
 		return result;
 	}
 
@@ -729,7 +676,7 @@ public class dbtool {
 	 */
 	private TreeMap<String, Integer> readKeggReactions(TreeMap<String, Integer> mappingFromKeggIdsToDbIds) throws IOException, DataFormatException, SQLException, AlreadyBoundException, NoTokenException {
 		// String[] reactionInfos = PageFetcher.fetch("ftp://ftp.genome.jp/pub/kegg/ligand/reaction/reaction").toString().split("///");
-		Stack<String> keggReactionIds = getKeggReactionIds();
+		Stack<String> keggReactionIds = getKeggIds("reaction");
 		int count = 0;
 		while (!keggReactionIds.isEmpty()) {
 			System.out.print((100 * (++count) / (keggReactionIds.size() + count)) + "% - ");
@@ -767,8 +714,7 @@ public class dbtool {
 	 */
 	private void readKeggEnzymes(TreeMap<String, Integer> mappingFromKeggOrganismIdsToDbIds) throws IOException, DataFormatException, SQLException {
 		System.out.println("Reading enzyme list...");
-		// String[] enzymeInfos = PageFetcher.fetch("ftp://ftp.genome.jp/pub/kegg/ligand/enzyme/enzyme").toString().split("///"); // get the kegg enzyme list
-		Stack<String> enzymeIds = getKeggEnzymeIds();
+		Stack<String> enzymeIds = getKeggIds("enzyme");
 		int count = 0;
 		while (!enzymeIds.isEmpty()) {
 			count++;
@@ -785,18 +731,6 @@ public class dbtool {
 
 	}
 
-	private TreeSet<String> findGenes(String source) throws UnexpectedException {
-		int start = source.indexOf("<nobr>");
-		TreeSet<String> result = Tools.StringSet();
-		while (start > 0) {
-			int end = source.indexOf(":", start);
-			if (end < 0) throw new UnexpectedException("Unexpected end of line ('" + source + "') while looking for ':'");
-			result.add(source.substring(start + 6, end).toLowerCase());
-			start = source.indexOf("<nobr>", end);
-		}
-		return result;
-	}
-
 	/**
 	 * parses the information text belonging to an enzyme
 	 * 
@@ -811,7 +745,7 @@ public class dbtool {
 	private void parseEnzymeInfo(Stack<String> unexploredEnzymeIds, TreeMap<String, Integer> mappingFromKeggOrganismIdsToDbIds) throws SQLException, IOException, DataFormatException {
 		String enzymeCode = unexploredEnzymeIds.pop();
 		EnzymeUrn enzymeUrn = new EnzymeUrn(enzymeCode);
-		String description = PageFetcher.fetch(enzymeUrn.keggUrl()).toString();
+		String description = enzymeUrn.fetch();
 		System.out.print("parsing " + enzymeCode + "...");
 		if (description.length() < 5) return;
 		String[] lines = description.split("\n");
@@ -819,45 +753,40 @@ public class dbtool {
 		TreeSet<String> names = Tools.StringSet();
 		TreeSet<Integer> orgIds = new TreeSet<Integer>();
 		for (int i = 0; i < lines.length; i++) {
-			if (lines[i].contains("<nobr>Name</nobr>")) {
-				while (!lines[++i].contains("</div>")) {
-					String name = Tools.removeHtml(lines[i]);
-					names.add(name.endsWith(";") ? (name.substring(0, name.length() - 1)) : name); // only remove end-of-line semicolons, preserve in-string semicolons
-				}
-			}
-
-			if (lines[i].contains("<nobr>Genes</nobr>")) {
-				TreeSet<String> orgList = findGenes(lines[++i]);
-				for (Iterator<String> it = orgList.iterator(); it.hasNext();) {
-					String org = it.next();
-					Integer orgid = mappingFromKeggOrganismIdsToDbIds.get(org);
-					if (orgid == null) throw new UnexpectedException("Unexpectedly, we found no database id for the organism '" + org + "'");
+			String line=lines[i];
+			if (line.startsWith("NAME")) {  				
+  				String name=line.substring(12).trim();
+  				if (name.endsWith(";")) name=name.substring(0, name.length()-1);
+  				names.add(name);
+  				while (lines[i+1].startsWith(" ")) {
+  					name = lines[++i].trim();
+  	  				if (name.endsWith(";")) name=name.substring(0, name.length()-1);
+  	  				names.add(name);
+   				}
+  			}
+  			
+			if (line.startsWith("GENES")) {
+				String orgCode=line.substring(12).split(":")[0];
+				System.out.println(orgCode);
+				Integer orgid = mappingFromKeggOrganismIdsToDbIds.get(orgCode);
+				if (orgid == null) throw new UnexpectedException("Unexpectedly, we found no database id for the organism '" + orgCode + "'");
+				orgIds.add(orgid);
+				
+				while (lines[i+1].startsWith(" ")){
+					i++;
+					orgCode=lines[i].substring(12).split(":")[0];
+					System.out.println(orgCode);
+					orgid = mappingFromKeggOrganismIdsToDbIds.get(orgCode);
+					if (orgid == null) throw new UnexpectedException("Unexpectedly, we found no database id for the organism '" + orgCode + "'");
 					orgIds.add(orgid);
-				}
-				i++;
-				if (lines[i].length() > 3  && !lines[i].startsWith("<input type")) throw new UnexpectedException("Unexpected input '" + lines[i] + "' in line " + i + " of " + enzymeUrn.keggUrl());
+				}				
 			}
 			// TODO: read "Other DBs" links
 		}
 
-		int enzymeDBId = InteractionDB.createEnzyme(names, enzymeCode, null, enzymeUrn, enzymeUrn.keggUrl());
+		int enzymeDBId = InteractionDB.createEnzyme(names, enzymeCode, null, enzymeUrn, enzymeUrn.url());
 		InteractionDB.linkOrganismsToEnzyme(orgIds, enzymeDBId);
 
-		// Statement statement = InteractionDB.createStatement();
-		// for (Iterator<Integer> it = orgIds.iterator(); it.hasNext();) {
-		// int organismDBId = it.next();
-		// String query = "INSERT INTO enzymes_compartments VALUES (" + organismDBId + "," + enzymeDBId + ")";
-		// try {
-		// statement.execute(query);
-		// } catch (SQLException e) {
-		// if (e.getMessage().contains("Duplicate key")) continue;
-		// System.err.println(query);
-		// throw e;
-		// }
-		// }
-		// for (Iterator<String> name = names.iterator(); name.hasNext();)
-		// InteractionDB.insertName(enzymeDBId, name.next());
-		// statement.close();
 		System.out.println("done");
 	}
 
