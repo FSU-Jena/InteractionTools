@@ -48,10 +48,8 @@ public class dbtool {
 	private long startTime = 0;
 	private static int keggProkaryotes;
 	private static int keggEukaryotes;
-	private static boolean skipClear, skipKegg, skipBiomodels, skipFiles, skipKeggPathways, skipKeggEnzymes, skipKeggCodes, skipKeggOrganisms, skipKeggCompounds, skipKeggSubstances, skipKeggReactions;
+	private static boolean skipClear, skipKegg, skipBiomodels, skipFiles, skipKeggPathways, skipKeggEnzymes, skipKeggCodes, skipKeggOrganisms, skipKeggCompounds, skipKeggSubstances, skipKeggReactions, skipAsk, clearDecisions, test;
 	private static String sbmlDirectory=System.getProperty("user.home")+"/Documents/sbml";
-	private static boolean skipAsk;
-	private static boolean clearDecisions;
 
 	/**
 	 * start program by creating a new dbtool instance
@@ -99,6 +97,7 @@ public class dbtool {
 		skipKeggEnzymes = false;
 		skipAsk = false;
 		clearDecisions = false;
+		test = false;
 		for (int i = 0; i < args.length; i++) {
 			if (args[i].startsWith("--cachedir=")) PageFetcher.setCache(args[i].substring(11));
 			if (args[i].equals("--skip-question")) {
@@ -121,6 +120,10 @@ public class dbtool {
 			if (args[i].startsWith("--folder=")) {
 				sbmlDirectory = args[i].substring(9);
 				Tools.note("Reading sbml files from " + sbmlDirectory + ".");
+			}
+			if (args[i].equals("--no-retry")) {
+				PageFetcher.setRetry(5);
+				Tools.note("Retrying unreachable webpages only 5 times.");
 			}
 			if (args[i].equals("--skip-biomodels")) {
 				Tools.note("Will skip biomodels.");
@@ -158,6 +161,12 @@ public class dbtool {
 				Tools.note("Will skip enzyme entries of Kegg database.");
 				skipKeggEnzymes = true;
 			}
+			if (args[i].equals("--test")) {
+				Tools.note("Will not write anything to the database, use to test parser.");
+				InteractionDB.setTestMode(true);
+				test=true;
+				skipClear = true;
+			}
 			if (args[i].equals("--help")) displayCLIoptions();
 			if (args[i].equals("--verbose")) Tools.enableLogging();
 		}
@@ -172,6 +181,7 @@ public class dbtool {
 		System.out.println("--verbose\t\t\tshow verbose output");
 		System.out.println("--skip-clear\t\tdo not clear the database before reading in new data");
 		System.out.println("--clear-all\t\twill also clear the decisions table");
+		System.out.println("--no-retry\t\tIf a page can not be loaded, i will give up after 5 trials.");
 		System.out.println("--skip-kegg\t\tdo not gather ANY data from kegg");
 		System.out.println("--skip-biomodels\tdo not read the biomodels database");
 		System.out.println("--skip-files\t\tdo not read sbml models from local files\n");
@@ -184,6 +194,7 @@ public class dbtool {
 		System.out.println("--skip-kegg-compounds\tWith this option enabled, no compounds will be read from kegg. This will render all Data from Kegg useless and is only for debuggin purposes.");
 		System.out.println("--skip-kegg-reactions\tWith this option, you can skip the reaction-parsing part. Makes the data quite useless.");
 		System.out.println("--skip-question\tWith this option, you can skip the confirmation question before erasing all database content.");
+		System.out.println("--test\tNothing will be written to the database. Use for testing the parsing functions.");		
 		System.exit(0);
 	}
 
@@ -214,7 +225,7 @@ public class dbtool {
 					if (!answer.toUpperCase().equals("YES")) System.exit(-1);
 				}
 				if (clearDecisions) query = query + ", decisions";
-				InteractionDB.createStatement().execute(query);
+				InteractionDB.execute(query);
 			}
 		} catch (SQLException e) {
 			Tools.warn("was not able to erase all tables: " + e.getMessage() + "\n\nQuery was: " + query);
@@ -408,8 +419,7 @@ public class dbtool {
 		String selectAllCompartmentsHoldingThisPathwayAndThisReaction = selectAllCompartmentsOfThisReaction + " AND cid IN (" + selectAllCompartmentsHoldingThisPathway + ")";
 		TreeSet<Integer> compartmentsHoldingThisPathwayAndThisReaction = new TreeSet<Integer>();
 		ResultSet rs = InteractionDB.createStatement().executeQuery(selectAllCompartmentsHoldingThisPathwayAndThisReaction);
-		while (rs.next())
-			compartmentsHoldingThisPathwayAndThisReaction.add(rs.getInt(1));
+		while (rs.next()) compartmentsHoldingThisPathwayAndThisReaction.add(rs.getInt(1));
 		rs.close();
 		return compartmentsHoldingThisPathwayAndThisReaction;
 	}
@@ -427,7 +437,6 @@ public class dbtool {
 	private void readReversibilityInformation(TreeMap<String, Integer> mappingFromKeggReactionIdsToDbIds, TreeMap<String, Integer> mappingFromKeggSubstanceIdsToDbIds, TreeMap<String, Integer> mappingFromKeggOrganismIdsToDbIds) throws IOException, SQLException {
 		String[] reactionMapList = PageFetcher.fetchLines("ftp://ftp.genome.jp/pub/kegg/ligand/reaction/reaction_mapformula.lst"); // fetch the map file
 		String[] parts = null; // will hold the different parts of the distinct file lines
-		Statement statement = InteractionDB.createStatement();
 		int lineCount = reactionMapList.length;
 		for (int lineNumber = 0; lineNumber < lineCount; lineNumber++) { // parse the file line by line
 			parts = reactionMapList[lineNumber].split(": "); // divide each line into reaction, pathway and formula part
@@ -443,16 +452,15 @@ public class dbtool {
 				if (!equation.contains("<=>")) { // if bi-directional: set both directions to true
 					if ((equation.contains("=>") && !reversed) || (equation.contains("<=") && reversed)) direction = "forward";
 					else direction = "backward";
-					statement.execute("INSERT INTO reaction_directions (rid,cid," + direction + ") VALUES (" + rid + ", " + cid + ", true) ON DUPLICATE KEY UPDATE " + direction + "=true");
-				} else statement.execute("INSERT INTO reaction_directions VALUES (" + rid + ", " + cid + ", true,true) ON DUPLICATE KEY UPDATE forward=true,backward=true"); // this has to be written, since another pathway with a directed duplicate reaction might otherwise falsefully set this reaction directed.
+					InteractionDB.execute("INSERT INTO reaction_directions (rid,cid," + direction + ") VALUES (" + rid + ", " + cid + ", true) ON DUPLICATE KEY UPDATE " + direction + "=true");
+				} else InteractionDB.execute("INSERT INTO reaction_directions VALUES (" + rid + ", " + cid + ", true,true) ON DUPLICATE KEY UPDATE forward=true,backward=true"); // this has to be written, since another pathway with a directed duplicate reaction might otherwise falsefully set this reaction directed.
 			}
 			if (lineNumber % 100 == 0) {
 				System.out.print((lineNumber * 100 / lineCount) + "%, ");
 				displayTimeStamp();
 			}
 		}
-		statement.execute("DELETE FROM reaction_directions WHERE forward=true AND backward=true"); // delete entries stating, that the reaction is reversible
-		statement.close();
+		InteractionDB.execute("DELETE FROM reaction_directions WHERE forward=true AND backward=true"); // delete entries stating, that the reaction is reversible
 	}
 
 	/**
@@ -506,8 +514,15 @@ public class dbtool {
 		int number = keggOrganismCodes.size();
 		for (String orgCode:keggOrganismCodes) {
 			count++;
-			analyzeKeggPathwayMap(orgCode);
-			System.out.print((100 * count / number) + "% - ");
+			
+			try {
+				analyzeKeggPathwayMap(orgCode);
+				System.out.print((100 * count / number) + "% - ");
+			} catch (FileNotFoundException fnf){
+				if (test){
+					fnf.printStackTrace();
+				} else throw fnf;
+			}
 		}
 		InteractionDB.setDateMark("Read KEGG pathways");
 
@@ -527,7 +542,7 @@ public class dbtool {
 		if (compartmentId != null) {
 			String[] pathwayMap = orgUrn.getFromApi();
 			System.out.print("collecting pathway information for organism " + keggOrganismCode + "...");
-			Statement st = InteractionDB.createStatement();
+			//Statement st = InteractionDB.createStatement();
 			for (String line:pathwayMap) {
 				String[] parts=line.split("\t");
 				String name = parts[1].split(" - ")[0];
@@ -536,7 +551,7 @@ public class dbtool {
 				InteractionDB.linkPathway(pid, compartmentId);
 				Tools.indent("");
 			}
-			st.close();
+			//st.close();
 			System.out.println("done.");
 		} else {
 			System.err.println("No compartmentid for organism " + keggOrganismCode);
@@ -566,7 +581,7 @@ public class dbtool {
 		String[] code = PageFetcher.fetchLines(listSource);
 		System.out.print("Reading KEGG organism list...[");
 		TreeMap<String, Integer> mappingFromKeggIdsToDbIds = new TreeMap<String, Integer>(ObjectComparator.get());
-		Statement st = InteractionDB.createStatement();
+//		Statement st = InteractionDB.createStatement();
 		
 		int count=code.length;
 		int step=count/20;		
@@ -590,7 +605,7 @@ public class dbtool {
 			}
 		}
 		System.out.println("]");
-		st.close();
+//		st.close();
 		InteractionDB.setDateMark("Read KEGG organisms");
 		System.out.println("done, found " + mappingFromKeggIdsToDbIds.size() + " species entries.");
 		return mappingFromKeggIdsToDbIds;
@@ -754,32 +769,27 @@ public class dbtool {
 		TreeSet<Integer> orgIds = new TreeSet<Integer>();
 		for (int i = 0; i < lines.length; i++) {
 			String line=lines[i];
-			if (line.startsWith("NAME")) {  				
-  				String name=line.substring(12).trim();
-  				if (name.endsWith(";")) name=name.substring(0, name.length()-1);
-  				names.add(name);
-  				while (lines[i+1].startsWith(" ")) {
-  					name = lines[++i].trim();
-  	  				if (name.endsWith(";")) name=name.substring(0, name.length()-1);
-  	  				names.add(name);
-   				}
+			if (line.startsWith("NAME")) {
+				while (true){
+					String name=line.substring(12).trim();
+					if (name.endsWith(";")) name=name.substring(0, name.length()-1);
+					names.add(name);
+					if (!lines[i+1].startsWith(" ")) break;
+					line=lines[++i];
+				}
   			}
   			
 			if (line.startsWith("GENES")) {
-				String orgCode=line.substring(12).split(":")[0];
-				System.out.println(orgCode);
-				Integer orgid = mappingFromKeggOrganismIdsToDbIds.get(orgCode);
-				if (orgid == null) throw new UnexpectedException("Unexpectedly, we found no database id for the organism '" + orgCode + "'");
-				orgIds.add(orgid);
-				
-				while (lines[i+1].startsWith(" ")){
-					i++;
-					orgCode=lines[i].substring(12).split(":")[0];
-					System.out.println(orgCode);
-					orgid = mappingFromKeggOrganismIdsToDbIds.get(orgCode);
-					if (orgid == null) throw new UnexpectedException("Unexpectedly, we found no database id for the organism '" + orgCode + "'");
+				while (true){
+					String orgCode=line.substring(12).split(":")[0];
+					Integer orgid = mappingFromKeggOrganismIdsToDbIds.get(orgCode);
+					if (test) orgid=0;
+					if (orgid == null) throw new UnexpectedException("Unexpectedly, i found no database id for the organism '" + orgCode + "'");
 					orgIds.add(orgid);
-				}				
+				
+					if (!lines[i+1].startsWith(" ")) break;
+					line=lines[++i];
+				}
 			}
 			// TODO: read "Other DBs" links
 		}
@@ -1088,6 +1098,7 @@ public class dbtool {
 	 * @throws IOException 
 	 */
 	public static void cleanDb(int lastRemainingId) throws SQLException, IOException {
+		if (test) return;
 		Statement st = InteractionDB.createStatement();
 		Vector<String> queries = new Vector<String>();
 		queries.add("DELETE FROM compartment_pathways WHERE cid>" + lastRemainingId + " OR pid>" + lastRemainingId);
