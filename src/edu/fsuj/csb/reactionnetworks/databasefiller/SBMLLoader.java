@@ -395,26 +395,27 @@ public class SBMLLoader {
 			
 			
 //			InteractionDB.insertName(databaseCompartmentId, nameUsedInFile);
-			Statement statement = InteractionDB.createStatement();
-			if (outside != null) {
-				Integer outsideId = mapFromCompartmentIdsToCids.get(outside);
-				query = "INSERT INTO hierarchy (contained,container) VALUES (" + databaseCompartmentId + ", " + outsideId + ")";
-				try {
-					statement.execute(query);
-				} catch (SQLException e){
-					if (!e.getMessage().contains("Duplicate key")) throw e;
+			if (!InteractionDB.inTestMode()){
+				Statement statement = InteractionDB.createStatement();
+				if (outside != null) {
+					Integer outsideId = mapFromCompartmentIdsToCids.get(outside);
+					query = "INSERT INTO hierarchy (contained,container) VALUES (" + databaseCompartmentId + ", " + outsideId + ")";
+					try {
+						statement.execute(query);
+					} catch (SQLException e){
+						if (!e.getMessage().contains("Duplicate key")) throw e;
+					}
 				}
-			}
-			if (superCompartment != null){
-				query = "INSERT INTO hierarchy (contained,container) VALUES (" + databaseCompartmentId + ", " + superCompartment.id() + ")";
-				try {
-					statement.execute(query);
-				} catch (SQLException e){
-					if (!e.getMessage().contains("Duplicate key")) throw e;
+				if (superCompartment != null){
+					query = "INSERT INTO hierarchy (contained,container) VALUES (" + databaseCompartmentId + ", " + superCompartment.id() + ")";
+					try {
+						statement.execute(query);
+					} catch (SQLException e){
+						if (!e.getMessage().contains("Duplicate key")) throw e;
+					}
 				}
+				statement.close();
 			}
-			statement.close();
-
 			mapFromCompartmentIdsToCids.put(idUsedInFile, databaseCompartmentId); // save the compartment id for further usage
 
 			/* here we save an url for the compartment into the database */
@@ -999,6 +1000,7 @@ public class SBMLLoader {
 	 * @throws IOException 
 	 */
 	private static void setReactionDirection(int rid, Collection<Integer> cids, String reversible) throws SQLException, IOException {
+		if (InteractionDB.inTestMode()) return;
 		Statement st = InteractionDB.createStatement();
 		String query;
 		for (Iterator<Integer> cit = cids.iterator(); cit.hasNext();) {
@@ -1027,6 +1029,7 @@ public class SBMLLoader {
 		if (stoichValue!=null) stoich=Double.parseDouble(stoichValue);
 		Integer sid = mapFromSubstanceIdsToSids.get(ref);
 		if (sid == null) throw new NullPointerException("no map entry for " + token);
+		if (InteractionDB.inTestMode()) return sid;
 		String query = "INSERT INTO substrates (sid,rid,stoich) VALUES(" + sid + ", " + rid + ","+stoich+")";
 		Statement st = InteractionDB.createStatement();
 		try {
@@ -1061,6 +1064,7 @@ public class SBMLLoader {
 		if (stoichValue!=null) stoich=Double.parseDouble(stoichValue);
 		Integer sid = mapFROMSubstanceIdsToSids.get(ref);
 		if (sid==null) throw new NullPointerException("could not find substance id for "+ref+" in model!");
+		if (InteractionDB.inTestMode()) return sid;
 		String query = "INSERT INTO products (sid,rid,stoich) VALUES(" + sid + ", " + rid + ","+stoich+")";
 		Statement st = InteractionDB.createStatement();
 		try {
