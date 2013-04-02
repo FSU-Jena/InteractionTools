@@ -544,6 +544,7 @@ public class dbtool {
 			System.out.print("collecting pathway information for organism " + keggOrganismCode + "...");
 			//Statement st = InteractionDB.createStatement();
 			for (String line:pathwayMap) {
+				if (line.length()<1) continue;
 				String[] parts=line.split("\t");
 				String name = parts[1].split(" - ")[0];
 				KeggPathwayUrn urn = new KeggPathwayUrn(parts[0]);
@@ -782,6 +783,7 @@ public class dbtool {
 			if (line.startsWith("GENES")) {
 				while (true){
 					String orgCode=line.substring(12).split(":")[0];
+					System.out.println(orgCode);
 					Integer orgid = mappingFromKeggOrganismIdsToDbIds.get(orgCode);
 					if (test) orgid=0;
 					if (orgid == null) throw new UnexpectedException("Unexpectedly, i found no database id for the organism '" + orgCode + "'");
@@ -846,49 +848,59 @@ public class dbtool {
 		TreeSet<String> names = Tools.StringSet();
 		TreeSet<String> synonyms = Tools.StringSet();
 		TreeSet<String> enzymes = Tools.StringSet();
-		TreeMap<Integer, Integer> substrates = null; // mapping from the substrate database ids to their stoichiometry
-		TreeMap<Integer, Integer> products = null;
+		TreeMap<Integer, Integer> substrateList = null; // mapping from the substrate database ids to their stoichiometry
+		TreeMap<Integer, Integer> productList = null;
 		boolean spontan = false;
 
 		for (int i = 0; i < lines.length; i++) {
-
-			if (lines[i].contains("<nobr>Name</nobr>")) {
-				while (!lines[++i].contains("</div>")) {
-					String name = Tools.removeHtml(lines[i]);
-					name = name.endsWith(";") ? (name.substring(0, name.length() - 1)) : name; // only remove end-of-line semicolons, preserve in-string semicolons
-					Tools.indent("add name " + name);
+			String line=lines[i];
+			
+			if (line.startsWith("NAME")) {
+				while (true){
+					String name=line.substring(12).trim();
+					if (name.endsWith(";")) name=name.substring(0, name.length()-1);
 					names.add(name);
+					if (!lines[i+1].startsWith(" ")) break;
+					line=lines[++i];
 				}
-			}
+  			}
 
-			if (lines[i].contains("<nobr>Definition</nobr>") && names.isEmpty()) {
-				while (!lines[++i].contains("</div>")) {
-					String definition = Tools.removeHtml(lines[i]);
-					String name = definition.endsWith(";") ? (definition.substring(0, definition.length() - 1)) : definition; // only remove endo-of-line semicolons, preserve in-string semicolons
+			if (line.startsWith("DEFINITION") && names.isEmpty()) {
+				while (true){
+					String name = line.substring(12).trim();
+					if (name.endsWith(";")) name=name.substring(0,name.length()-1);
 					Tools.indent("add name " + name + "(from definition)");
 					names.add(name);
+					if (!lines[i+1].startsWith(" ")) break;
+					line=lines[++i];
 				}
 			}
 
-			if (lines[i].contains("<nobr>Comment</nobr>")) {
+			if (line.startsWith("COMMENT")) {
+
 				String comment = "";
-				while (!lines[++i].contains("</tr>"))
-					comment += Tools.removeHtml(lines[i]) + "\n";
+
+				while (true){
+					comment+=line.substring(12).trim();
+					if (!lines[i+1].startsWith(" ")) break;
+					line=lines[++i];
+				}
+  			
 				if (comment.toLowerCase().contains("spontan")) spontan = true;
 			}
 
-			if (lines[i].contains("<nobr>Equation</nobr>")) {
-				String equation = Tools.removeHtml(lines[++i]);
+			if (line.startsWith("EQUATION")) {
+				String equation = line.substring(12).trim();
 				Tools.indent("equation: " + equation);
-				substrates = new TreeMap<Integer, Integer>();
-				products = new TreeMap<Integer, Integer>();
+				substrateList = new TreeMap<Integer, Integer>();
+				productList = new TreeMap<Integer, Integer>();
 				String[] equationParts = equation.split("<=>");
-				String[] subs = equationParts[0].trim().split(" \\+ ");
-				String[] prods = equationParts[1].trim().split(" \\+ ");
+				String[] substrates = equationParts[0].trim().split(" \\+ ");
+				String[] products = equationParts[1].trim().split(" \\+ ");
 				Integer substanceDbId = null;
 
-				for (int k = 0; k < subs.length; k++) {
-					String dummy = replaceN(subs[k]).replace("(", "").replace(")", "");
+				for (String substrate:substrates) {
+					String dummy = replaceN(substrate).replace("(", "").replace(")", "");
 					int spacePos = dummy.indexOf(" ");
 					String substanceKeggId;
 					if (spacePos < 0) { // no stoichiometric coefficients
@@ -911,18 +923,18 @@ public class dbtool {
 					}
 
 					if (spacePos < 0) {
-						if (substrates.containsKey(substanceDbId)) {
-							substrates.put(substanceDbId, substrates.get(substanceDbId) + 1);
-						} else substrates.put(substanceDbId, 1);
+						if (substrateList.containsKey(substanceDbId)) {
+							substrateList.put(substanceDbId, substrateList.get(substanceDbId) + 1);
+						} else substrateList.put(substanceDbId, 1);
 					} else {
-						if (substrates.containsKey(substanceDbId)) {
-							substrates.put(substanceDbId, substrates.get(substanceDbId) + Integer.parseInt(dummy.substring(0, spacePos)));
-						} else substrates.put(substanceDbId, Integer.parseInt(dummy.substring(0, spacePos)));
+						if (substrateList.containsKey(substanceDbId)) {
+							substrateList.put(substanceDbId, substrateList.get(substanceDbId) + Integer.parseInt(dummy.substring(0, spacePos)));
+						} else substrateList.put(substanceDbId, Integer.parseInt(dummy.substring(0, spacePos)));
 					}
 				}
 
-				for (int k = 0; k < prods.length; k++) {
-					String dummy = replaceN(prods[k]).replace("(", "").replace(")", "");
+				for (String product:products) {
+					String dummy = replaceN(product).replace("(", "").replace(")", "");
 					int spacePos = dummy.indexOf(" ");
 					String substanceKeggId;
 					if (spacePos < 0) {
@@ -943,46 +955,60 @@ public class dbtool {
 						}
 					}
 					if (spacePos<0){
-						if (products.containsKey(substanceDbId)) {
-							products.put(substanceDbId, products.get(substanceDbId) + 1);
-						} else products.put(substanceDbId, 1);
+						if (productList.containsKey(substanceDbId)) {
+							productList.put(substanceDbId, productList.get(substanceDbId) + 1);
+						} else productList.put(substanceDbId, 1);
 					} else {
-						if (products.containsKey(substanceDbId)) {
-							products.put(substanceDbId, products.get(substanceDbId) + Integer.parseInt(dummy.substring(0, spacePos)));
-						} else products.put(substanceDbId, Integer.parseInt(dummy.substring(0, spacePos)));
+						if (productList.containsKey(substanceDbId)) {
+							productList.put(substanceDbId, productList.get(substanceDbId) + Integer.parseInt(dummy.substring(0, spacePos)));
+						} else productList.put(substanceDbId, Integer.parseInt(dummy.substring(0, spacePos)));
 					}	
 				}
+				if (lines[i+1].startsWith(" ")) throw new UnexpectedException("The Equation line of "+keggReactionId+" spans more than one line!");
 			}
-			if (lines[i].contains("<nobr>Remark</nobr>")) {
-				String remark = Tools.removeHtml(lines[++i]);
-				if (remark.toLowerCase().contains("spontan")) {
-					System.out.println("Remark: " + remark);
-					spontan = true;
-					System.out.println("SPONTAN!");
-					System.exit(0);
-				}
-
-				if (remark.contains("Same as")) {
-					String[] dummy = remark.replace("Same as:&nbsp;", "").split(" ");
-					for (int k = 0; k < dummy.length; k++) {
-						URN urn = InteractionDB.urnForComponent(dummy[k]);
-						if (urn != null) {
-							Tools.indent("same as " + dummy[k]);
-							synonyms.add(dummy[k]);
-							urns.add(urn);
-						}
+  			if (line.startsWith("REMARK")) {
+  				boolean sameAs=false;
+				while (true){
+					String remark = line.substring(12).trim();
+					if (remark.toLowerCase().contains("spontan")) {
+						System.out.println("Remark: " + remark);
+						spontan = true;
 					}
+
+					if (remark.contains("Same as")) sameAs=true;
+  	  				if (sameAs){
+  						String[] ids = remark.replace("Same as:", "").split(" ");
+  						for (String id:ids) {
+  							if (id.length() < 6) continue;
+  							String keggId = id.substring(0, 6);
+  							URN alternativeUrn = InteractionDB.urnForComponent(keggId);
+  							if (alternativeUrn!=null){
+								Tools.indent("same as " + keggId);
+  								synonyms.add(keggId);
+  								if (alternativeUrn != null) urns.add(alternativeUrn);
+  							} else {  								
+  								System.err.println("something's wrong with "+line.trim());
+  								System.exit(-1);
+  							}
+  						}  	  				
+					}
+					
+  					if (!lines[i+1].startsWith(" ")) break;
+  					line=lines[++i];
 				}
 			}
-			if (lines[i].contains("<nobr>Enzyme</nobr>")) {
-				lines[++i] = Tools.removeHtml(lines[i]);
-				while (lines[i].contains("  "))
-					lines[i] = lines[i].replace("  ", " ");
-				String[] codes = lines[i].split(" ");
-				for (int k = 0; k < codes.length; k++) {
-					Tools.indent("Enzyme: " + codes[k]);
-					enzymes.add(codes[k]);
-				}
+			if (line.startsWith("ENZYME")) {				
+				while (true){
+					String[] codes = line.substring(12).trim().split(" ");
+					for (String code:codes) {
+						if (code.length()<4) continue;
+						Tools.indent("Enzyme: " + code);
+						enzymes.add(code);
+					}
+					
+					if (!lines[i+1].startsWith(" ")) break;
+					line=lines[++i];
+				}  			
 			}
 		}
 		if (names.isEmpty()) throw new NameNotFoundException();
@@ -1007,11 +1033,11 @@ public class dbtool {
 		 * for (Iterator<String> name = names.iterator(); name.hasNext();) InteractionDB.insertName(rid, name.next()); // add new names only
 		 */
 
-		for (Iterator<Entry<Integer, Integer>> it = substrates.entrySet().iterator(); it.hasNext();) {
+		for (Iterator<Entry<Integer, Integer>> it = substrateList.entrySet().iterator(); it.hasNext();) {
 			Entry<Integer, Integer> reactant = it.next();
 			InteractionDB.addSubstrateToReaction(rid, reactant.getKey(), reactant.getValue());
 		}
-		for (Iterator<Entry<Integer, Integer>> it = products.entrySet().iterator(); it.hasNext();) {
+		for (Iterator<Entry<Integer, Integer>> it = productList.entrySet().iterator(); it.hasNext();) {
 			Entry<Integer, Integer> reactant = it.next();
 			InteractionDB.addProductToReaction(rid, reactant.getKey(), reactant.getValue());
 		}
