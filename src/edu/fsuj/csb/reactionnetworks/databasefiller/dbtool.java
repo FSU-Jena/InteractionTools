@@ -565,7 +565,7 @@ public class dbtool {
 		String name;
 		public OrgInfo(String line) {
 			String[] dummy=line.split("\t");
-			code=dummy[1];
+			code=dummy[1].toUpperCase();
 			name=dummy[2];
 		}
 	}
