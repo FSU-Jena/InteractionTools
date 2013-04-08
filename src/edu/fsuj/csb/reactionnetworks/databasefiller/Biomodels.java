@@ -29,8 +29,7 @@ public class Biomodels {
 		int count=0;
 		int number=modelUrns.size();
 		
-		for (Iterator<BiomodelUrn> it = modelUrns.iterator();it.hasNext();) {
-			BiomodelUrn urn=it.next();
+		for (BiomodelUrn urn: modelUrns) {
 			String model=urn.code();
 			count++;
 			System.out.print(((count)*100/number)+"% - ");

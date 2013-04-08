@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
+import java.rmi.UnexpectedException;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -448,6 +449,7 @@ public class UnificationNode extends DefaultMutableTreeNode implements MutableTr
 
 		if (url.toString().contains("genome.jp/dbget-bin/www_bget")){
 			result=getKeggNames(url);
+			throw new UnexpectedException("UnificationNode.getNames called with "+url);
 		} else if (url.toString().contains("3dmet.dna.affrc.go.jp/cgi/show_data.php")){
 			result=get3dMetNames(url);
 		} else if (url.toString().contains("bioportal.bioontology.org/ontologies")){
@@ -870,6 +872,7 @@ public class UnificationNode extends DefaultMutableTreeNode implements MutableTr
 		}
 		if (url.toString().contains("genome.jp/dbget-bin/www_bget")) {
 			result=getKeggMass(url);
+			throw new UnexpectedException("UnificationNode.getMass called with "+url);
 		} else if (url.toString().contains("nikkajiweb.jst.go.jp/nikkaji_web/pages/top_e.js")){
 			result=getJCSDMass(url);
 		} else if (url.toString().contains("ebi.ac.uk/chebi/searchId.do")){
@@ -1095,12 +1098,10 @@ public class UnificationNode extends DefaultMutableTreeNode implements MutableTr
 		Formula result=null;		
 		Set<URL> urls = urn.urls();
 		if (urls==null) return null;
+		urls=InteractionDB.replaceKeggUrls(urls);
 		for (Iterator<URL> it = urls.iterator(); it.hasNext();) {
-	    URL url = it.next();
-	    
+	    URL url = it.next();	    
 	    result=InteractionDB.getFormulaFrom(url); /*******************************/
-	    
-
     }
 		
 		Tools.endMethod(result);

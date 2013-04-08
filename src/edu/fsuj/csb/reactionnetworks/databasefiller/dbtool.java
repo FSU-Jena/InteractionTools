@@ -69,6 +69,7 @@ public class dbtool {
 	 */
 	public static void main(String[] args) throws IOException, NameNotFoundException, SQLException, NoSuchMethodException, NoTokenException, NoSuchAlgorithmException, DataFormatException, NoSuchAttributeException, AlreadyBoundException, ClassNotFoundException, InterruptedException {
 		parseArgs(args);
+		PageFetcher.setRetry(15);
 		new dbtool();
 	}
 
@@ -303,8 +304,12 @@ public class dbtool {
 	 */
 	private static TreeMap<String, TreeSet<File>> getSbmlFileList(String directory) {
 		File f = new File(directory);
-		File[] folders = f.listFiles();
 		TreeMap<String, TreeSet<File>> result = new TreeMap<String, TreeSet<File>>(ObjectComparator.get());
+		if (!f.exists()) {
+			Tools.warn("No SBML files found in "+directory);
+			return result;
+		}
+		File[] folders = f.listFiles();
 
 		for (int index = 0; index < folders.length; index++) {
 			System.out.println(folders[index]);
@@ -783,7 +788,6 @@ public class dbtool {
 			if (line.startsWith("GENES")) {
 				while (true){
 					String orgCode=line.substring(12).split(":")[0];
-					System.out.println(orgCode);
 					Integer orgid = mappingFromKeggOrganismIdsToDbIds.get(orgCode);
 					if (test) orgid=0;
 					if (orgid == null) throw new UnexpectedException("Unexpectedly, i found no database id for the organism '" + orgCode + "'");
@@ -796,7 +800,7 @@ public class dbtool {
 			// TODO: read "Other DBs" links
 		}
 
-		int enzymeDBId = InteractionDB.createEnzyme(names, enzymeCode, null, enzymeUrn, enzymeUrn.url());
+		int enzymeDBId = InteractionDB.createEnzyme(names, enzymeCode, null, enzymeUrn, enzymeUrn.apiUrl());
 		InteractionDB.linkOrganismsToEnzyme(orgIds, enzymeDBId);
 
 		System.out.println("done");
@@ -1020,7 +1024,7 @@ public class dbtool {
 		for (Iterator<String> it = synonyms.iterator(); it.hasNext();)
 			unexploredKeggIds.push(it.next());
 
-		int rid = InteractionDB.createReaction(names, urns, spontan, reactionUrn.url());
+		int rid = InteractionDB.createReaction(names, urns, spontan, reactionUrn.apiUrl());
 
 		// int rid = InteractionDB.getOrCreateReactionId(urns,reactionUrn);
 		mappingFromKeggIdsToDbIds.put(keggReactionId, rid);
