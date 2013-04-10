@@ -14,9 +14,9 @@
 	<classpathentry kind="src" path="/OrganismTools"/>
 	<classpathentry kind="src" path="/URN"/>
 	<classpathentry kind="src" path="/PageParser"/>
-	<classpathentry kind="lib" path="/batik-1.7/batik.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/batik-1.7"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/DBComponents"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Configuration"/>
+	<classpathentry kind="lib" path="/batik-1.7/batik.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

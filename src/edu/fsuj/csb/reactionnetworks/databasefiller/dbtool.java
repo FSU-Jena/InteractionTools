@@ -69,7 +69,7 @@ public class dbtool {
 	 */
 	public static void main(String[] args) throws IOException, NameNotFoundException, SQLException, NoSuchMethodException, NoTokenException, NoSuchAlgorithmException, DataFormatException, NoSuchAttributeException, AlreadyBoundException, ClassNotFoundException, InterruptedException {
 		parseArgs(args);
-		PageFetcher.setRetry(15);
+		PageFetcher.setRetry(20);
 		new dbtool();
 	}
 
