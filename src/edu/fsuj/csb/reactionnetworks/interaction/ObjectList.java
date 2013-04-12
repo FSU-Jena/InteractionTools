@@ -19,9 +19,11 @@ public class ObjectList extends VerticalPanel implements Serializable{
    */
   private static final long serialVersionUID = -4964623372264127718L;
 	private ObjectListModel model;
+	@SuppressWarnings("rawtypes")
 	private JList list;
 	private JScrollPane scrollpane;
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public ObjectList(int width, int height) {
 		super();
 		model=new ObjectListModel();
@@ -34,6 +36,7 @@ public class ObjectList extends VerticalPanel implements Serializable{
 
 	public TreeSet<Object> getSelectedElements() {
 		TreeSet<Object> result = new TreeSet<Object>(ObjectComparator.get());
+		@SuppressWarnings("deprecation")
 		Object[] dummy=list.getSelectedValues();
 		for (int i=0; i<dummy.length; i++) result.add(dummy[i]);
 	  return result; 

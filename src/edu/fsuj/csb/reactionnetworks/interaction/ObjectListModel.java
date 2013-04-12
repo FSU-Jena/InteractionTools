@@ -8,7 +8,7 @@ import javax.swing.event.ListDataListener;
 
 import edu.fsuj.csb.tools.xml.ObjectComparator;
 
-public class ObjectListModel implements ListModel {
+public class ObjectListModel implements ListModel<Object> {
 	TreeSet<ListDataListener> listeners;
 	TreeSet<Object> entries;
 

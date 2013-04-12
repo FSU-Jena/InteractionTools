@@ -594,6 +594,7 @@ public class dbtool {
 		count=0;
 		int currentKeggGroup = keggEukaryotes;
 		for (String line:code) {
+			if (line.contains("Prokaryotes")) currentKeggGroup = keggProkaryotes;
 			OrgInfo org = new OrgInfo(line);			
 			String sql = null;
 			try {
@@ -605,9 +606,6 @@ public class dbtool {
 				System.err.println(sql);
 				e.printStackTrace();
 				System.exit(-1);
-			}
-			if (line.contains("Prokaryotes")) {
-				currentKeggGroup = keggProkaryotes;
 			}
 		}
 		System.out.println("]");

@@ -29,8 +29,8 @@ public class ProductCalculationTask extends TaskContainingCompartmentAndSubtance
 	public void run(CalculationClient client) throws IOException, SQLException  {
 		Compartment c=DbCompartment.load(compartmentId);
 		Collection<Integer> productIds;
-    productIds = c.calculateProductsOf(substanceIds);
-    client.sendObject(new ProductCalculationResult(this, productIds));
+		productIds = c.calculateProductsOf(substanceIds);
+		client.sendObject(new ProductCalculationResult(this, productIds));
 	}
 		
 	public MutableTreeNode treeRepresentation() throws IOException, NoTokenException, AlreadyBoundException, SQLException {

@@ -277,6 +277,7 @@ public class OptimizationTask extends CalculationTask {
 	protected OptimizationSolution createSolution(LPSolveWrapper solver) {
 		OptimizationSolution solution = new OptimizationSolution();
 		
+		if (solver.getSolution().isEmpty()) return null;
 		for (Entry<LPVariable, Double> entry:solver.getSolution().entrySet()){
 			double val=entry.getValue();
 			if (val!=0.0) {

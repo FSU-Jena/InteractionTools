@@ -257,7 +257,7 @@ public class DatabasePane extends HorizontalPanel implements ActionListener, Mou
 	 * @throws SQLException
 	 * @throws IOException 
 	 */
-	private int getGroup(JComboBox<String> sources) throws SQLException, IOException {
+	private int getGroup(JComboBox sources) throws SQLException, IOException {
 		int i = sources.getSelectedIndex();
 		if (i + 1 == sources.getItemCount()) return addGroup();
 		return mappingFromGroupIndicesToIds.get(i);

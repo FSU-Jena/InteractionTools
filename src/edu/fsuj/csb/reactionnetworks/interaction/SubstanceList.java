@@ -94,8 +94,7 @@ public class SubstanceList extends VerticalPanel implements ChangeListener,TreeS
 	public void addSubstance(Substance s) throws SQLException {
 		//System.err.println("SubstanceList.addSubstance("+s+")");
 		int sid=s.id();
-		for (Iterator<String> names = s.names().iterator(); names.hasNext();) {
-			String name = names.next();
+		for (String name:s.names()) {
 			Object child = root.getChildByName(name);
 			//System.err.println("child="+child);
 			SubsstanceGroupNode sgn=null;
