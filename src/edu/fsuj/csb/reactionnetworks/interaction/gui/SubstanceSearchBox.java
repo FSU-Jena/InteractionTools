@@ -18,7 +18,7 @@ import edu.fsuj.csb.reactionnetworks.interaction.SubstanceList;
 import edu.fsuj.csb.reactionnetworks.organismtools.DbSubstance;
 import edu.fsuj.csb.tools.xml.ObjectComparator;
 
-public class SubstanceSearchBox extends JComboBox<String> implements KeyListener {
+public class SubstanceSearchBox extends JComboBox implements KeyListener {
 
   private static final long serialVersionUID = 5837689672708421760L;
   private JTextComponent editor;  

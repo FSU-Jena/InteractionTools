@@ -66,7 +66,7 @@ import edu.fsuj.csb.tools.xml.Tools;
 public class DatabasePane extends HorizontalPanel implements ActionListener, MouseListener, TreeSelectionListener {
 	private static final long serialVersionUID = -7663240543407963010L;
 	private JButton loadFileButton;
-	private JComboBox<String> sources;
+	private JComboBox sources;
 	private String newGroup = "<add new group>";
 	private JButton cleanButton;
 	private TreeSet<ChangeListener> changeListeners;
@@ -186,7 +186,7 @@ public class DatabasePane extends HorizontalPanel implements ActionListener, Mou
 	 * @throws IllegalAccessException
 	 * @throws InstantiationException
 	 */
-	private JComboBox<String> createDropDown() throws SQLException, IOException {
+	private JComboBox createDropDown() throws SQLException, IOException {
 		Statement st = InteractionDB.createStatement();
 		ResultSet rs = st.executeQuery("SELECT id,name FROM names NATURAL JOIN ids WHERE type=" + InteractionDB.COMPARTMENT_GROUP);
 		Vector<String> strings = new Vector<String>();
@@ -197,7 +197,7 @@ public class DatabasePane extends HorizontalPanel implements ActionListener, Mou
 			strings.add(rs.getString(2));
 		}
 		strings.add(newGroup);
-		JComboBox<String> result = new JComboBox<String>(strings);
+		JComboBox result = new JComboBox(strings);
 		return result;
 	}
 
