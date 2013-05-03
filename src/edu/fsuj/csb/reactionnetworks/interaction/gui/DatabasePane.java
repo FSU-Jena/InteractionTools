@@ -209,14 +209,12 @@ public class DatabasePane extends HorizontalPanel implements ActionListener, Mou
 	 */
 	public void actionPerformed(ActionEvent arg0) {
 		Object source = arg0.getSource();
-		int lastKeggId = 198392;
-		int lastBiomodelId = 216965;
 		try {
 			if (source == loadFileButton) {
 				loadSBMLFile();
 			} else if (source == cleanButton) {
-				Object keggRange=InteractionDB.getRange(Commons.KEGG_IDS);
-				Object biomodelsRange=InteractionDB.getRange(Commons.BIOMODELS_IDS);
+				int[] keggRange=InteractionDB.getRange(Commons.KEGG_IDS);
+				int[] biomodelsRange=InteractionDB.getRange(Commons.BIOMODELS_IDS);
 				dbtool.cleanDb(keggRange);
 				dbtool.cleanDb(biomodelsRange);
 			} else if (source == examinationButton){
