@@ -100,11 +100,7 @@ public class SBMLLoader {
 	 * @throws NoSuchMethodException
 	 */
 	public static void loadSBMLFile(XMLReader xmlr, int groupId, DbCompartment superCompartment, URL source) throws NoSuchAlgorithmException, IOException, NoTokenException, SQLException, DataFormatException {
-		String query = "SELECT max(id) FROM ids";
-		ResultSet rs = InteractionDB.createStatement().executeQuery(query);
-		rs.next();
-		int maxDBid = rs.getInt(1);
-		rs.close();
+		int maxDBid = InteractionDB.getLastID();
 		XmlToken token = xmlr.readToken();
 		MD5Hash hash = new MD5Hash(token);
 
@@ -124,7 +120,8 @@ public class SBMLLoader {
 			e.printStackTrace();
 			System.err.println();
 			try {
-	      dbtool.cleanDb(maxDBid-1); // -1 since the id for the sbml model is added before this code 
+				int[] range={maxDBid-1,InteractionDB.getLastID()};
+	      dbtool.cleanDb(range); // -1 since the id for the sbml model is added before this code 
       } catch (SQLException e1) {   }
 			System.exit(-1);
 		}
