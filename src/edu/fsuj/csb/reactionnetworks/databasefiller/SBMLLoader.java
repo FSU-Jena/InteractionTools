@@ -56,7 +56,25 @@ public class SBMLLoader {
 		XmlToken token = xmlr.readToken();
 		xmlr.close();
 		MD5Hash hash = new MD5Hash(token);
-		
+		if (modelName==null){
+			XmlToken dummy = token;
+			while (true){
+				if (dummy.tokenClass().equals("sbml")){
+					for (XmlToken subtoken:dummy.subtokens()){
+						if (subtoken.tokenClass().equals("model")) {
+							dummy=subtoken;
+							break;
+						}
+					}
+				}
+				if (dummy.tokenClass().equals("model")){
+					if (dummy.keys().contains("name")) {
+						modelName=dummy.getValue("name");
+						break;
+					}
+				}
+			}
+		}
 		URN urn = new FileUrn(hash.toString());
 		if (InteractionDB.readIdFor(urn) != null) {
 			System.out.println("This model is already included in the database!");
@@ -127,18 +145,17 @@ public class SBMLLoader {
 	}
 
 	private static void addUrisToToken(XmlToken token) throws NoTokenException, DataFormatException {
-		for (Iterator<XmlToken> it = token.subtokenIterator(); it.hasNext();){
-			token=it.next();
-			if (token.instanceOf("model") || token.instanceOf("listOfSpecies")) {
-				addUrisToToken(token);
-			} else if (token.instanceOf("species")){
-				addUrisToSpecies(token);
-			} else if (token.instanceOf("listOfCompartments") || token.instanceOf("listOfReactions") || token.instanceOf("listOfUnitDefinitions")) {
+		for (XmlToken subtoken : token.subtokens()){
+			if (subtoken.instanceOf("model") || subtoken.instanceOf("listOfSpecies")) {
+				addUrisToToken(subtoken);
+			} else if (subtoken.instanceOf("species")){
+				addUrisToSpecies(subtoken);
+			} else if (subtoken.instanceOf("listOfCompartments") || subtoken.instanceOf("listOfReactions") || subtoken.instanceOf("listOfUnitDefinitions")) {
 				// no changes to compartments or reactions here
-			} else if (token.instanceOf("notes")){
+			} else if (subtoken.instanceOf("notes")){
 				// no interes in notes of model or notes of listOfSpecies
 			} else {
-				throw new NoTokenException("found unexpected tokenclass: "+token.tokenClass());
+				throw new NoTokenException("found unexpected tokenclass: "+subtoken.tokenClass());
 			}
 		}
   }
@@ -206,8 +223,7 @@ public class SBMLLoader {
 		TreeMap<String, Integer> mapFromSubstanceIdsToDbIds = new TreeMap<String, Integer>(ObjectComparator.get());
 		TreeMap<Integer, Integer> mapFromSubstanceToCompartment = new TreeMap<Integer, Integer>();
 		TreeMap<String, String> mapFromModelSubstanceToECNumber = new TreeMap<String, String>(ObjectComparator.get());
-		for (Iterator<XmlToken> it = sbmlToken.subtokenIterator(); it.hasNext();) {
-			XmlToken subtoken = it.next();
+		for (XmlToken subtoken : sbmlToken.subtokens()) {
 			if (subtoken.instanceOf("model")) {
 				writeModelIntoDatabase(subtoken, fileHash, groupnumber, mapFromCompartmentIdsToDbIds, mapFromSubstanceIdsToDbIds, mapFromSubstanceToCompartment, superCompartment,source,mapFromModelSubstanceToECNumber);
 			} else Tools.noteOnce("Note: found " + subtoken.tokenClass() + " token in sbml");
@@ -239,8 +255,7 @@ public class SBMLLoader {
 		String modelName = model.getValue("name");
 		if (modelName == null) modelName = model.getValue("id");
 		if (modelName == null) modelName = fileHash.toString();
-		for (Iterator<XmlToken> it = model.subtokenIterator(); it.hasNext();) {
-			XmlToken subtoken = it.next();
+		for (XmlToken subtoken: model.subtokens()) {			
 			if (subtoken.instanceOf("listOfCompartments")) {
 				writeCompartmentListIntoDatabase(subtoken, fileHash, groupnumber, mapFromCompartmentIdsToCids, modelName, superCompartment,source);
 			} else if (subtoken.instanceOf("listOfSpecies")) {
@@ -269,7 +284,7 @@ public class SBMLLoader {
 	 */
 	private static void writeCompartmentListIntoDatabase(XmlToken compartmentList, MD5Hash fileHash, int groupnumber, TreeMap<String, Integer> mapFromCompartmentIdsToCids, String modelName, DbCompartment superCompartment, URL source) throws SQLException, NoSuchAlgorithmException, NoSuchMethodException, DataFormatException, IOException {
 		Vector<XmlToken> unparsedSubTokens = new Vector<XmlToken>();
-		for (Iterator<XmlToken> it = compartmentList.subtokenIterator(); it.hasNext();)	unparsedSubTokens.add(it.next());
+		for (XmlToken subtoken: compartmentList.subtokens())	unparsedSubTokens.add(subtoken);
 		while (!unparsedSubTokens.isEmpty()) {
 			XmlToken subtoken = unparsedSubTokens.remove(0);
 			if (subtoken.instanceOf("compartment")) {
@@ -302,8 +317,7 @@ public class SBMLLoader {
 	 * @throws IOException 
 	 */
 	private static void writeSubstancesListIntoDatabase(XmlToken token, MD5Hash fileHash, int groupnumber, TreeMap<String, Integer> mapFromSubstanceIdsToCids, TreeMap<String, Integer> mapFromCompartmentIdsToCids, TreeMap<Integer, Integer> mapFromSubstanceToCompartment, DbCompartment superCompartment, URL source, TreeMap<String, String> mapFromModelSubstanceToECNumber) throws SQLException, NoSuchAttributeException, DataFormatException, NoSuchMethodException, IOException {
-		for (Iterator<XmlToken> it = token.subtokenIterator(); it.hasNext();) {
-			XmlToken subtoken = it.next();
+		for (XmlToken subtoken:token.subtokens()) {
 			if (subtoken.instanceOf("species")) {
 				writeSpeciesIntoDatabase(subtoken, fileHash, groupnumber, mapFromSubstanceIdsToCids, mapFromCompartmentIdsToCids, mapFromSubstanceToCompartment,superCompartment,source,mapFromModelSubstanceToECNumber);
 			} else Tools.noteOnce("found " + subtoken.tokenClass() + " token in listOfSpecies");
@@ -328,9 +342,7 @@ public class SBMLLoader {
 	 * @throws IOException 
 	 */
 	private static void writeReactionListIntoDatabase(XmlToken token, MD5Hash fileHash, int groupnumber, TreeMap<String, Integer> mapFromSubstanceIdsToSids, TreeMap<String, Integer> mapFromCompartmentIdsToCids, TreeMap<Integer, Integer> mapFromSubstanceToCompartment, DbCompartment superCompartment,URL source, TreeMap<String, String> mapFromModelSubstanceToECNumber) throws SQLException, NoSuchAlgorithmException, NoTokenException, NoSuchMethodException, IOException {
-		for (Iterator<XmlToken> it = token.subtokenIterator(); it.hasNext();) {
-			XmlToken subtoken = it.next();
-
+		for (XmlToken subtoken:token.subtokens()) {
 			if (subtoken.instanceOf("reaction")) {
 				writeReactionIntoDatabase(subtoken, mapFromSubstanceIdsToSids, mapFromCompartmentIdsToCids, mapFromSubstanceToCompartment, fileHash,superCompartment,source,mapFromModelSubstanceToECNumber);
 
@@ -431,36 +443,35 @@ public class SBMLLoader {
 	 */
 	private static void getAnnotationURNs(TreeSet<URN> urns, XmlToken token, String path) throws DataFormatException {
 		path=path+"/"+token.tokenClass();
-		for (Iterator<XmlToken> subtokens = token.subtokenIterator(); subtokens.hasNext();) {
-			token=subtokens.next();
-			if (token.instanceOf("rdf:RDF")){
-				getURNsFromRdf(urns,token,path);
-			} else if (token.instanceOf("COPASI")){
-				getAnnotationURNs(urns,token,path);
-			} else if (token.instanceOf("jd:display") || token.instanceOf("jd:listOfShadows")){
+		for (XmlToken subToken: token.subtokens()) {
+			if (subToken.instanceOf("rdf:RDF")){
+				getURNsFromRdf(urns,subToken,path);
+			} else if (subToken.instanceOf("COPASI")){
+				getAnnotationURNs(urns,subToken,path);
+			} else if (subToken.instanceOf("jd:display") || subToken.instanceOf("jd:listOfShadows")){
 				// we are not interested in display flags
-			} else if (token.instanceOf("VCellInfo")){
+			} else if (subToken.instanceOf("VCellInfo")){
 				// we are not interested in VCellInfo
-			} else if (token.instanceOf("body")){
+			} else if (subToken.instanceOf("body")){
 				// we are not interested in body token of annotation
-			} else if (token.instanceOf("celldesigner:name")){
+			} else if (subToken.instanceOf("celldesigner:name")){
 				// celldesigner names seem to be identical to names given in species/compartment tags, so unnecessary
-			} else if (token.instanceOf("celldesigner:positionToCompartment")){
+			} else if (subToken.instanceOf("celldesigner:positionToCompartment")){
 				// we are not interested in node positions
-			} else if (token.instanceOf("celldesigner:speciesIdentity")){
+			} else if (subToken.instanceOf("celldesigner:speciesIdentity")){
 				// we are not interested in this
-			} else if (token.instanceOf("celldesigner:extension")){
+			} else if (subToken.instanceOf("celldesigner:extension")){
 				// we are not interested in celldesigner extensions
-			} else if (token.instanceOf("celldesigner:listOfCatalyzedReactions")){
+			} else if (subToken.instanceOf("celldesigner:listOfCatalyzedReactions")){
 				// shoould be annotated in modifiers of reaction, too
-			} else if (token.instanceOf("dcterms:creator")){
+			} else if (subToken.instanceOf("dcterms:creator")){
 				// we are currently not interested in vcards ;)
-			} else if (token.instanceOf("dcterms:created")){
+			} else if (subToken.instanceOf("dcterms:created")){
 				// we are currently not interested in creation dates ;)
-			} else if (token.instanceOf("srsoftware:urn")){
-				urns.add(new MiriamUrn(token.getValue("urn")));
+			} else if (subToken.instanceOf("srsoftware:urn")){
+				urns.add(new MiriamUrn(subToken.getValue("urn")));
 			} else {
-				throw new DataFormatException("found "+token.tokenClass()+" token in "+path+":\n"+token);
+				throw new DataFormatException("found "+subToken.tokenClass()+" token in "+path+":\n"+subToken);
 			}
 		}
 	}
@@ -474,12 +485,11 @@ public class SBMLLoader {
 	 */
 	private static void getURNsFromRdf(TreeSet<URN> urns, XmlToken token, String path) throws DataFormatException {
 		path=path+"/"+token.tokenClass();
-		for (Iterator<XmlToken> subtokens = token.subtokenIterator(); subtokens.hasNext();) {
-			token=subtokens.next();
-			if (token.instanceOf("rdf:Description")){
-				getURNsFromRdfDescription(urns,token,path);
+		for (XmlToken subtoken:token.subtokens()) {
+			if (subtoken.instanceOf("rdf:Description")){
+				getURNsFromRdfDescription(urns,subtoken,path);
 			} else {
-				throw new DataFormatException("found "+token.tokenClass()+" token in "+path+"...");
+				throw new DataFormatException("found "+subtoken.tokenClass()+" token in "+path+"...");
 			}
 		}
 	}
@@ -493,60 +503,56 @@ public class SBMLLoader {
 	 */
 	private static void getURNsFromRdfDescription(TreeSet<URN> urns, XmlToken token, String path) throws DataFormatException {
 		path=path+"/"+token.tokenClass();
-		for (Iterator<XmlToken> subtokens = token.subtokenIterator(); subtokens.hasNext();) {
-			token=subtokens.next();
-			if (token.instanceOf("bqbiol:is") || token.instanceOf("bqmodel:is") || token.instanceOf("CopasiMT:is")) {
-				getURNsFromBqBiolIs(urns,token,path);
-			} else if (token.instanceOf("bqbiol:isVersionOf") || token.instanceOf("bqbiol:hasVersion") || token.instanceOf("CopasiMT:isVersionOf")){
+		for (XmlToken subtoken : token.subtokens()) {
+			if (subtoken.instanceOf("bqbiol:is") || subtoken.instanceOf("bqmodel:is") || subtoken.instanceOf("CopasiMT:is")) {
+				getURNsFromBqBiolIs(urns,subtoken,path);
+			} else if (subtoken.instanceOf("bqbiol:isVersionOf") || subtoken.instanceOf("bqbiol:hasVersion") || subtoken.instanceOf("CopasiMT:isVersionOf")){
 				// we are currently not interested in versions
-			} else if (token.instanceOf("bqbiol:isHomologTo")||token.instanceOf("CopasiMT:isHomologTo")){
+			} else if (subtoken.instanceOf("bqbiol:isHomologTo")||subtoken.instanceOf("CopasiMT:isHomologTo")){
 				// we are currently not interested in homologies
-			} else if (token.instanceOf("bqbiol:hasProperty")){
-				getEnzymeUrnsFromBqBiolHasProperty(urns,token,path);
-			} else if (token.instanceOf("bqbiol:occursIn")){
+			} else if (subtoken.instanceOf("bqbiol:hasProperty")){
+				getEnzymeUrnsFromBqBiolHasProperty(urns,subtoken,path);
+			} else if (subtoken.instanceOf("bqbiol:occursIn")){
 				// we are currently not interested in this kind of occurences
-			} else if (token.instanceOf("bqbiol:hasPart")||token.instanceOf("bqbiol:isPartOf")){
+			} else if (subtoken.instanceOf("bqbiol:hasPart")||subtoken.instanceOf("bqbiol:isPartOf")){
 				// we are currently not interested in parts
-			} else if (token.instanceOf("bqbiol:encodes") || token.instanceOf("CopasiMT:encodes") || token.instanceOf("bqbiol:isEncodedBy")){
+			} else if (subtoken.instanceOf("bqbiol:encodes") || subtoken.instanceOf("CopasiMT:encodes") || subtoken.instanceOf("bqbiol:isEncodedBy")){
 				// we are currently not interested in genes
-			} else if (token.instanceOf("bqmodel:isDescribedBy")||token.instanceOf("bqbiol:isDescribedBy")){
+			} else if (subtoken.instanceOf("bqmodel:isDescribedBy")||subtoken.instanceOf("bqbiol:isDescribedBy")){
 				// we are currently not interested in descriptions
-			} else if (token.instanceOf("dcterms:created")){
+			} else if (subtoken.instanceOf("dcterms:created")){
 				// we don't care about creation times
-			} else if (token.instanceOf("dcterms:creator")){
+			} else if (subtoken.instanceOf("dcterms:creator")){
 				// we don't care about vcards
-			} else if (token.instanceOf("dcterms:bibliographicCitation")){
+			} else if (subtoken.instanceOf("dcterms:bibliographicCitation")){
 				// we don't care about bibs
-			} else if (token.instanceOf("dc:relation")){
-				getURNsFromDCrelation(urns,token,path);
+			} else if (subtoken.instanceOf("dc:relation")){
+				getURNsFromDCrelation(urns,subtoken,path);
 			} else {
-				throw new DataFormatException("found "+token.tokenClass()+" token in "+path+":\n"+token);
+				throw new DataFormatException("found "+subtoken.tokenClass()+" token in "+path+":\n"+subtoken);
 			}
 		}
 	}
 	
 	private static void getEnzymeUrnsFromBqBiolHasProperty(TreeSet<URN> urns, XmlToken token, String path) throws DataFormatException {
 		path=path+"/"+token.tokenClass();
-		for (Iterator<XmlToken> subtokens = token.subtokenIterator(); subtokens.hasNext();) {
-			token=subtokens.next();
-			if (token.instanceOf("rdf:Bag")){
-				getEnzymeUrnsFromBqBiolHasPropertyBag(urns,token,path);
+		for (XmlToken subtoken:token.subtokens()) {
+			if (subtoken.instanceOf("rdf:Bag")){
+				getEnzymeUrnsFromBqBiolHasPropertyBag(urns,subtoken,path);
 			} else {
-				throw new DataFormatException("found "+token.tokenClass()+" token in "+path+"...");
+				throw new DataFormatException("found "+subtoken.tokenClass()+" token in "+path+"...");
 			}
 		}
 	}
 
 	private static void getEnzymeUrnsFromBqBiolHasPropertyBag(TreeSet<URN> urns, XmlToken token, String path) throws DataFormatException {
 		path=path+"/"+token.tokenClass();
-		for (Iterator<XmlToken> subtokens = token.subtokenIterator(); subtokens.hasNext();) {
-			token=subtokens.next();
-			if (token.instanceOf("rdf:li")){
-				String u=token.getValue("rdf:resource");
+		for (XmlToken subtoken:token.subtokens()) {			if (subtoken.instanceOf("rdf:li")){
+				String u=subtoken.getValue("rdf:resource");
 				if (u!=null && u.startsWith("urn") && u.contains("ec-code")){
 					urns.add(new MiriamUrn(u));					
 				} 
-			} else throw new DataFormatException("found "+token.tokenClass()+" token in "+path+"...");
+			} else throw new DataFormatException("found "+subtoken.tokenClass()+" token in "+path+"...");
 		}
 	}
 
@@ -559,12 +565,10 @@ public class SBMLLoader {
 	 */
 	private static void getURNsFromDCrelation(TreeSet<URN> urns, XmlToken token, String path) throws DataFormatException {
 		path=path+"/"+token.tokenClass();
-		for (Iterator<XmlToken> subtokens = token.subtokenIterator(); subtokens.hasNext();) {
-			token=subtokens.next();
-			if (token.instanceOf("rdf:Bag")){
-				getURNsFromDcRelationBag(urns,token,path);
+		for (XmlToken subtoken:token.subtokens()) {			if (subtoken.instanceOf("rdf:Bag")){
+				getURNsFromDcRelationBag(urns,subtoken,path);
 			} else {
-				throw new DataFormatException("found "+token.tokenClass()+" token in "+path+"...");
+				throw new DataFormatException("found "+subtoken.tokenClass()+" token in "+path+"...");
 			}
 		}
 	}
@@ -578,20 +582,18 @@ public class SBMLLoader {
 	 */
 	private static void getURNsFromDcRelationBag(TreeSet<URN> urns, XmlToken token, String path) throws DataFormatException {
 		path=path+"/"+token.tokenClass();
-		for (Iterator<XmlToken> subtokens = token.subtokenIterator(); subtokens.hasNext();) {
-			token=subtokens.next();
-			if (token.instanceOf("rdf:li")){
-				String u=token.getValue("rdf:resource");
-				if (u==null) throw new DataFormatException("found rdf:li, but it has no rdf:ressource! ("+token+")");
+		for (XmlToken subtoken:token.subtokens()) {			if (subtoken.instanceOf("rdf:li")){
+				String u=subtoken.getValue("rdf:resource");
+				if (u==null) throw new DataFormatException("found rdf:li, but it has no rdf:ressource! ("+subtoken+")");
 				if (u.startsWith("http://www.genome.jp/kegg/compound/#C")) {
 					String code=u.substring(u.indexOf("#")+1);
 					urns.add(new KeggCompoundUrn(code));
 				} else if (u.startsWith("http://bigg.ucsd.edu/#")){
-					Tools.noteOnce("found bigg resource in "+token.tokenClass()+" in "+path+"...");
+					Tools.noteOnce("found bigg resource in "+subtoken.tokenClass()+" in "+path+"...");
 				} else  if (u.startsWith("http://www.genoscope.cns.fr/acinetocyc/#")){
-					Tools.noteOnce("found genoscope resource in "+token.tokenClass()+" in "+path+"...");
+					Tools.noteOnce("found genoscope resource in "+subtoken.tokenClass()+" in "+path+"...");
 				} else throw new DataFormatException("unkown rdf:ressource type "+u+" token in "+path+"...");
-			} else throw new DataFormatException("found "+token.tokenClass()+" token in "+path+"...");
+			} else throw new DataFormatException("found "+subtoken.tokenClass()+" token in "+path+"...");
 		}
 	}
 
@@ -602,10 +604,9 @@ public class SBMLLoader {
 	 * @param path the path to the current token
 	 * @throws DataFormatException
 	 */
-	private static void getURNsFromBqBiolIs(TreeSet<URN> urns, XmlToken token, String path) throws DataFormatException {
-		path=path+"/"+token.tokenClass();
-		for (Iterator<XmlToken> subtokens = token.subtokenIterator(); subtokens.hasNext();) {
-			token=subtokens.next();
+	private static void getURNsFromBqBiolIs(TreeSet<URN> urns, XmlToken parent, String path) throws DataFormatException {
+		path=path+"/"+parent.tokenClass();
+		for (XmlToken token:parent.subtokens()) {
 			if (token.instanceOf("rdf:Bag")){
 				getURNsFromBqBiolIsBag(urns,token,path);
 			} else {
@@ -621,10 +622,9 @@ public class SBMLLoader {
 	 * @param path the path to this token
 	 * @throws DataFormatException
 	 */
-	private static void getURNsFromBqBiolIsBag(TreeSet<URN> urns, XmlToken token, String path) throws DataFormatException {
-		path=path+"/"+token.tokenClass();
-		for (Iterator<XmlToken> subtokens = token.subtokenIterator(); subtokens.hasNext();) {
-			token=subtokens.next();
+	private static void getURNsFromBqBiolIsBag(TreeSet<URN> urns, XmlToken parent, String path) throws DataFormatException {
+		path=path+"/"+parent.tokenClass();
+		for (XmlToken token:parent.subtokens()) {
 			if (token.instanceOf("rdf:li")){
 				String u=token.getValue("rdf:resource");
 				if (u!=null){
@@ -745,11 +745,10 @@ public class SBMLLoader {
 	 * @return the set of relevant urns of this token (if any)
 	 * @throws DataFormatException
 	 */
-	private static TreeSet<URN> readUrns(XmlToken token) throws DataFormatException {
+	private static TreeSet<URN> readUrns(XmlToken parent) throws DataFormatException {
 		TreeSet<URN> urns = new TreeSet<URN>(ObjectComparator.get());
-		String path=token.tokenClass();
-		for (Iterator<XmlToken> it = token.subtokenIterator();it.hasNext();){
-			token=it.next();
+		String path=parent.tokenClass();
+		for (XmlToken token:parent.subtokens()) {
 			if (token.instanceOf("annotation")){
 				getAnnotationURNs(urns, token,path);
 			} else if (token.instanceOf("notes")){
@@ -761,10 +760,9 @@ public class SBMLLoader {
 		return urns;
   }
 
-	private static void getNotesURNs(TreeSet<URN> urns, XmlToken token, String path) throws DataFormatException {
-		path=path+"/"+token.tokenClass();
-		for (Iterator<XmlToken> subtokens = token.subtokenIterator(); subtokens.hasNext();) {
-			token=subtokens.next();
+	private static void getNotesURNs(TreeSet<URN> urns, XmlToken parent, String path) throws DataFormatException {
+		path=path+"/"+parent.tokenClass();
+		for (XmlToken token:parent.subtokens()) {
 			if (token.instanceOf("html")){
 				getURNsFromHtmlNotes(urns,token,path);
 			} else if (token.instanceOf("body")){
@@ -777,10 +775,9 @@ public class SBMLLoader {
 		}
   }
 
-	private static void getURNsFromHtmlNotes(TreeSet<URN> urns, XmlToken token, String path) throws DataFormatException {
-		path=path+"/"+token.tokenClass();
-		for (Iterator<XmlToken> subtokens = token.subtokenIterator(); subtokens.hasNext();) {
-			token=subtokens.next();
+	private static void getURNsFromHtmlNotes(TreeSet<URN> urns, XmlToken parent, String path) throws DataFormatException {
+		path=path+"/"+parent.tokenClass();
+		for (XmlToken token:parent.subtokens()) {
 			if (token.instanceOf("p") || token.instanceOf("html:p")){
 				if (!"wrong".equals(token.getValue("class")))	getURNsFromHtmlNotesParagraph(urns,token,path);
 			} else if (token.instanceOf("body")){
@@ -881,8 +878,7 @@ public class SBMLLoader {
 		TreeSet<Integer> participatingSubstances = new TreeSet<Integer>();
 
 		try {
-			for (Iterator<XmlToken> it = token.subtokenIterator(); it.hasNext();) {
-				XmlToken subtoken = it.next();
+			for (XmlToken subtoken:token.subtokens()) {
 				if (subtoken.instanceOf("listOfReactants")) {
 					participatingSubstances.addAll(writeReactionReactantsIntoDatabase(subtoken, rid, mapFromSubstanceIdsToSids));
 				} else if (subtoken.instanceOf("listOfProducts")) {
@@ -932,9 +928,8 @@ public class SBMLLoader {
 	 */
 	private static TreeSet<Integer> writeReactionReactantsIntoDatabase(XmlToken token, int rid, TreeMap<String, Integer> mapFROMSubstanceIdsToSids) throws SQLException, IOException {
 		TreeSet<Integer> databaseIds = new TreeSet<Integer>();
-		if (!token.subtokenIterator().hasNext()) Tools.warn("no reactants found in reactant list!");
-		for (Iterator<XmlToken> it = token.subtokenIterator(); it.hasNext();) {
-			XmlToken subtoken = it.next();
+		if (!token.subtokens().isEmpty()) Tools.warn("no reactants found in reactant list!");
+		for (XmlToken subtoken: token.subtokens()) {
 			if (subtoken.instanceOf("speciesReference")) databaseIds.add(writeReactantSpeciesReferenceIntoDatabase(subtoken, rid, mapFROMSubstanceIdsToSids));
 			else Tools.noteOnce("found " + subtoken.tokenClass() + " token in ListOfReactants");
 		}
@@ -954,9 +949,8 @@ public class SBMLLoader {
 	 */
 	private static TreeSet<Integer> writeReactionProductsIntoDatabase(XmlToken token, int rid, TreeMap<String, Integer> mapFROMSubstanceIdsToSids) throws SQLException, NoTokenException, IOException {
 		TreeSet<Integer> databaseIds = new TreeSet<Integer>();
-		if (!token.subtokenIterator().hasNext()) Tools.warn("no products found in product list!");
-		for (Iterator<XmlToken> it = token.subtokenIterator(); it.hasNext();) {
-			XmlToken subtoken = it.next();
+		if (!token.subtokens().isEmpty()) Tools.warn("no products found in product list!");
+		for (XmlToken subtoken: token.subtokens()) {
 			if (subtoken.instanceOf("speciesReference")) databaseIds.add(writeProductSpeciesReferenceIntoDatabase(subtoken, rid, mapFROMSubstanceIdsToSids));
 			else Tools.noteOnce("found " + subtoken.tokenClass() + " token in ListOfReactants");
 		}
@@ -978,8 +972,7 @@ public class SBMLLoader {
 	 */
 	private static TreeSet<Integer> writeReactionModifiersIntoDatabase(XmlToken token, int rid, TreeMap<String, Integer> mapFROMSubstanceIdsToSids, MD5Hash fileHash, TreeMap<String, String> mapFromModelSubstanceToECNumber) throws SQLException, NoSuchAlgorithmException, IOException {
 		TreeSet<Integer> databaseIds = new TreeSet<Integer>();
-		for (Iterator<XmlToken> it = token.subtokenIterator(); it.hasNext();) {
-			XmlToken subtoken = it.next();
+		for (XmlToken subtoken: token.subtokens()) {
 			if (subtoken.instanceOf("modifierSpeciesReference")) writeModifierSpeciesReferenceIntoDatabase(fileHash, subtoken, rid, mapFROMSubstanceIdsToSids,mapFromModelSubstanceToECNumber);
 			else Tools.noteOnce("found " + subtoken.tokenClass() + " token in ListOfReactants");
 		}
