@@ -252,6 +252,7 @@ public class SBMLLoader {
 	 * @throws IOException 
 	 */
 	private static void writeModelIntoDatabase(XmlToken model, MD5Hash fileHash, int groupnumber, TreeMap<String, Integer> mapFromCompartmentIdsToCids, TreeMap<String, Integer> mapFromSubstanceIdsToSids, TreeMap<Integer, Integer> mapFromSubstanceToCompartment, DbCompartment superCompartment, URL source, TreeMap<String, String> mapFromModelSubstanceToECNumber) throws SQLException, NoSuchAlgorithmException, NoSuchAttributeException, NoSuchMethodException, DataFormatException, NoTokenException, IOException {
+		System.out.println("reading model...");
 		String modelName = model.getValue("name");
 		if (modelName == null) modelName = model.getValue("id");
 		if (modelName == null) modelName = fileHash.toString();
@@ -283,6 +284,7 @@ public class SBMLLoader {
 	 * @throws IOException 
 	 */
 	private static void writeCompartmentListIntoDatabase(XmlToken compartmentList, MD5Hash fileHash, int groupnumber, TreeMap<String, Integer> mapFromCompartmentIdsToCids, String modelName, DbCompartment superCompartment, URL source) throws SQLException, NoSuchAlgorithmException, NoSuchMethodException, DataFormatException, IOException {
+		System.out.println("reading compartment list...");
 		Vector<XmlToken> unparsedSubTokens = new Vector<XmlToken>();
 		for (XmlToken subtoken: compartmentList.subtokens())	unparsedSubTokens.add(subtoken);
 		while (!unparsedSubTokens.isEmpty()) {
@@ -317,6 +319,7 @@ public class SBMLLoader {
 	 * @throws IOException 
 	 */
 	private static void writeSubstancesListIntoDatabase(XmlToken token, MD5Hash fileHash, int groupnumber, TreeMap<String, Integer> mapFromSubstanceIdsToCids, TreeMap<String, Integer> mapFromCompartmentIdsToCids, TreeMap<Integer, Integer> mapFromSubstanceToCompartment, DbCompartment superCompartment, URL source, TreeMap<String, String> mapFromModelSubstanceToECNumber) throws SQLException, NoSuchAttributeException, DataFormatException, NoSuchMethodException, IOException {
+		System.out.println("reading substance list...");
 		for (XmlToken subtoken:token.subtokens()) {
 			if (subtoken.instanceOf("species")) {
 				writeSpeciesIntoDatabase(subtoken, fileHash, groupnumber, mapFromSubstanceIdsToCids, mapFromCompartmentIdsToCids, mapFromSubstanceToCompartment,superCompartment,source,mapFromModelSubstanceToECNumber);
@@ -342,6 +345,7 @@ public class SBMLLoader {
 	 * @throws IOException 
 	 */
 	private static void writeReactionListIntoDatabase(XmlToken token, MD5Hash fileHash, int groupnumber, TreeMap<String, Integer> mapFromSubstanceIdsToSids, TreeMap<String, Integer> mapFromCompartmentIdsToCids, TreeMap<Integer, Integer> mapFromSubstanceToCompartment, DbCompartment superCompartment,URL source, TreeMap<String, String> mapFromModelSubstanceToECNumber) throws SQLException, NoSuchAlgorithmException, NoTokenException, NoSuchMethodException, IOException {
+		System.out.println("reading reaction list...");
 		for (XmlToken subtoken:token.subtokens()) {
 			if (subtoken.instanceOf("reaction")) {
 				writeReactionIntoDatabase(subtoken, mapFromSubstanceIdsToSids, mapFromCompartmentIdsToCids, mapFromSubstanceToCompartment, fileHash,superCompartment,source,mapFromModelSubstanceToECNumber);
@@ -880,9 +884,13 @@ public class SBMLLoader {
 		try {
 			for (XmlToken subtoken:token.subtokens()) {
 				if (subtoken.instanceOf("listOfReactants")) {
-					participatingSubstances.addAll(writeReactionReactantsIntoDatabase(subtoken, rid, mapFromSubstanceIdsToSids));
+					TreeSet<Integer> substrates = writeReactionReactantsIntoDatabase(subtoken, rid, mapFromSubstanceIdsToSids);
+					if (substrates.isEmpty()) Tools.warn("no reactants found in reactant list of ("+idString+"/"+name+")!");
+					participatingSubstances.addAll(substrates);
 				} else if (subtoken.instanceOf("listOfProducts")) {
-					participatingSubstances.addAll(writeReactionProductsIntoDatabase(subtoken, rid, mapFromSubstanceIdsToSids));
+					TreeSet<Integer> products = writeReactionProductsIntoDatabase(subtoken, rid, mapFromSubstanceIdsToSids);
+					if (products.isEmpty()) Tools.warn("no products found in product list of ("+idString+"/"+name+")!");
+					participatingSubstances.addAll(products);
 				} else if (subtoken.instanceOf("listOfModifiers")) {
 					participatingSubstances.addAll(writeReactionModifiersIntoDatabase(subtoken, rid, mapFromSubstanceIdsToSids, fileHash,mapFromModelSubstanceToECNumber));
 				} else Tools.noteOnce("found " + subtoken.tokenClass() + " token in Reaction");
@@ -928,7 +936,7 @@ public class SBMLLoader {
 	 */
 	private static TreeSet<Integer> writeReactionReactantsIntoDatabase(XmlToken token, int rid, TreeMap<String, Integer> mapFROMSubstanceIdsToSids) throws SQLException, IOException {
 		TreeSet<Integer> databaseIds = new TreeSet<Integer>();
-		if (!token.subtokens().isEmpty()) Tools.warn("no reactants found in reactant list!");
+		if (token.subtokens().isEmpty()) Tools.warn("no reactants found in reactant list!");
 		for (XmlToken subtoken: token.subtokens()) {
 			if (subtoken.instanceOf("speciesReference")) databaseIds.add(writeReactantSpeciesReferenceIntoDatabase(subtoken, rid, mapFROMSubstanceIdsToSids));
 			else Tools.noteOnce("found " + subtoken.tokenClass() + " token in ListOfReactants");
@@ -949,7 +957,7 @@ public class SBMLLoader {
 	 */
 	private static TreeSet<Integer> writeReactionProductsIntoDatabase(XmlToken token, int rid, TreeMap<String, Integer> mapFROMSubstanceIdsToSids) throws SQLException, NoTokenException, IOException {
 		TreeSet<Integer> databaseIds = new TreeSet<Integer>();
-		if (!token.subtokens().isEmpty()) Tools.warn("no products found in product list!");
+		if (token.subtokens().isEmpty()) Tools.warn("no products found in product list!");
 		for (XmlToken subtoken: token.subtokens()) {
 			if (subtoken.instanceOf("speciesReference")) databaseIds.add(writeProductSpeciesReferenceIntoDatabase(subtoken, rid, mapFROMSubstanceIdsToSids));
 			else Tools.noteOnce("found " + subtoken.tokenClass() + " token in ListOfReactants");
