@@ -45,7 +45,7 @@ import edu.fsuj.csb.gui.PanelTools;
 import edu.fsuj.csb.gui.VerticalPanel;
 import edu.fsuj.csb.reactionnetworks.database.InteractionDB;
 import edu.fsuj.csb.reactionnetworks.databasefiller.SBMLLoader;
-import edu.fsuj.csb.reactionnetworks.databasefiller.dbtool;
+import edu.fsuj.csb.reactionnetworks.interaction.Commons;
 import edu.fsuj.csb.reactionnetworks.interaction.UnificationNode;
 import edu.fsuj.csb.reactionnetworks.organismtools.DbSubstance;
 import edu.fsuj.csb.reactionnetworks.organismtools.gui.DbComponentNode;
@@ -208,13 +208,15 @@ public class DatabasePane extends HorizontalPanel implements ActionListener, Mou
 	 */
 	public void actionPerformed(ActionEvent arg0) {
 		Object source = arg0.getSource();
-		int lastKeggId = 198392;
-		int lastBiomodelId = 216965;
 		try {
 			if (source == loadFileButton) {
 				loadSBMLFile();
 			} else if (source == cleanButton) {
-				dbtool.cleanDb(Math.max(lastBiomodelId,lastKeggId));
+				int[] keggRange=InteractionDB.getRange(Commons.KEGG_IDS);
+				int[] biomodelsRange=InteractionDB.getRange(Commons.BIOMODELS_IDS);
+				int max=Math.max(Math.max(keggRange[0], keggRange[1]), Math.max(biomodelsRange[0], biomodelsRange[1]));
+				int [] cleanRange={max,Integer.MAX_VALUE};
+				InteractionDB.cleanDb(cleanRange);
 			} else if (source == examinationButton){
 				examineAll();
 			}	else System.out.println(source);			

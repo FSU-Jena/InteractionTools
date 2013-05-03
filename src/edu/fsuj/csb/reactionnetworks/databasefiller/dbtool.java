@@ -19,13 +19,13 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.Vector;
 import java.util.zip.DataFormatException;
 
 import javax.naming.NameNotFoundException;
 import javax.naming.directory.NoSuchAttributeException;
 
 import edu.fsuj.csb.reactionnetworks.database.InteractionDB;
+import edu.fsuj.csb.reactionnetworks.interaction.Commons;
 import edu.fsuj.csb.tools.newtork.pagefetcher.PageFetcher;
 import edu.fsuj.csb.tools.organisms.Formula;
 import edu.fsuj.csb.tools.urn.URN;
@@ -44,6 +44,7 @@ import edu.fsuj.csb.tools.xml.Tools;
  * 
  */
 public class dbtool {
+
 
 	private long startTime = 0;
 	private static int keggProkaryotes;
@@ -234,20 +235,20 @@ public class dbtool {
 		InteractionDB.checkTables(); // assure, that required tables exist
 		displayTimeStamp();
 
+		Integer firstKeggId = InteractionDB.getLastID();
 		if (!skipKegg) readKeggContent(); // read kegg data // disabled, so i can not accidentally overwrite
 		Integer lastKeggId = InteractionDB.getLastID();
-		System.out.println("last kegg id: " + lastKeggId);
+		InteractionDB.storeIDrange(Commons.KEGG_IDS,firstKeggId,lastKeggId);
 
+		Integer firstBiomodelsId=InteractionDB.getLastID();
 		if (!skipBiomodels) Biomodels.parse();
 		Integer lastBiomodelsId = InteractionDB.getLastID();
-		System.out.println("last kegg id: " + lastKeggId);
-		System.out.println("last biomodels id: " + lastBiomodelsId);// */
+		InteractionDB.storeIDrange(Commons.BIOMODELS_IDS, firstBiomodelsId, lastBiomodelsId);
 
+		Integer firstSbmlId=InteractionDB.getLastID();
 		if (!skipFiles) parseSbmlFiles(getSbmlFileList(sbmlDirectory));
 		Integer lastSbmlId = InteractionDB.getLastID();
-		System.out.println("last kegg id: " + lastKeggId);
-		System.out.println("last biomodels id: " + lastBiomodelsId);// */
-		System.out.println("last sbml id: " + lastSbmlId);
+		InteractionDB.storeIDrange(Commons.SBML_IDS, firstSbmlId, lastSbmlId);
 		InteractionDB.printMissingAbbrevations();
 		System.out.println();
 		Tools.endMethod();
@@ -1114,46 +1115,6 @@ public class dbtool {
 		} catch (NumberFormatException nfe) {
 			Tools.warn("dbtool.replaceN(" + input + ") failed!");
 			throw nfe;
-		}
-	}
-
-	/**
-	 * removes all content, which contains ids larger than the given one, from the database
-	 * 
-	 * @param lastRemainingId the last id, which will be not deleted
-	 * 
-	 * @throws SQLException
-	 * @throws IOException 
-	 */
-	public static void cleanDb(int lastRemainingId) throws SQLException, IOException {
-		if (test) return;
-		Statement st = InteractionDB.createStatement();
-		Vector<String> queries = new Vector<String>();
-		queries.add("DELETE FROM compartment_pathways WHERE cid>" + lastRemainingId + " OR pid>" + lastRemainingId);
-		queries.add("DELETE FROM compartments WHERE id>" + lastRemainingId);
-		queries.add("DELETE FROM enzymes WHERE id>" + lastRemainingId);
-		queries.add("DELETE FROM enzymes_compartments WHERE cid>" + lastRemainingId + " OR eid>" + lastRemainingId);
-		queries.add("DELETE FROM hierarchy WHERE contained>" + lastRemainingId + " OR container>" + lastRemainingId);
-		queries.add("DELETE FROM ids WHERE id>" + lastRemainingId);
-		queries.add("DELETE FROM names WHERE id>" + lastRemainingId);
-		queries.add("DELETE FROM products WHERE sid>" + lastRemainingId + " OR rid>" + lastRemainingId);
-		queries.add("DELETE FROM reaction_directions WHERE rid>" + lastRemainingId + " OR cid>" + lastRemainingId);
-		queries.add("DELETE FROM reaction_enzymes WHERE rid>" + lastRemainingId + " OR eid>" + lastRemainingId);
-		queries.add("DELETE FROM reactions WHERE id>" + lastRemainingId);
-		queries.add("DELETE FROM substances WHERE id>" + lastRemainingId);
-		queries.add("DELETE FROM substrates WHERE sid>" + lastRemainingId + " OR rid>" + lastRemainingId);
-		queries.add("DELETE FROM unifications WHERE id>" + lastRemainingId + " OR id2>" + lastRemainingId);
-		queries.add("DELETE FROM urns WHERE id>" + lastRemainingId);
-		queries.add("ALTER TABLE ids AUTO_INCREMENT=" + (lastRemainingId + 1));
-		try {
-			while (!queries.isEmpty()) {
-				System.out.println("executing " + queries.firstElement());
-				st.execute(queries.firstElement());
-				queries.remove(0);
-			}
-		} catch (SQLException e) {
-			System.err.println(queries.firstElement());
-			throw e;
 		}
 	}
 }
