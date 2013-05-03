@@ -26,6 +26,7 @@ import javax.naming.NameNotFoundException;
 import javax.naming.directory.NoSuchAttributeException;
 
 import edu.fsuj.csb.reactionnetworks.database.InteractionDB;
+import edu.fsuj.csb.reactionnetworks.interaction.Commons;
 import edu.fsuj.csb.tools.newtork.pagefetcher.PageFetcher;
 import edu.fsuj.csb.tools.organisms.Formula;
 import edu.fsuj.csb.tools.urn.URN;
@@ -45,9 +46,7 @@ import edu.fsuj.csb.tools.xml.Tools;
  */
 public class dbtool {
 
-	private static final String KEGG_IDS = "KEGG IDs";
-	private static final String BIOMODELS_IDS = "Biomodel IDs";
-	private static final String SBML_IDS = "SBML IDs";
+
 	private long startTime = 0;
 	private static int keggProkaryotes;
 	private static int keggEukaryotes;
@@ -240,17 +239,17 @@ public class dbtool {
 		Integer firstKeggId = InteractionDB.getLastID();
 		if (!skipKegg) readKeggContent(); // read kegg data // disabled, so i can not accidentally overwrite
 		Integer lastKeggId = InteractionDB.getLastID();
-		InteractionDB.storeIDrange(KEGG_IDS,firstKeggId,lastKeggId);
+		InteractionDB.storeIDrange(Commons.KEGG_IDS,firstKeggId,lastKeggId);
 
 		Integer firstBiomodelsId=InteractionDB.getLastID();
 		if (!skipBiomodels) Biomodels.parse();
 		Integer lastBiomodelsId = InteractionDB.getLastID();
-		InteractionDB.storeIDrange(BIOMODELS_IDS, firstBiomodelsId, lastBiomodelsId);
+		InteractionDB.storeIDrange(Commons.BIOMODELS_IDS, firstBiomodelsId, lastBiomodelsId);
 
 		Integer firstSbmlId=InteractionDB.getLastID();
 		if (!skipFiles) parseSbmlFiles(getSbmlFileList(sbmlDirectory));
 		Integer lastSbmlId = InteractionDB.getLastID();
-		InteractionDB.storeIDrange(SBML_IDS, firstSbmlId, lastSbmlId);
+		InteractionDB.storeIDrange(Commons.SBML_IDS, firstSbmlId, lastSbmlId);
 		InteractionDB.printMissingAbbrevations();
 		System.out.println();
 		Tools.endMethod();
