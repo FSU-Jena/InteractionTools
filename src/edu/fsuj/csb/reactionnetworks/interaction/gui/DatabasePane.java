@@ -214,8 +214,9 @@ public class DatabasePane extends HorizontalPanel implements ActionListener, Mou
 			} else if (source == cleanButton) {
 				int[] keggRange=InteractionDB.getRange(Commons.KEGG_IDS);
 				int[] biomodelsRange=InteractionDB.getRange(Commons.BIOMODELS_IDS);
-				InteractionDB.cleanDb(keggRange);
-				InteractionDB.cleanDb(biomodelsRange);
+				int max=Math.max(Math.max(keggRange[0], keggRange[1]), Math.max(biomodelsRange[0], biomodelsRange[1]));
+				int [] cleanRange={max,Integer.MAX_VALUE};
+				InteractionDB.cleanDb(cleanRange);
 			} else if (source == examinationButton){
 				examineAll();
 			}	else System.out.println(source);			
