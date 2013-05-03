@@ -55,8 +55,7 @@ public class Biomodels {
 	}
 
 	private static TreeSet<String> parseContentTable(XmlToken table) throws MalformedURLException {
-		for (Iterator<XmlToken> it = table.subtokenIterator();it.hasNext();){
-			XmlToken token = it.next();
+		for (XmlToken token: table.subtokens()){
 			if (token.instanceOf("tbody")) return parseContentTableBody(token);
 		}
 		return null;	  
@@ -64,8 +63,7 @@ public class Biomodels {
 	
 	private static TreeSet<String> parseContentTableBody(XmlToken table) throws MalformedURLException {
 		TreeSet<String> models = Tools.StringSet();
-		for (Iterator<XmlToken> it = table.subtokenIterator();it.hasNext();){
-			XmlToken token = it.next();
+		for (XmlToken token: table.subtokens()){
 			if (token.instanceOf("tr")) {
 				models.add(parseContentTableRow(token));
 			}
@@ -73,12 +71,11 @@ public class Biomodels {
 		return models;
   }
 	private static String parseContentTableRow(XmlToken row) throws MalformedURLException {
-		return parseLink(row.subtokenIterator().next());
+		return parseLink(row.subtokens().firstElement());
   }
 
 	private static String parseLink(XmlToken link) throws MalformedURLException {
-		for (Iterator<XmlToken> it = link.subtokenIterator();it.hasNext();){
-			XmlToken token = it.next();
+		for (XmlToken token: link.subtokens()){
 			if (token.instanceOf("a")) return token.getValue("href");
 		}
 		return null;
