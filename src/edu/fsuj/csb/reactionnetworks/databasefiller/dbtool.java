@@ -1129,31 +1129,33 @@ public class dbtool {
 	 */
 	public static void cleanDb(int[] keggRange) throws SQLException, IOException {
 		if (test) return;
+		int min=Math.min(keggRange[0], keggRange[1]);
+		int max=Math.max(keggRange[0], keggRange[1]);
 		Statement st = InteractionDB.createStatement();
 		Vector<String> queries = new Vector<String>();
-		queries.add("DELETE FROM compartment_pathways WHERE cid>" + keggRange[0] + " AND cid<"+keggRange[1]);
-		queries.add("DELETE FROM compartment_pathways WHERE pid>" + keggRange[0] + " AND pid<"+keggRange[1]);
-		queries.add("DELETE FROM compartments WHERE id>" + keggRange[0] + " AND id<"+keggRange[1]);
-		queries.add("DELETE FROM enzymes WHERE id>" + keggRange[0] + " AND id<"+keggRange[1]);
-		queries.add("DELETE FROM enzymes_compartments WHERE cid>" + keggRange[0] + " AND cid<"+keggRange[1]); 
-		queries.add("DELETE FROM enzymes_compartments WHERE eid>" + keggRange[0] + " AND cid<"+keggRange[1]);
-		queries.add("DELETE FROM hierarchy WHERE contained>" + keggRange[0] + " AND contained<"+keggRange[1]);
-		queries.add("DELETE FROM hierarchy WHERE container>" + keggRange[0] + " AND container<"+keggRange[1]);
-		queries.add("DELETE FROM ids WHERE id>" + keggRange[0] + " AND id<"+keggRange[1]);
-		queries.add("DELETE FROM names WHERE id>" + keggRange[0] + " AND id<"+keggRange[1]);
-		queries.add("DELETE FROM products WHERE sid>" + keggRange[0] + " AND sid<"+keggRange[1]);
-		queries.add("DELETE FROM products WHERE rid>" + keggRange[0] + " AND rid<"+keggRange[1]);
-		queries.add("DELETE FROM reaction_directions WHERE rid>" + keggRange[0] + " AND rid<"+keggRange[1]);
-		queries.add("DELETE FROM reaction_directions WHERE cid>" + keggRange[0] + " AND cid<"+keggRange[1]);
-		queries.add("DELETE FROM reaction_enzymes WHERE rid>" + keggRange[0] + " AND rid<"+keggRange[1]);
-		queries.add("DELETE FROM reaction_enzymes WHERE eid>" + keggRange[0] + " AND eid<"+keggRange[1]);
-		queries.add("DELETE FROM reactions WHERE id>" + keggRange[0] + " AND id<"+keggRange[1]);
-		queries.add("DELETE FROM substances WHERE id>" + keggRange[0] + " AND id<"+keggRange[1]);
-		queries.add("DELETE FROM substrates WHERE sid>" + keggRange[0] + " AND sid<"+keggRange[1]);
-		queries.add("DELETE FROM substrates WHERE rid>" + keggRange[0] + " AND rid<"+keggRange[1]);
-		queries.add("DELETE FROM unifications WHERE id>" + keggRange[0] + " AND id<"+keggRange[1]);
-		queries.add("DELETE FROM unifications WHERE id2>" + keggRange[0] + " AND id2<"+keggRange[1]);
-		queries.add("DELETE FROM urns WHERE id>" + keggRange[0] + " AND id<"+keggRange[1]);
+		queries.add("DELETE FROM compartment_pathways WHERE cid>" + min + " AND cid<"+max);
+		queries.add("DELETE FROM compartment_pathways WHERE pid>" + min + " AND pid<"+max);
+		queries.add("DELETE FROM compartments WHERE id>" + min + " AND id<"+max);
+		queries.add("DELETE FROM enzymes WHERE id>" + min + " AND id<"+max);
+		queries.add("DELETE FROM enzymes_compartments WHERE cid>" + min + " AND cid<"+max); 
+		queries.add("DELETE FROM enzymes_compartments WHERE eid>" + min + " AND cid<"+max);
+		queries.add("DELETE FROM hierarchy WHERE contained>" + min + " AND contained<"+max);
+		queries.add("DELETE FROM hierarchy WHERE container>" + min + " AND container<"+max);
+		queries.add("DELETE FROM ids WHERE id>" + min + " AND id<"+max);
+		queries.add("DELETE FROM names WHERE id>" + min + " AND id<"+max);
+		queries.add("DELETE FROM products WHERE sid>" + min + " AND sid<"+max);
+		queries.add("DELETE FROM products WHERE rid>" + min + " AND rid<"+max);
+		queries.add("DELETE FROM reaction_directions WHERE rid>" + min + " AND rid<"+max);
+		queries.add("DELETE FROM reaction_directions WHERE cid>" + min + " AND cid<"+max);
+		queries.add("DELETE FROM reaction_enzymes WHERE rid>" + min + " AND rid<"+max);
+		queries.add("DELETE FROM reaction_enzymes WHERE eid>" + min + " AND eid<"+max);
+		queries.add("DELETE FROM reactions WHERE id>" + min + " AND id<"+max);
+		queries.add("DELETE FROM substances WHERE id>" + min + " AND id<"+max);
+		queries.add("DELETE FROM substrates WHERE sid>" + min + " AND sid<"+max);
+		queries.add("DELETE FROM substrates WHERE rid>" + min + " AND rid<"+max);
+		queries.add("DELETE FROM unifications WHERE id>" + min + " AND id<"+max);
+		queries.add("DELETE FROM unifications WHERE id2>" + min + " AND id2<"+max);
+		queries.add("DELETE FROM urns WHERE id>" + min + " AND id<"+max);
 		try {
 			while (!queries.isEmpty()) {
 				System.out.println("executing " + queries.firstElement());
