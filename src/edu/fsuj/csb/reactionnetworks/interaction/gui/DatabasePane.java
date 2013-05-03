@@ -25,9 +25,11 @@ import javax.naming.directory.NoSuchAttributeException;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeSelectionEvent;
@@ -188,7 +190,7 @@ public class DatabasePane extends HorizontalPanel implements ActionListener, Mou
 	 */
 	private JComboBox createDropDown() throws SQLException, IOException {
 		Statement st = InteractionDB.createStatement();
-		ResultSet rs = st.executeQuery("SELECT id,name FROM names NATURAL JOIN ids WHERE type=" + InteractionDB.COMPARTMENT_GROUP);
+		ResultSet rs = st.executeQuery("SELECT nid,name FROM names WHERE nid IN (SELECT DISTINCT groups FROM compartments)");
 		Vector<String> strings = new Vector<String>();
 		mappingFromGroupIndicesToIds = new TreeMap<Integer, Integer>();
 		int index = 0;
@@ -299,9 +301,12 @@ public class DatabasePane extends HorizontalPanel implements ActionListener, Mou
 	private void loadSBMLFile() throws IOException, NoTokenException, NoSuchAlgorithmException, SQLException, NoSuchMethodException, DataFormatException, NoSuchAttributeException {
 		int groupId = getGroup(sources);
 		URL fileUrl = PanelTools.showSelectFileDialog("open SBML file", null, new GenericFileFilter("SBML file", "sbml;xml"), this);
+		JFrame frame = (JFrame) SwingUtilities.getRoot(this);
+		frame.setCursor(new Cursor(Cursor.WAIT_CURSOR));
   	Tools.resetWarnings();
 		SBMLLoader.loadSBMLFile(fileUrl, groupId,null);
 		databaseChanged();
+		frame.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 	}
 
 	public void addChangeListener(ChangeListener listener) {
