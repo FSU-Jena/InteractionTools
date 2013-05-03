@@ -45,6 +45,9 @@ import edu.fsuj.csb.tools.xml.Tools;
  */
 public class dbtool {
 
+	private static final String KEGG_IDS = "KEGG IDs";
+	private static final String BIOMODELS_IDS = "Biomodel IDs";
+	private static final String SBML_IDS = "SBML IDs";
 	private long startTime = 0;
 	private static int keggProkaryotes;
 	private static int keggEukaryotes;
@@ -234,20 +237,20 @@ public class dbtool {
 		InteractionDB.checkTables(); // assure, that required tables exist
 		displayTimeStamp();
 
+		Integer firstKeggId = InteractionDB.getLastID();
 		if (!skipKegg) readKeggContent(); // read kegg data // disabled, so i can not accidentally overwrite
 		Integer lastKeggId = InteractionDB.getLastID();
-		System.out.println("last kegg id: " + lastKeggId);
+		InteractionDB.storeIDrange(KEGG_IDS,firstKeggId,lastKeggId);
 
+		Integer firstBiomodelsId=InteractionDB.getLastID();
 		if (!skipBiomodels) Biomodels.parse();
 		Integer lastBiomodelsId = InteractionDB.getLastID();
-		System.out.println("last kegg id: " + lastKeggId);
-		System.out.println("last biomodels id: " + lastBiomodelsId);// */
+		InteractionDB.storeIDrange(BIOMODELS_IDS, firstBiomodelsId, lastBiomodelsId);
 
+		Integer firstSbmlId=InteractionDB.getLastID();
 		if (!skipFiles) parseSbmlFiles(getSbmlFileList(sbmlDirectory));
 		Integer lastSbmlId = InteractionDB.getLastID();
-		System.out.println("last kegg id: " + lastKeggId);
-		System.out.println("last biomodels id: " + lastBiomodelsId);// */
-		System.out.println("last sbml id: " + lastSbmlId);
+		InteractionDB.storeIDrange(SBML_IDS, firstSbmlId, lastSbmlId);
 		InteractionDB.printMissingAbbrevations();
 		System.out.println();
 		Tools.endMethod();
