@@ -120,7 +120,7 @@ public class SBMLLoader {
 			System.err.println();
 			try {
 				int[] range={maxDBid-1,InteractionDB.getLastID()};
-	      dbtool.cleanDb(range); // -1 since the id for the sbml model is added before this code 
+	      InteractionDB.cleanDb(range); // -1 since the id for the sbml model is added before this code 
       } catch (SQLException e1) {   }
 			System.exit(-1);
 		}

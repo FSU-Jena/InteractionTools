@@ -45,7 +45,6 @@ import edu.fsuj.csb.gui.PanelTools;
 import edu.fsuj.csb.gui.VerticalPanel;
 import edu.fsuj.csb.reactionnetworks.database.InteractionDB;
 import edu.fsuj.csb.reactionnetworks.databasefiller.SBMLLoader;
-import edu.fsuj.csb.reactionnetworks.databasefiller.dbtool;
 import edu.fsuj.csb.reactionnetworks.interaction.Commons;
 import edu.fsuj.csb.reactionnetworks.interaction.UnificationNode;
 import edu.fsuj.csb.reactionnetworks.organismtools.DbSubstance;
@@ -215,8 +214,8 @@ public class DatabasePane extends HorizontalPanel implements ActionListener, Mou
 			} else if (source == cleanButton) {
 				int[] keggRange=InteractionDB.getRange(Commons.KEGG_IDS);
 				int[] biomodelsRange=InteractionDB.getRange(Commons.BIOMODELS_IDS);
-				dbtool.cleanDb(keggRange);
-				dbtool.cleanDb(biomodelsRange);
+				InteractionDB.cleanDb(keggRange);
+				InteractionDB.cleanDb(biomodelsRange);
 			} else if (source == examinationButton){
 				examineAll();
 			}	else System.out.println(source);			
