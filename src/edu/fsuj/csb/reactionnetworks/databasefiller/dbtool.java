@@ -103,12 +103,9 @@ public class dbtool {
 		for (int i = 0; i < args.length; i++) {
 			if (args[i].startsWith("--cachedir=")) PageFetcher.setCache(args[i].substring(11));
 			if (args[i].equals("--skip-question")) {
-				Tools.warn("Will not ask before deletion of database content! Cancel within 20 seconds to avoid!");
 				skipAsk = true;
-				Thread.sleep(20000);
 			}
 			if (args[i].equals("--clear-all")) {
-				Tools.warn("Will also clear decision table.");
 				clearDecisions = true;
 			}
 			if (args[i].equals("--skip-clear")) {
@@ -175,6 +172,13 @@ public class dbtool {
 			}
 			if (args[i].equals("--help")) displayCLIoptions();
 			if (args[i].equals("--verbose")) Tools.enableLogging();
+		}
+		if (clearDecisions)	Tools.warn("Will also clear decision table.");
+
+		if (skipAsk){
+			Thread.sleep(100);
+			Tools.warn("Will not ask before deletion of database content! Cancel within 20 seconds to avoid!");
+			Thread.sleep(20000);
 		}
 	}
 
