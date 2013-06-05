@@ -679,9 +679,9 @@ public class dbtool {
 		System.out.println("done, found " + keggSubstanceIds.size() + " substances.");
 		int count = 0;
 		System.out.print((100 * count / (keggSubstanceIds.size() + count)) + "% - ");
-//		keggSubstanceIds.push("C00720");
-//		Tools.resetIntendation();
-//		Tools.enableLogging();
+		/*keggSubstanceIds.push("C17040");
+		Tools.resetIntendation();
+		Tools.enableLogging(); //*/
 		while (!keggSubstanceIds.isEmpty()) {			
 			count++;
 			if (InteractionDB.parseSubstanceInfo(keggSubstanceIds, mappingFromKeggSubstanceIdsToDbIds,skipKeggLinks)) System.out.print((100 * count / (keggSubstanceIds.size() + count)) + "% - ");
