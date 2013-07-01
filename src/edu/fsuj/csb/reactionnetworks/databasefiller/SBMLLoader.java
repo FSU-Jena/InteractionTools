@@ -524,6 +524,8 @@ public class SBMLLoader {
 				// we are currently not interested in genes
 			} else if (subtoken.instanceOf("bqmodel:isDescribedBy")||subtoken.instanceOf("bqbiol:isDescribedBy")){
 				// we are currently not interested in descriptions
+			} else if (subtoken.instanceOf("CopasiMT:hasPart")){
+				// we don't care about copasi parts
 			} else if (subtoken.instanceOf("dcterms:created")){
 				// we don't care about creation times
 			} else if (subtoken.instanceOf("dcterms:creator")){
