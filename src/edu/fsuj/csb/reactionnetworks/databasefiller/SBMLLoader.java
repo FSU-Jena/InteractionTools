@@ -526,12 +526,18 @@ public class SBMLLoader {
 				// we are currently not interested in descriptions
 			} else if (subtoken.instanceOf("CopasiMT:hasPart")){
 				// we don't care about copasi parts
-			} else if (subtoken.instanceOf("dcterms:created")){
-				// we don't care about creation times
+			} else if (subtoken.instanceOf("CopasiMT:isPartOf")){
+				// we don't care about copasi parts
+			} else if (subtoken.instanceOf("CopasiMT:haspart")){
+				// we don't care about copasi parts
+			} else if (subtoken.instanceOf("CopasiMT:hasVersion")){
+				// we don't care about copasi versions
 			} else if (subtoken.instanceOf("dcterms:creator")){
 				// we don't care about vcards
 			} else if (subtoken.instanceOf("dcterms:bibliographicCitation")){
 				// we don't care about bibs
+			} else if (subtoken.instanceOf("dcterms:created")){
+				// we don't care about creation times
 			} else if (subtoken.instanceOf("dc:relation")){
 				getURNsFromDCrelation(urns,subtoken,path);
 			} else {
