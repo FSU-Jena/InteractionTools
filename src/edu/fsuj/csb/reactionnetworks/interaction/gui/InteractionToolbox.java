@@ -41,7 +41,6 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 
 	private static final long serialVersionUID = 7;
 	//private static PrintStream out;
-	private JButton calculateSeedsButton;
 	private CompartmentsTab compartmentTab;
 	private ActionHandler actionHandler;
 	private JButton disconnectClients;
@@ -197,11 +196,6 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	
 	public VerticalPanel optimizationButtons(){
 		VerticalPanel optimizationButtonPanel=new VerticalPanel("Optimizations");
-		calculateSeedsButton = new JButton("<html>Calculate Seeds<br/>with MILP (buggy)");
-		calculateSeedsButton.setToolTipText("<html>This method should calculate the minimum sets of substances which can be supplied to form<ul><li>all Substances in the compartment (organism) <i>if no target substances are specified</i></li><li>for the specified target substances <i>otherwise</i></li></ul><font color=\"red\">not implemented, yet.</font></html>");
-		calculateSeedsButton.addActionListener(this);
-		optimizationButtonPanel.add(calculateSeedsButton);
-		
 		optimizeSeeds=new JButton("<html>Calculate Flow<br/>Distributions for given<br/>Input/Output<br/>using linear programming");
 		optimizeSeeds.setToolTipText("<html>Takes one substance list as targets<br/>and the other as \"desired nutrients\"<br/>and tries to optimize (maximize) flow<br/>towards targets and decomposition<br/>of the <i>desired nutrients</i> while keeping<br/>all other inflow reactions low.</html>");
 		optimizeSeeds.addActionListener(this);
@@ -424,7 +418,6 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		Component frame=SwingUtilities.getRoot(this);
 		frame.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 		try {
-			if (source == calculateSeedsButton) actionHandler.calcSeeds(compartmentTab.getUserList().getListed(),substancesTab.produceList(),substancesTab.ignoreList(),skipUnbalancedReactions.isSelected(),useMilp.isSelected());
 			if (source == calculateProductsButton){
 						TreeSet<Integer> nutrients = substancesTab.degradeList();
 						nutrients.addAll(substancesTab.ignoreList());

@@ -23,7 +23,6 @@ import edu.fsuj.csb.reactionnetworks.interaction.tasks.CalculationTask;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.EvolveSeedsTask;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.FindPathTask;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.OptimizeBuildTask;
-import edu.fsuj.csb.reactionnetworks.interaction.tasks.SeedCalculationTask;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.StructuredTask;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.graph.AdditionsCalculationTask;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.graph.ProcessorSearchTask;
@@ -104,35 +103,6 @@ public class ActionHandler extends Master {
 		}
 		handle.send(ct);
 	}
-
-	/**
-	 * tries to calculate the precursor substances for all given targetSubstances in all given compartments
-	 * @param compartmentNodes the ids of the compartments to be examined
-	 * @param targetSubstanceIds the ids of the targeted substances
-	 * @param ignoredSubstances 
-	 * @param ignoreUnbalanced 
-	 * @param useMilp 
-	 * @throws IOException
-	 */
-	public void calcSeeds(TreeSet<CompartmentNode> compartmentNodes, TreeSet<Integer> targetSubstanceIds, TreeSet<Integer> ignoredSubstances, boolean ignoreUnbalanced, boolean useMilp) throws IOException {
-		if (warnforEmptyList(targetSubstanceIds)) return;
-		for (Iterator<CompartmentNode> it = compartmentNodes.iterator(); it.hasNext();) {	// loop through the set of compartments		
-			int cid = it.next().compartment().id();
-			calcSeeds(cid,targetSubstanceIds,ignoredSubstances,ignoreUnbalanced,useMilp); // calculate seed for specific compartment
-		}
-	}
-
-	/**
-	 * Tries to calculate the seed substances for all given target substances in a specific compartment. Therefor, potential precursors for all target substances are calculated first. As soon as the precursors for all targets are calculated, the actual seedset calculation is started
-	 * @param compartmentId the id of the compartment to be examined
-	 * @param targetSubstanceIds the id of the targeted substances
-	 * @param ignoredSubstances 
-	 * @throws IOException
-	 */
-	private void calcSeeds(int compartmentId, TreeSet<Integer> targetSubstanceIds, TreeSet<Integer> ignoredSubstances,boolean ignoreUnbalanced,boolean useMilp) throws IOException {
-		SeedCalculationTask sct=new SeedCalculationTask(compartmentId,targetSubstanceIds,ignoredSubstances,useMilp,ignoreUnbalanced);
-		sendTask(sct);
-  }
 
 	/**
 	 * calculates the set of substnaces which may be produced by the given compartments when supplied with the given substances
