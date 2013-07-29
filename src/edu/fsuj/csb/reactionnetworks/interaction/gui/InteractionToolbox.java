@@ -189,8 +189,8 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		VerticalPanel buttonPane = new VerticalPanel();
 		VerticalPanel taskButtons=new VerticalPanel("Tasks");
 		
-		taskButtons.add(searchProcessors=new JButton("<html>Search for<br/>processing species"));
-		searchProcessors.setToolTipText("<html>Search for species, which enable reactions that have at least one of the given substances as substrate</html>");
+		taskButtons.add(searchProcessors=new JButton("<html>Search for<br/>processing organisms"));
+		searchProcessors.setToolTipText("<html>Search for organisms/compartments, which enable reactions that have at least one of the given substances as substrate</html>");
 		searchProcessors.addActionListener(this);		
 		
 		VerticalPanel milpPanel=new VerticalPanel("Optimizations");
