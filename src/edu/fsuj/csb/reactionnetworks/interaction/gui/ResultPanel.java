@@ -31,7 +31,6 @@ import javax.swing.tree.TreePath;
 import edu.fsuj.csb.gui.HorizontalPanel;
 import edu.fsuj.csb.gui.PanelTools;
 import edu.fsuj.csb.gui.VerticalPanel;
-import edu.fsuj.csb.reactionnetworks.interaction.SeedOptimizationMappingNode;
 import edu.fsuj.csb.reactionnetworks.organismtools.DbCompartment;
 import edu.fsuj.csb.tools.organisms.Compartment;
 import edu.fsuj.csb.tools.organisms.Reaction;
@@ -40,7 +39,6 @@ import edu.fsuj.csb.tools.organisms.gui.CompartmentNode;
 import edu.fsuj.csb.tools.organisms.gui.ReactionNode;
 import edu.fsuj.csb.tools.organisms.gui.SubstanceNode;
 import edu.fsuj.csb.tools.organisms.gui.URLNode;
-import edu.fsuj.csb.tools.xml.XMLWriter;
 
 public class ResultPanel extends VerticalPanel implements ActionListener, TreeSelectionListener, MouseListener {
 
@@ -236,7 +234,6 @@ public class ResultPanel extends VerticalPanel implements ActionListener, TreeSe
 	private void appendChildren(DefaultMutableTreeNode treeRoot, BufferedWriter bw, String filename) throws IOException, SecurityException, URISyntaxException, SQLException, DataFormatException {
 		@SuppressWarnings("unchecked")
 		Enumeration<DefaultMutableTreeNode> children = treeRoot.children();
-		int childNUmber = 0;
 		if (children.hasMoreElements()) {
 			bw.write("<ul class=\"collapsibleList\">\n");
 			while (children.hasMoreElements()) {
@@ -245,7 +242,6 @@ public class ResultPanel extends VerticalPanel implements ActionListener, TreeSe
 
 				String alternateText = null;
 				if (child.toString().startsWith("Task ")) alternateText = exportTask(child, filename);
-				if (child instanceof SeedOptimizationMappingNode) alternateText = exportMapping((SeedOptimizationMappingNode) child, filename, childNUmber);
 				if (child instanceof SubstanceNode) alternateText = exportSubstance(((SubstanceNode) child).substance().id());
 				if (child instanceof CompartmentNode) alternateText = exportCompartment((CompartmentNode) child);
 				if (child instanceof ReactionNode) alternateText = exportReaction((ReactionNode) child);
@@ -254,7 +250,6 @@ public class ResultPanel extends VerticalPanel implements ActionListener, TreeSe
 					writeParseTree(bw, child, filename, null);
 				} else bw.write(alternateText);
 				bw.write("</li>\n");
-				childNUmber++;
 			}
 			bw.write("</ul>\n");
 		}
@@ -263,13 +258,6 @@ public class ResultPanel extends VerticalPanel implements ActionListener, TreeSe
 
 	private String exportUrlNode(URLNode child) {
 		return "<a href=\"" + child + "\">" + child + "</a>\n";
-	}
-
-	private String exportMapping(SeedOptimizationMappingNode child, String filename, int childNumber) throws SecurityException, IOException, URISyntaxException, SQLException, DataFormatException {
-		String backlink = "<a href=\"" + filename + ".html\">Task</a>";
-		filename = filename + " " + childNumber + ". " + child;
-		String dotFile = writeDotForMapping(child, filename);
-		return "<a href=\"" + export(filename, child, backlink) + "\">result mapping</a> (" + writeSbmlOf(child, filename) + ", " + dotFile + ", " + dotFile.replace("\">dot-file", ".ps\">ps-file") + ")";
 	}
 
 	private String exportTask(DefaultMutableTreeNode treeRoot, String filename) throws IOException, URISyntaxException, SecurityException, SQLException, DataFormatException {
@@ -281,20 +269,6 @@ public class ResultPanel extends VerticalPanel implements ActionListener, TreeSe
 		bw.write("CollapsibleLists.apply();");
 		bw.write("</script>\n</body></html>");
 		bw.close();
-	}
-
-	private String writeDotForMapping(SeedOptimizationMappingNode mapping, String filename) throws IOException, URISyntaxException, SQLException {
-		filename += ".dot";
-		mapping.writeDotFile(filename);
-		return "<a href=\"" + filename + "\">dot-file</a>";
-	}
-
-	private String writeSbmlOf(SeedOptimizationMappingNode mapping, String filename) throws SecurityException, IOException {
-		filename += ".sbml.xml";
-		XMLWriter writer = new XMLWriter(filename);
-		writer.write(mapping);
-		writer.close();
-		return "<a href=\"" + filename + "\">sbml</a>";
 	}
 
 	private String exportReaction(ReactionNode rn) throws MalformedURLException, SQLException, DataFormatException {

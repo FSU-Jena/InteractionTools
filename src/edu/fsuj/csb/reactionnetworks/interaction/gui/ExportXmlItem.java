@@ -11,7 +11,6 @@ import java.util.zip.DataFormatException;
 
 import javax.swing.JMenuItem;
 
-import edu.fsuj.csb.reactionnetworks.interaction.SeedOptimizationMappingNode;
 import edu.fsuj.csb.tools.organisms.gui.CompartmentNode;
 import edu.fsuj.csb.tools.xml.XmlObject;
 
@@ -23,7 +22,7 @@ public class ExportXmlItem extends JMenuItem {
 	public ExportXmlItem(XmlObject targetObject) throws SQLException, DataFormatException, IOException {
 		super("export XML");
 		xmlobject=targetObject;
-		if (targetObject instanceof SeedOptimizationMappingNode || targetObject instanceof CompartmentNode) setText("export SBML");
+		if (targetObject instanceof CompartmentNode) setText("export SBML");
   }
 
 	public void export(URL url) throws URISyntaxException, IOException {

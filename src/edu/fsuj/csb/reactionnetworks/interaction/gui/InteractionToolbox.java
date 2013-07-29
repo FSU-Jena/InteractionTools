@@ -47,8 +47,8 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	private SubstancesTab substancesTab;
 	private JButton calculateProductsButton,calcPotentialAdditionals,searchProcessors;
 	private JTabbedPane taskTabs;
-	private JButton optimizeSeeds,evolveSeeds;
-	private JCheckBox onlyOdle,skipUnbalancedReactions,useMilp;
+	private JButton evolveSeeds;
+	private JCheckBox onlyOdle,skipUnbalancedReactions;
 	private OptimizationParametersTab parametersTab;
 	private StatusPanel statusPanel;
 	private DatabasePane databasePane;
@@ -196,14 +196,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	
 	public VerticalPanel optimizationButtons(){
 		VerticalPanel optimizationButtonPanel=new VerticalPanel("Optimizations");
-		optimizeSeeds=new JButton("<html>Calculate Flow<br/>Distributions for given<br/>Input/Output<br/>using linear programming");
-		optimizeSeeds.setToolTipText("<html>Takes one substance list as targets<br/>and the other as \"desired nutrients\"<br/>and tries to optimize (maximize) flow<br/>towards targets and decomposition<br/>of the <i>desired nutrients</i> while keeping<br/>all other inflow reactions low.</html>");
-		optimizeSeeds.addActionListener(this);
-		optimizationButtonPanel.add(optimizeSeeds);
-		
-		useMilp=new JCheckBox("<html>Use MILP<br/>(boolean switches;<br/>slower, more accurate)");
-		optimizationButtonPanel.add(useMilp);
-		
+				
 		return optimizationButtonPanel;
 	}
 
@@ -345,17 +338,13 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	 * @param method if method is set to 1, the seed optimization will be performed by means of mixed linear integer programming, otherwise an evolutionary algorithm will be applied
 	 * @throws IOException
 	 */
-	private void optimizeSeeds(int method) throws IOException {
+	private void optimizeSeeds() throws IOException {
 		TreeSet<Integer> decompositionList = substancesTab.degradeList();
 		if (decompositionList!=null && !decompositionList.isEmpty()){
 			TreeSet<Integer> buildList = substancesTab.produceList();
 			
 			if (buildList!=null && !buildList.isEmpty()){
-				if (method==1){
-					actionHandler.optimizeSeeds(compartmentTab.getUserList().getListed(),decompositionList,buildList,substancesTab.ignoreList(),substancesTab.noOutflowList(),parametersTab.optimizationParameterSet(),skipUnbalancedReactions.isSelected(),useMilp.isSelected());
-				} else {
-					actionHandler.evovleSeeds(compartmentTab.getUserList().getListed(), decompositionList, buildList,substancesTab.ignoreList());
-				}
+				actionHandler.evovleSeeds(compartmentTab.getUserList().getListed(), decompositionList, buildList,substancesTab.ignoreList());
 			}
 		}
   }
@@ -426,8 +415,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 			if (source == disconnectClients) actionHandler.disconnect(onlyOdle.isSelected());
 			if (source == calcPotentialAdditionals) actionHandler.calcPotentialAdditionals(compartmentTab.getUserList().getListed(),substancesTab.degradeList(),substancesTab.ignoreList());
 			if (source == searchProcessors) actionHandler.searchProcessors(substancesTab.degradeList());
-			if (source == optimizeSeeds) optimizeSeeds(1);
-			if (source == evolveSeeds) optimizeSeeds(2);
+			if (source == evolveSeeds) optimizeSeeds();
 			if (source == findPath) findPath();
 			
 		} catch (IOException e1) {

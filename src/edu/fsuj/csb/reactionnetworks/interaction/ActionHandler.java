@@ -17,12 +17,10 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import edu.fsuj.csb.distributedcomputing.tools.ClientHandle;
 import edu.fsuj.csb.distributedcomputing.tools.Master;
-import edu.fsuj.csb.reactionnetworks.interaction.gui.OptimizationParametersTab.OptimizationParameterSet;
 import edu.fsuj.csb.reactionnetworks.interaction.results.CalculationResult;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.CalculationTask;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.EvolveSeedsTask;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.FindPathTask;
-import edu.fsuj.csb.reactionnetworks.interaction.tasks.OptimizeBuildTask;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.StructuredTask;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.graph.AdditionsCalculationTask;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.graph.ProcessorSearchTask;
@@ -261,30 +259,6 @@ public class ActionHandler extends Master {
 		}
 		return false;
   }
-
-	/**
-	 * tries to find a set of seed substances in certain compartments by applying a mixed linear integer programming approach
-	 * @param compartments the set of compartments, for which the calculation shall be performed
-	 * @param decompose the set of substances, which shall be processed by those compartments
-	 * @param build the set of substances, which shall be built be the respective compartments
-	 * @param noOutflow set of substance ids, for which outflow shall be supressed
-	 * @param optimizationParameterSet 
-	 * @param useMilp 
-	 * @param b 
-	 * @param rateOfOutflowReactionsImportance 
-	 * @param numberOfOutflowReactionsImportance 
-	 * @param rateOfInflowReactionsImportance 
-	 * @param numberOfInflowReactionsImportance 
-	 * @param numberOfAllReactionsImportance 
-	 * @param minimizeInternalReactions determines, whether the use of internal reactions shall be minimized
-	 * @throws IOException
-	 */
-	public void optimizeSeeds(TreeSet<CompartmentNode> compartments, TreeSet<Integer> decompose, TreeSet<Integer> build, TreeSet<Integer> ignore, TreeSet<Integer> noOutflow, OptimizationParameterSet optimizationParameterSet, boolean ignoreUnbalanced, boolean useMilp) throws IOException {
-		for (Iterator<CompartmentNode> it = compartments.iterator();it.hasNext();){
-			int cid=it.next().compartment().id();
-			sendTask(new OptimizeBuildTask(cid,decompose,build,ignore, optimizationParameterSet,ignoreUnbalanced,noOutflow,useMilp));
-		}
-	}
 
 	/**
 	 * tries to find a set of substances needed to form another set of target substances in certain compartments by means of an evolutionary algorith
