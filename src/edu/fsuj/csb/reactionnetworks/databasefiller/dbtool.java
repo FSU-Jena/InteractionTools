@@ -49,7 +49,7 @@ public class dbtool {
 	private long startTime = 0;
 	private static int keggProkaryotes;
 	private static int keggEukaryotes;
-	private static boolean skipClear, skipKegg, skipBiomodels, skipFiles, skipKeggPathways, skipKeggEnzymes, skipKeggCodes, skipKeggOrganisms, skipKeggCompounds, skipKeggSubstances, skipKeggReactions, skipAsk, clearDecisions, test;
+	private static boolean skipClear, skipKegg, skipBiomodels, skipFiles, skipKeggPathways, skipKeggEnzymes, skipKeggCodes, skipKeggOrganisms, skipKeggCompounds, skipKeggSubstances, skipKeggReactions, skipAsk, clearDecisions, test, skipKeggLinks;
 	private static String sbmlDirectory=System.getProperty("user.home")+"/Documents/sbml";
 
 	/**
@@ -103,12 +103,9 @@ public class dbtool {
 		for (int i = 0; i < args.length; i++) {
 			if (args[i].startsWith("--cachedir=")) PageFetcher.setCache(args[i].substring(11));
 			if (args[i].equals("--skip-question")) {
-				Tools.warn("Will not ask before deletion of database content! Cancel within 20 seconds to avoid!");
 				skipAsk = true;
-				Thread.sleep(20000);
 			}
 			if (args[i].equals("--clear-all")) {
-				Tools.warn("Will also clear decision table.");
 				clearDecisions = true;
 			}
 			if (args[i].equals("--skip-clear")) {
@@ -163,6 +160,10 @@ public class dbtool {
 				Tools.note("Will skip enzyme entries of Kegg database.");
 				skipKeggEnzymes = true;
 			}
+			if (args[i].equals("--skip-kegg-links")){
+				Tools.note("Will ignore Links to DBs outside KEGG.");
+				skipKeggLinks=true;
+			}
 			if (args[i].equals("--test")) {
 				Tools.note("Will not write anything to the database, use to test parser.");
 				InteractionDB.setTestMode(true);
@@ -171,6 +172,13 @@ public class dbtool {
 			}
 			if (args[i].equals("--help")) displayCLIoptions();
 			if (args[i].equals("--verbose")) Tools.enableLogging();
+		}
+		if (clearDecisions)	Tools.warn("Will also clear decision table.");
+
+		if (skipAsk){
+			Thread.sleep(100);
+			Tools.warn("Will not ask before deletion of database content! Cancel within 20 seconds to avoid!");
+			Thread.sleep(20000);
 		}
 	}
 
@@ -366,7 +374,7 @@ public class dbtool {
 		TreeMap<String, Integer> mappingFromKeggSubstanceIdsToDbIds = new TreeMap<String, Integer>(ObjectComparator.get());
 
 		if (!skipKeggCodes) {
-			InteractionDB.preprareAbbrevations(mappingFromKeggSubstanceIdsToDbIds);
+			InteractionDB.preprareAbbrevations(mappingFromKeggSubstanceIdsToDbIds,skipKeggLinks);
 			displayTimeStamp();
 		}
 
@@ -671,12 +679,12 @@ public class dbtool {
 		System.out.println("done, found " + keggSubstanceIds.size() + " substances.");
 		int count = 0;
 		System.out.print((100 * count / (keggSubstanceIds.size() + count)) + "% - ");
-//		keggSubstanceIds.push("C00720");
-//		Tools.resetIntendation();
-//		Tools.enableLogging();
+		/*keggSubstanceIds.push("C17040");
+		Tools.resetIntendation();
+		Tools.enableLogging(); //*/
 		while (!keggSubstanceIds.isEmpty()) {			
 			count++;
-			if (InteractionDB.parseSubstanceInfo(keggSubstanceIds, mappingFromKeggSubstanceIdsToDbIds)) System.out.print((100 * count / (keggSubstanceIds.size() + count)) + "% - ");
+			if (InteractionDB.parseSubstanceInfo(keggSubstanceIds, mappingFromKeggSubstanceIdsToDbIds,skipKeggLinks)) System.out.print((100 * count / (keggSubstanceIds.size() + count)) + "% - ");
 		}
 		InteractionDB.setDateMark("Read KEGG substances");
 
@@ -917,7 +925,7 @@ public class dbtool {
 					substanceDbId = InteractionDB.readIdFor(InteractionDB.urnForComponent(substanceKeggId));
 					if (substanceDbId == null) {
 						unexploredKeggIds.push(substanceKeggId);
-						InteractionDB.parseSubstanceInfo(unexploredKeggIds, mappingFromKeggIdsToDbIds);
+						InteractionDB.parseSubstanceInfo(unexploredKeggIds, mappingFromKeggIdsToDbIds,skipKeggLinks);
 						substanceDbId = InteractionDB.readIdFor(InteractionDB.urnForComponent(substanceKeggId));
 						if (substanceDbId == null) {
 							Tools.warn("No information found for " + substanceKeggId + ", one of the substrates of reaction " + keggReactionId);
@@ -950,7 +958,7 @@ public class dbtool {
 					substanceDbId = InteractionDB.readIdFor(InteractionDB.urnForComponent(substanceKeggId));
 					if (substanceDbId == null) {
 						unexploredKeggIds.push(substanceKeggId);
-						InteractionDB.parseSubstanceInfo(unexploredKeggIds, mappingFromKeggIdsToDbIds);
+						InteractionDB.parseSubstanceInfo(unexploredKeggIds, mappingFromKeggIdsToDbIds,skipKeggLinks);
 						substanceDbId = InteractionDB.readIdFor(InteractionDB.urnForComponent(substanceKeggId));
 						if (substanceDbId == null) {
 							Tools.warn("No information found for " + substanceKeggId + ", one of the products of reaction " + keggReactionId);

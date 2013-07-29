@@ -111,6 +111,7 @@ public class PopupMenu extends JPopupMenu implements ActionListener {
 			try {
 				URL filename = PanelTools.showSelectFileDialog("State output file", "network.sbml.xml", new GenericFileFilter("SBML file", "*.xml"), this);
 				if (filename!=null){
+					System.out.println("Starting SBML export. This may take a while.");
 					((ExportXmlItem) option).export(filename);
 					System.out.println("Exported to "+filename);
 				}
