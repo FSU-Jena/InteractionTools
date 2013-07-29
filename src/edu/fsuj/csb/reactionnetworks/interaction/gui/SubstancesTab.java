@@ -1,5 +1,6 @@
 package edu.fsuj.csb.reactionnetworks.interaction.gui;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -42,6 +43,7 @@ public class SubstancesTab extends HorizontalPanel implements ActionListener, Co
 	private SubstanceList list2;
 	private SubstanceList list3;
 	private SubstanceList list4;
+	private SubstanceSearchBox searchBox;
 	
 	public SubstancesTab() throws IOException, NoTokenException, AlreadyBoundException, SQLException {
 		lmp = new ListModificationPanel();
@@ -81,17 +83,22 @@ public class SubstancesTab extends HorizontalPanel implements ActionListener, Co
   }
 
 	private VerticalPanel createChoosableSubstancesList() throws IOException, NoTokenException, AlreadyBoundException, SQLException {
-		VerticalPanel result=new VerticalPanel();		
+		VerticalPanel result=new VerticalPanel();
+		result.setBackground(Color.gray);
+		lmp.setBackground(Color.red);
 		choosableSubstances = new SubstanceList("Nutrient substances",false);
 		choosableSubstances.addActionListener(this);
 		
 		searchPanel = new HorizontalPanel();
 		
-		SubstanceSearchBox searchBox=new SubstanceSearchBox(choosableSubstances);
+		searchBox=new SubstanceSearchBox(choosableSubstances);
 		
 		clearButton=new JButton("↑ clear list");
 		clearButton.addActionListener(this);
 		searchPanel.add(searchBox);
+		Dimension dim = searchBox.getPreferredSize();
+		dim.width=choosableSubstances.getWidth()+lmp.getWidth()-clearButton.getWidth();
+		searchBox.setPreferredSize(dim);
 		searchPanel.add(clearButton);
 
 		result.add(choosableSubstances);
@@ -220,6 +227,10 @@ public class SubstancesTab extends HorizontalPanel implements ActionListener, Co
 	public void scaleScrollPanes(Dimension d) {
 		int width=(d.width-lmp.getWidth()-40)/2;
 		choosableSubstances.scaleScrollPane(new Dimension(width,d.height-searchPanel.getHeight()-60));
+		Dimension dim = searchBox.getPreferredSize();
+		dim.width=choosableSubstances.getWidth()+lmp.getWidth()-clearButton.getWidth();
+		searchBox.setPreferredSize(dim);
+
 		selectedSubstancesTabs.setPreferredSize(new Dimension(width,d.height-40));
 		d=new Dimension(width-20,d.height-140);
 		list1.scaleScrollPane(d);
