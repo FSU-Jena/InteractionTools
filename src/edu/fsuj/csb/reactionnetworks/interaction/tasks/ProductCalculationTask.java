@@ -30,6 +30,7 @@ public class ProductCalculationTask extends TaskContainingCompartmentAndSubtance
 		Compartment c=DbCompartment.load(compartmentId);
 		Collection<Integer> productIds;
     productIds = c.calculateProductsOf(substanceIds);
+    productIds.removeAll(substanceIds);
     client.sendObject(new ProductCalculationResult(this, productIds));
 	}
 		
