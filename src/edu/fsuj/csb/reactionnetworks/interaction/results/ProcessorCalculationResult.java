@@ -28,7 +28,8 @@ public class ProcessorCalculationResult extends CalculationResult implements Ser
 	}
 	
 	
-	@Override
+	@SuppressWarnings("unchecked")
+  @Override
 	public DefaultMutableTreeNode treeRepresentation() throws IOException, NoTokenException, AlreadyBoundException, SQLException {
 		DefaultMutableTreeNode result = superTreeRepresentation();
 		result.add(new SubstanceListNode("Spontaneously formed substances", idsOfspontaneouslyReachedSubstances));
