@@ -31,6 +31,7 @@ public class ProcessorCalculationResult extends CalculationResult implements Ser
 	@Override
 	public DefaultMutableTreeNode treeRepresentation() throws IOException, NoTokenException, AlreadyBoundException, SQLException {
 		DefaultMutableTreeNode result = superTreeRepresentation();
+		result.add(new SubstanceListNode("Spontaneously formed substances", idsOfspontaneouslyReachedSubstances));
 		TreeMap<Integer, TreeMap<Integer, TreeSet<Integer>>> mappingFromNumberOfProcessedSubstancesToSpeciesToProcessedSubstances=(TreeMap<Integer, TreeMap<Integer, TreeSet<Integer>>>) super.result;
 		for (Entry<Integer, TreeMap<Integer, TreeSet<Integer>>> entry:mappingFromNumberOfProcessedSubstancesToSpeciesToProcessedSubstances.entrySet()){
 			DefaultMutableTreeNode node=new DefaultMutableTreeNode("Species processing "+entry.getKey()+" substances");
