@@ -11,7 +11,7 @@ import java.util.TreeSet;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import edu.fsuj.csb.reactionnetworks.interaction.SubstanceListNode;
-import edu.fsuj.csb.reactionnetworks.interaction.tasks.ProcessorSearchTask;
+import edu.fsuj.csb.reactionnetworks.interaction.tasks.graph.ProcessorSearchTask;
 import edu.fsuj.csb.reactionnetworks.organismtools.DbCompartment;
 import edu.fsuj.csb.tools.organisms.gui.CompartmentNode;
 import edu.fsuj.csb.tools.xml.NoTokenException;

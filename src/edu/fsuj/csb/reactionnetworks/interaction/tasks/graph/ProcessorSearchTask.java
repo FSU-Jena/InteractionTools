@@ -1,4 +1,4 @@
-package edu.fsuj.csb.reactionnetworks.interaction.tasks;
+package edu.fsuj.csb.reactionnetworks.interaction.tasks.graph;
 
 import java.io.IOException;
 import java.rmi.AlreadyBoundException;
@@ -16,6 +16,7 @@ import javax.swing.tree.MutableTreeNode;
 import edu.fsuj.csb.reactionnetworks.database.InteractionDB;
 import edu.fsuj.csb.reactionnetworks.interaction.CalculationClient;
 import edu.fsuj.csb.reactionnetworks.interaction.results.ProcessorCalculationResult;
+import edu.fsuj.csb.reactionnetworks.interaction.tasks.CalculationTask;
 import edu.fsuj.csb.reactionnetworks.organismtools.DbReaction;
 import edu.fsuj.csb.reactionnetworks.organismtools.gui.DbComponentNode;
 import edu.fsuj.csb.tools.organisms.Reaction;

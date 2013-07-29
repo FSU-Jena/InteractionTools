@@ -11,7 +11,7 @@ import java.util.TreeSet;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.CalculationTask;
-import edu.fsuj.csb.reactionnetworks.interaction.tasks.ProductCalculationTask;
+import edu.fsuj.csb.reactionnetworks.interaction.tasks.graph.ProductCalculationTask;
 import edu.fsuj.csb.reactionnetworks.organismtools.gui.DbComponentNode;
 import edu.fsuj.csb.tools.xml.NoTokenException;
 

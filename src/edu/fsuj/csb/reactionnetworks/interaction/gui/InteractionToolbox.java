@@ -193,6 +193,18 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		searchProcessors.setToolTipText("<html>Search for organisms/compartments, which enable reactions that have at least one of the given substances as substrate</html>");
 		searchProcessors.addActionListener(this);		
 		
+		VerticalPanel graphTasks=new VerticalPanel("Graph theoretic tasks");
+		calculateProductsButton = new JButton("Calculate products");
+		calculateProductsButton.setToolTipText("<html>This calculates the set of substances, which can be formed out of the given set of substances <i>directly or indirectly</i></html>");
+		calculateProductsButton.addActionListener(this);
+		graphTasks.add(calculateProductsButton);
+
+		calcPotentialAdditionals=new JButton("<html>Calc additionals maximizing<br/>the set of products");
+		calcPotentialAdditionals.setToolTipText("<html>Calculates the substances, which, thoghether with the given substances, maximize the scope (number of reachable substances) of the given substances</html>");
+		calcPotentialAdditionals.addActionListener(this);
+		graphTasks.add(calcPotentialAdditionals);
+		taskButtons.add(graphTasks);
+		
 		VerticalPanel milpPanel=new VerticalPanel("Optimizations");
 		calculateSeedsButton = new JButton("<html>Calculate Seeds<br/>with MILP (buggy)");
 		calculateSeedsButton.setToolTipText("<html>This method should calculate the minimum sets of substances which can be supplied to form<ul><li>all Substances in the compartment (organism) <i>if no target substances are specified</i></li><li>for the specified target substances <i>otherwise</i></li></ul><font color=\"red\">not implemented, yet.</font></html>");
@@ -219,15 +231,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		evolveSeeds.addActionListener(this);
 		taskButtons.add(evolveSeeds);
 
-		calculateProductsButton = new JButton("Calculate products");
-		calculateProductsButton.setToolTipText("<html>This calculates the set of substances, which can be formed out of the given set of substances <i>directly or indirectly</i></html>");
-		calculateProductsButton.addActionListener(this);
-		taskButtons.add(calculateProductsButton);
 
-		calcPotentialAdditionals=new JButton("<html>Calc additionals maximizing<br/>the set of products");
-		calcPotentialAdditionals.setToolTipText("<html>Calculates the substances, which, thoghether with the given substances, maximize the scope (number of reachable substances) of the given substances</html>");
-		calcPotentialAdditionals.addActionListener(this);
-		taskButtons.add(calcPotentialAdditionals);
 
 
 		

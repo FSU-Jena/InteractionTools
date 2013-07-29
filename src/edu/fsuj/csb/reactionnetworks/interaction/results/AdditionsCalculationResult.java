@@ -12,7 +12,7 @@ import java.util.TreeSet;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import edu.fsuj.csb.reactionnetworks.interaction.SubstanceListNode;
-import edu.fsuj.csb.reactionnetworks.interaction.tasks.AdditionsCalculationTask;
+import edu.fsuj.csb.reactionnetworks.interaction.tasks.graph.AdditionsCalculationTask;
 import edu.fsuj.csb.tools.xml.NoTokenException;
 
 /**
@@ -46,7 +46,6 @@ public class AdditionsCalculationResult extends CalculationResult implements Ser
    * @see edu.fsuj.csb.reactionnetworks.interaction.CalculationResult#resultTreeRepresentation()
    */
   public DefaultMutableTreeNode resultTreeRepresentation() throws SQLException{
-  	System.out.println("AdditionsCalculationResult.resultTreeRepresentation");
 		if (getTask() instanceof AdditionsCalculationTask){ // then the result set is a set of integers representing substance ids
 			@SuppressWarnings("unchecked")
       TreeMap<String, TreeSet<Integer>> bestAdditionals = (TreeMap<String,TreeSet<Integer>>) result;
