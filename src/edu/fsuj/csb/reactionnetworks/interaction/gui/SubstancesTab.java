@@ -46,11 +46,8 @@ public class SubstancesTab extends HorizontalPanel implements ActionListener, Co
 	private SubstanceSearchBox searchBox;
 	
 	public SubstancesTab() throws IOException, NoTokenException, AlreadyBoundException, SQLException {
-		lmp = new ListModificationPanel();
-		lmp.addActionListener(this);
 
 		add(createChoosableSubstancesList());
-		add(lmp);
 		add(createSelectedSubstancesTabs());
 		scale();
   }
@@ -84,26 +81,41 @@ public class SubstancesTab extends HorizontalPanel implements ActionListener, Co
 
 	private VerticalPanel createChoosableSubstancesList() throws IOException, NoTokenException, AlreadyBoundException, SQLException {
 		VerticalPanel result=new VerticalPanel();
-		result.setBackground(Color.gray);
-		lmp.setBackground(Color.red);
-		choosableSubstances = new SubstanceList("Nutrient substances",false);
-		choosableSubstances.addActionListener(this);
-		
-		searchPanel = new HorizontalPanel();
-		
-		searchBox=new SubstanceSearchBox(choosableSubstances);
-		
-		clearButton=new JButton("↑ clear list");
-		clearButton.addActionListener(this);
-		searchPanel.add(searchBox);
-		Dimension dim = searchBox.getPreferredSize();
-		dim.width=choosableSubstances.getWidth()+lmp.getWidth()-clearButton.getWidth();
-		searchBox.setPreferredSize(dim);
-		searchPanel.add(clearButton);
 
-		result.add(choosableSubstances);
-		result.add(searchPanel);
+		HorizontalPanel inner=new HorizontalPanel();
 		
+		inner.add(choosableSubstances = new SubstanceList("Nutrient substances",false));
+		inner.add(lmp = new ListModificationPanel());		
+		choosableSubstances.addActionListener(this);
+		lmp.addActionListener(this);
+
+		/*
+		 ________________________________
+		 |result                         |
+		 | _____________________________ |
+		 | |inner                       ||        
+		 | | ____________________  ____ ||
+		 | | |choosableSubstances| |lmp|||
+		 | |____________________________||
+		 | _____________________________ |
+		 | |searchPanel                 ||
+		 | | ____________  ____________ ||
+		 | | |clearButton| |searchBox  |||
+		 | |____________________________||
+		 |_______________________________|
+		 */
+		
+		searchPanel = new HorizontalPanel();		
+		searchPanel.add(clearButton=new JButton("↑ clear list"));
+		searchPanel.add(searchBox=new SubstanceSearchBox(choosableSubstances));		
+		clearButton.addActionListener(this);
+		
+
+
+		
+		result.add(inner);
+		result.add(searchPanel);
+		result.scale();
 	  return result;
   }
 
@@ -226,7 +238,7 @@ public class SubstancesTab extends HorizontalPanel implements ActionListener, Co
 
 	public void scaleScrollPanes(Dimension d) {
 		int width=(d.width-lmp.getWidth()-40)/2;
-		choosableSubstances.scaleScrollPane(new Dimension(width,d.height-searchPanel.getHeight()-60));
+		choosableSubstances.scaleScrollPane(new Dimension(width,d.height-searchPanel.getHeight()-70));
 		Dimension dim = searchBox.getPreferredSize();
 		dim.width=choosableSubstances.getWidth()+lmp.getWidth()-clearButton.getWidth();
 		searchBox.setPreferredSize(dim);
