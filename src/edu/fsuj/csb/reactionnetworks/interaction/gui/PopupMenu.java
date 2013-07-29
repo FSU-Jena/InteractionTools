@@ -36,7 +36,7 @@ public class PopupMenu extends JPopupMenu implements ActionListener {
 	private String objectText;
 	private JMenuItem search;
 	private JMenuItem clip;
-	private JMenuItem cListItem;	
+	private JMenuItem compartmentListItem;	
 	private static CompartmentList compartmentList=null;
 	private static TreeSet<SubstanceList> substanceLists=new TreeSet<SubstanceList>(ObjectComparator.get());
 
@@ -68,9 +68,9 @@ public class PopupMenu extends JPopupMenu implements ActionListener {
 
 		if (targetObject instanceof CompartmentNode){
 			objectText=((CompartmentNode)targetObject).compartment().mainName();
-			cListItem=new JMenuItem("add to \""+compartmentList.caption()+"\"");
-			cListItem.addActionListener(this);
-			add(cListItem);
+			compartmentListItem=new JMenuItem("add to \""+compartmentList.caption()+"\"");
+			compartmentListItem.addActionListener(this);
+			add(compartmentListItem);
 		}
 		if (targetObject instanceof SubstanceNode){
 			objectText=((SubstanceNode)targetObject).substance().mainName();
@@ -101,9 +101,9 @@ public class PopupMenu extends JPopupMenu implements ActionListener {
 		Object option = arg0.getSource();
 		if (option==search) searchFor(objectText);
 		if (option==clip) copyToClipboard(objectText);
-		if (option==cListItem) try {
-			DbCompartmentNode dbComp = (DbCompartmentNode)targetObject;
-	    compartmentList.addCompartment(dbComp.compartment());
+		if (option==compartmentListItem) try {
+			DbCompartmentNode databaseCompartment = (DbCompartmentNode)targetObject;
+	    compartmentList.addCompartment(databaseCompartment.compartment());
     } catch (SQLException e) {
 	    e.printStackTrace();
     }
