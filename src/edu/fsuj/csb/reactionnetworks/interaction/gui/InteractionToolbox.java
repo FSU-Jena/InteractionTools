@@ -180,6 +180,38 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		taskPane.scale();
 		return taskPane;
 	}
+	
+	public VerticalPanel graphTaskButtons(){
+		VerticalPanel graphTaskButtonPanel=new VerticalPanel("Graph theoretic tasks");
+		calculateProductsButton = new JButton("Calculate products");
+		calculateProductsButton.setToolTipText("<html>This calculates the set of substances, which can be formed out of the given set of substances <i>directly or indirectly</i></html>");
+		calculateProductsButton.addActionListener(this);
+		graphTaskButtonPanel.add(calculateProductsButton);
+
+		calcPotentialAdditionals=new JButton("<html>Calc additionals maximizing<br/>the set of products");
+		calcPotentialAdditionals.setToolTipText("<html>Calculates the substances, which, thoghether with the given substances, maximize the scope (number of reachable substances) of the given substances</html>");
+		calcPotentialAdditionals.addActionListener(this);
+		graphTaskButtonPanel.add(calcPotentialAdditionals);
+		return graphTaskButtonPanel;
+	}
+	
+	public VerticalPanel optimizationButtons(){
+		VerticalPanel optimizationButtonPanel=new VerticalPanel("Optimizations");
+		calculateSeedsButton = new JButton("<html>Calculate Seeds<br/>with MILP (buggy)");
+		calculateSeedsButton.setToolTipText("<html>This method should calculate the minimum sets of substances which can be supplied to form<ul><li>all Substances in the compartment (organism) <i>if no target substances are specified</i></li><li>for the specified target substances <i>otherwise</i></li></ul><font color=\"red\">not implemented, yet.</font></html>");
+		calculateSeedsButton.addActionListener(this);
+		optimizationButtonPanel.add(calculateSeedsButton);
+		
+		optimizeSeeds=new JButton("<html>Calculate Flow<br/>Distributions for given<br/>Input/Output<br/>using linear programming");
+		optimizeSeeds.setToolTipText("<html>Takes one substance list as targets<br/>and the other as \"desired nutrients\"<br/>and tries to optimize (maximize) flow<br/>towards targets and decomposition<br/>of the <i>desired nutrients</i> while keeping<br/>all other inflow reactions low.</html>");
+		optimizeSeeds.addActionListener(this);
+		optimizationButtonPanel.add(optimizeSeeds);
+		
+		useMilp=new JCheckBox("<html>Use MILP<br/>(boolean switches;<br/>slower, more accurate)");
+		optimizationButtonPanel.add(useMilp);
+		
+		return optimizationButtonPanel;
+	}
 
 	/**
 	 * creates the sidebar of the task panel, which holds the buttons to submit tasks
@@ -193,33 +225,8 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		searchProcessors.setToolTipText("<html>Search for organisms/compartments, which enable reactions that have at least one of the given substances as substrate</html>");
 		searchProcessors.addActionListener(this);		
 		
-		VerticalPanel graphTasks=new VerticalPanel("Graph theoretic tasks");
-		calculateProductsButton = new JButton("Calculate products");
-		calculateProductsButton.setToolTipText("<html>This calculates the set of substances, which can be formed out of the given set of substances <i>directly or indirectly</i></html>");
-		calculateProductsButton.addActionListener(this);
-		graphTasks.add(calculateProductsButton);
-
-		calcPotentialAdditionals=new JButton("<html>Calc additionals maximizing<br/>the set of products");
-		calcPotentialAdditionals.setToolTipText("<html>Calculates the substances, which, thoghether with the given substances, maximize the scope (number of reachable substances) of the given substances</html>");
-		calcPotentialAdditionals.addActionListener(this);
-		graphTasks.add(calcPotentialAdditionals);
-		taskButtons.add(graphTasks);
-		
-		VerticalPanel milpPanel=new VerticalPanel("Optimizations");
-		calculateSeedsButton = new JButton("<html>Calculate Seeds<br/>with MILP (buggy)");
-		calculateSeedsButton.setToolTipText("<html>This method should calculate the minimum sets of substances which can be supplied to form<ul><li>all Substances in the compartment (organism) <i>if no target substances are specified</i></li><li>for the specified target substances <i>otherwise</i></li></ul><font color=\"red\">not implemented, yet.</font></html>");
-		calculateSeedsButton.addActionListener(this);
-		milpPanel.add(calculateSeedsButton);
-		
-		optimizeSeeds=new JButton("<html>Calculate Flow<br/>Distributions for given<br/>Input/Output<br/>using linear programming");
-		optimizeSeeds.setToolTipText("<html>Takes one substance list as targets<br/>and the other as \"desired nutrients\"<br/>and tries to optimize (maximize) flow<br/>towards targets and decomposition<br/>of the <i>desired nutrients</i> while keeping<br/>all other inflow reactions low.</html>");
-		optimizeSeeds.addActionListener(this);
-		milpPanel.add(optimizeSeeds);
-		
-		useMilp=new JCheckBox("<html>Use MILP<br/>(boolean switches;<br/>slower, more accurate)");
-		milpPanel.add(useMilp);
-		
-		taskButtons.add(milpPanel);
+		taskButtons.add(graphTaskButtons());		
+		taskButtons.add(optimizationButtons());
 		
 		findPath=new JButton("<html>Find paths from<br/>substances-to-degrade<br/>to substances-to-produce");
 		findPath.setToolTipText("<html>Tries to find connections between the substances to degrade<br/>and the substances that shall be built.");
