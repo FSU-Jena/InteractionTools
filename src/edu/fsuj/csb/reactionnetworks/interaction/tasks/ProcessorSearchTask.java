@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -46,8 +47,23 @@ public class ProcessorSearchTask extends CalculationTask {
 			TreeSet<Integer> spontaneouslyReached = new TreeSet<Integer>(sids);
 			spontaneouslyReached.removeAll(oldSIDs);
 			
-			//System.out.println("Closure: "+sids);
-			calculationClient.sendObject(new ProcessorCalculationResult(this, spontaneouslyReached,findProcessors(sids)));
+			TreeMap<Integer, TreeSet<Integer>> mappingFromCompartmentsToProcessedSubstances = findProcessors(sids);
+			
+			TreeMap<Integer,TreeMap<Integer,TreeSet<Integer>>> mappingFromNumberOfProcessedSubstancesToSpeciesToProcessedSubstances=new TreeMap<Integer, TreeMap<Integer,TreeSet<Integer>>>();
+			
+			for (Entry<Integer, TreeSet<Integer>> entry:mappingFromCompartmentsToProcessedSubstances.entrySet()){
+				int cid=entry.getKey();
+				TreeSet<Integer> idsOfProcessedSubstances = entry.getValue();
+				int size=idsOfProcessedSubstances.size();
+				
+				TreeMap<Integer, TreeSet<Integer>> mapFromCidToProcessedSubstances = mappingFromNumberOfProcessedSubstancesToSpeciesToProcessedSubstances.get(size);
+				if (mapFromCidToProcessedSubstances==null) {
+					mapFromCidToProcessedSubstances=new TreeMap<Integer, TreeSet<Integer>>();
+					mappingFromNumberOfProcessedSubstancesToSpeciesToProcessedSubstances.put(size, mapFromCidToProcessedSubstances);
+				}
+				mapFromCidToProcessedSubstances.put(cid, idsOfProcessedSubstances);
+			}
+			calculationClient.sendObject(new ProcessorCalculationResult(this, spontaneouslyReached,mappingFromNumberOfProcessedSubstancesToSpeciesToProcessedSubstances));
     } catch (SQLException e) {
 	    e.printStackTrace();
     }
