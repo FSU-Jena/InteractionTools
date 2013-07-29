@@ -21,9 +21,12 @@ import edu.fsuj.csb.tools.xml.NoTokenException;
 public class ProcessorCalculationResult extends CalculationResult implements Serializable {
 
 	private static final long serialVersionUID = -1355599796879378411L;
+	private TreeSet<Integer> idsOfspontaneouslyReachedSubstances;
+	
 
-	public ProcessorCalculationResult(ProcessorSearchTask processorSearchTask, TreeMap<Integer, TreeSet<Integer>> mappingFromCompartmentsToProcessedSubstances) {
+	public ProcessorCalculationResult(ProcessorSearchTask processorSearchTask, TreeSet<Integer> spontaneouslyReachedSubstances, TreeMap<Integer, TreeSet<Integer>> mappingFromCompartmentsToProcessedSubstances) {		
 		super(processorSearchTask, mappingFromCompartmentsToProcessedSubstances);
+		this.idsOfspontaneouslyReachedSubstances=spontaneouslyReachedSubstances;
 	}
 
 	public DefaultMutableTreeNode resultTreeRepresentation() throws SQLException {

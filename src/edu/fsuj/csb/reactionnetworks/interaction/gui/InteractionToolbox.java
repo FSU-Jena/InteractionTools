@@ -188,7 +188,11 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	private VerticalPanel createTaskButtons() {
 		VerticalPanel buttonPane = new VerticalPanel();
 		VerticalPanel taskButtons=new VerticalPanel("Tasks");
-
+		
+		taskButtons.add(searchProcessors=new JButton("<html>Search for<br/>processing species"));
+		searchProcessors.setToolTipText("<html>Search for species, which enable reactions that have at least one of the given substances as substrate</html>");
+		searchProcessors.addActionListener(this);		
+		
 		VerticalPanel milpPanel=new VerticalPanel("Optimizations");
 		calculateSeedsButton = new JButton("<html>Calculate Seeds<br/>with MILP (buggy)");
 		calculateSeedsButton.setToolTipText("<html>This method should calculate the minimum sets of substances which can be supplied to form<ul><li>all Substances in the compartment (organism) <i>if no target substances are specified</i></li><li>for the specified target substances <i>otherwise</i></li></ul><font color=\"red\">not implemented, yet.</font></html>");
@@ -225,10 +229,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		calcPotentialAdditionals.addActionListener(this);
 		taskButtons.add(calcPotentialAdditionals);
 
-		searchProcessors=new JButton("<html>Search for<br/>processing species");
-		searchProcessors.setToolTipText("<html>Search for species, which enable reactions that have at least one of the given substances as substrate</html>");
-		searchProcessors.addActionListener(this);
-		taskButtons.add(searchProcessors);
+
 		
 		skipUnbalancedReactions=new JCheckBox("<html>Skip unbalanced reactions");
 		skipUnbalancedReactions.setToolTipText("<html>Unbalanced reactions wil not be taken into account, when using methods which use stoichiometry.");

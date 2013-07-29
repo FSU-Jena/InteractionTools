@@ -27,10 +27,9 @@ public class ProcessorSearchTask extends CalculationTask {
    * 
    */
   private static final long serialVersionUID = -8585064130135195312L;
-	private TreeSet<Integer> sids,spontaneouslyReached;
+	private TreeSet<Integer> sids;
 	public ProcessorSearchTask(TreeSet<Integer> substanceIds) {
 		super();
-		spontaneouslyReached=null;
 		sids=substanceIds;
   }
 
@@ -44,11 +43,11 @@ public class ProcessorSearchTask extends CalculationTask {
 			//System.out.println("Original set of substances: "+sids);
 			TreeSet<Integer> oldSIDs = sids;
 			sids=getSpontaneousClosure(sids);
-			spontaneouslyReached=new TreeSet<Integer>(sids);
+			TreeSet<Integer> spontaneouslyReached = new TreeSet<Integer>(sids);
 			spontaneouslyReached.removeAll(oldSIDs);
 			
 			//System.out.println("Closure: "+sids);
-			calculationClient.sendObject(new ProcessorCalculationResult(this, findProcessors(sids)));
+			calculationClient.sendObject(new ProcessorCalculationResult(this, spontaneouslyReached,findProcessors(sids)));
     } catch (SQLException e) {
 	    e.printStackTrace();
     }
@@ -258,16 +257,11 @@ public class ProcessorSearchTask extends CalculationTask {
 	public MutableTreeNode treeRepresentation() throws IOException, NoTokenException, AlreadyBoundException, SQLException {
 		DefaultMutableTreeNode node = new DefaultMutableTreeNode("Task: Search processing compartments ["+this.getClass().getSimpleName()+"]");
 		DefaultMutableTreeNode species = new DefaultMutableTreeNode("Input substances");
-		DefaultMutableTreeNode spontaneouslyAddedSubstances = null;
 		for (Iterator<Integer> it = sids.iterator();it.hasNext();){			
 			Integer sid=it.next();
 			MutableTreeNode substanceNode = DbComponentNode.create(sid);
-			if (spontaneouslyReached != null && spontaneouslyReached.contains(sid)){
-				if (spontaneouslyAddedSubstances==null) spontaneouslyAddedSubstances=new DefaultMutableTreeNode("spontaneously formed");
-				spontaneouslyAddedSubstances.add(substanceNode);
-			} else species.add(substanceNode);			
+			species.add(substanceNode);			
 		}
-		if (spontaneouslyAddedSubstances!=null) species.add(spontaneouslyAddedSubstances);
 		node.add(species);
 	  return node;
   }
