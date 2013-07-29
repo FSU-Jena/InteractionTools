@@ -21,7 +21,7 @@ import javax.swing.JPopupMenu;
 import edu.fsuj.csb.gui.GenericFileFilter;
 import edu.fsuj.csb.gui.PanelTools;
 import edu.fsuj.csb.reactionnetworks.interaction.SubstanceList;
-import edu.fsuj.csb.reactionnetworks.organismtools.gui.DbCompartmentNode;
+import edu.fsuj.csb.reactionnetworks.organismtools.DbCompartment;
 import edu.fsuj.csb.tools.organisms.gui.CompartmentNode;
 import edu.fsuj.csb.tools.organisms.gui.SubstanceNode;
 import edu.fsuj.csb.tools.organisms.gui.URLNode;
@@ -102,8 +102,9 @@ public class PopupMenu extends JPopupMenu implements ActionListener {
 		if (option==search) searchFor(objectText);
 		if (option==clip) copyToClipboard(objectText);
 		if (option==compartmentListItem) try {
-			DbCompartmentNode databaseCompartment = (DbCompartmentNode)targetObject;
-	    compartmentList.addCompartment(databaseCompartment.compartment());
+			System.out.println(targetObject.getClass().getName());
+			DbCompartment databaseCompartment = (DbCompartment) ((CompartmentNode)targetObject).compartment();
+	    compartmentList.addCompartment(databaseCompartment);
     } catch (SQLException e) {
 	    e.printStackTrace();
     }

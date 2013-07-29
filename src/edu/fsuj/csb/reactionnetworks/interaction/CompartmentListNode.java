@@ -6,7 +6,6 @@ import java.util.TreeSet;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import edu.fsuj.csb.reactionnetworks.organismtools.gui.DbCompartmentNode;
 import edu.fsuj.csb.reactionnetworks.organismtools.gui.DbComponentNode;
 import edu.fsuj.csb.tools.organisms.gui.CompartmentNode;
 import edu.fsuj.csb.tools.xml.ObjectComparator;
@@ -37,9 +36,9 @@ public class CompartmentListNode extends DefaultMutableTreeNode {
 	  TreeSet<CompartmentNode> result=new TreeSet<CompartmentNode>(ObjectComparator.get());
 	  for (@SuppressWarnings("unchecked") Enumeration<DefaultMutableTreeNode>children=children(); children.hasMoreElements();){
 	  	DefaultMutableTreeNode child=children.nextElement();
-	  	if (child instanceof DbCompartmentNode) {
-	  		DbCompartmentNode cn=(DbCompartmentNode)child;
-	  		result.add((DbCompartmentNode) DbComponentNode.create(cn.compartment().id()));
+	  	if (child instanceof CompartmentNode) {
+	  		CompartmentNode cn=(CompartmentNode)child;
+	  		result.add((CompartmentNode) DbComponentNode.create(cn.compartment().id()));
 	  	}
 	  }
 		return result;

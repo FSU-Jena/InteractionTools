@@ -21,7 +21,6 @@ import edu.fsuj.csb.reactionnetworks.database.InteractionDB;
 import edu.fsuj.csb.reactionnetworks.interaction.CompartmentListNode;
 import edu.fsuj.csb.reactionnetworks.interaction.CompartmentListener;
 import edu.fsuj.csb.reactionnetworks.organismtools.DbCompartment;
-import edu.fsuj.csb.reactionnetworks.organismtools.gui.DbCompartmentNode;
 import edu.fsuj.csb.tools.organisms.gui.CompartmentNode;
 import edu.fsuj.csb.tools.organisms.gui.SortedTreeNode;
 
@@ -126,9 +125,9 @@ public class CompartmentsTab extends HorizontalPanel implements ActionListener {
 	private CompartmentNode compartmentTree(int cid) throws SQLException {
 		//System.err.println("CompartmentTabs.compartmentTree("+cid+")");
 		DbCompartment c=DbCompartment.load(cid);
-		DbCompartmentNode compartmentNode=null;
+		CompartmentNode compartmentNode=null;
 		try {
-			compartmentNode=new DbCompartmentNode(c);
+			compartmentNode=new CompartmentNode(c);
 		} catch (NoSuchElementException e){
 			System.err.println(cid);			
 			throw e;
