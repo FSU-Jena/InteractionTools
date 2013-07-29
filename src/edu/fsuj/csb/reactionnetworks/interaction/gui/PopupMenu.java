@@ -102,7 +102,6 @@ public class PopupMenu extends JPopupMenu implements ActionListener {
 		if (option==search) searchFor(objectText);
 		if (option==clip) copyToClipboard(objectText);
 		if (option==compartmentListItem) try {
-			System.out.println(targetObject.getClass().getName());
 			DbCompartment databaseCompartment = (DbCompartment) ((CompartmentNode)targetObject).compartment();
 	    compartmentList.addCompartment(databaseCompartment);
     } catch (SQLException e) {
