@@ -92,7 +92,7 @@ public class CalculationResult implements Serializable {
 	}
 	
 	/**
-	 * @return a tree representation for the task this result belongs to and this result, which can be used to display the result hierarchically
+	 * @return a tree representation for the result and the task to which this result belongs. Can be overridden by extending classes to display the result hierarchically
 	 * @throws IOException
 	 * @throws NoTokenException
 	 * @throws AlreadyBoundException
