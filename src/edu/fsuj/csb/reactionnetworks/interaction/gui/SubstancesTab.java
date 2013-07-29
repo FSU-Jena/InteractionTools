@@ -1,6 +1,5 @@
 package edu.fsuj.csb.reactionnetworks.interaction.gui;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -237,14 +236,14 @@ public class SubstancesTab extends HorizontalPanel implements ActionListener, Co
   }
 
 	public void scaleScrollPanes(Dimension d) {
-		int width=(d.width-lmp.getWidth()-40)/2;
-		choosableSubstances.scaleScrollPane(new Dimension(width,d.height-searchPanel.getHeight()-70));
+		int width=(d.width-lmp.getWidth()-60)/2;
+		choosableSubstances.scaleScrollPane(new Dimension(width-30,d.height-searchPanel.getHeight()-70));
 		Dimension dim = searchBox.getPreferredSize();
 		dim.width=choosableSubstances.getWidth()+lmp.getWidth()-clearButton.getWidth();
 		searchBox.setPreferredSize(dim);
 
-		selectedSubstancesTabs.setPreferredSize(new Dimension(width,d.height-40));
-		d=new Dimension(width-20,d.height-140);
+		selectedSubstancesTabs.setPreferredSize(new Dimension(width+30,d.height-40));
+		d=new Dimension(width+10,d.height-140);
 		list1.scaleScrollPane(d);
 		list2.scaleScrollPane(d);
 		list3.scaleScrollPane(d);
