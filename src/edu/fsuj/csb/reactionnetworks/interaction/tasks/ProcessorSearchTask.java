@@ -62,6 +62,7 @@ public class ProcessorSearchTask extends CalculationTask {
 					mappingFromNumberOfProcessedSubstancesToSpeciesToProcessedSubstances.put(size, mapFromCidToProcessedSubstances);
 				}
 				mapFromCidToProcessedSubstances.put(cid, idsOfProcessedSubstances);
+				sids.removeAll(spontaneouslyReached);
 			}
 			calculationClient.sendObject(new ProcessorCalculationResult(this, spontaneouslyReached,mappingFromNumberOfProcessedSubstancesToSpeciesToProcessedSubstances));
     } catch (SQLException e) {
