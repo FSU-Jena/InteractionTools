@@ -19,7 +19,6 @@ import edu.fsuj.csb.distributedcomputing.tools.ClientHandle;
 import edu.fsuj.csb.distributedcomputing.tools.Master;
 import edu.fsuj.csb.reactionnetworks.interaction.results.CalculationResult;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.CalculationTask;
-import edu.fsuj.csb.reactionnetworks.interaction.tasks.EvolveSeedsTask;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.StructuredTask;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.graph.AdditionsCalculationTask;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.graph.ProcessorSearchTask;
@@ -257,20 +256,5 @@ public class ActionHandler extends Master {
 			return true;
 		}
 		return false;
-  }
-
-	/**
-	 * tries to find a set of substances needed to form another set of target substances in certain compartments by means of an evolutionary algorith
-	 * @param compartments the list of compartments, for which the calculation shall be done 
-	 * @param decompose the ids of the substances, which shall be degraded
-	 * @param build the ids of the substances, that shall be produced in the respective compartments
-	 * @param treeSet 
-	 * @throws IOException
-	 */
-	public void evovleSeeds(TreeSet<CompartmentNode> compartments, TreeSet<Integer> decompose, TreeSet<Integer> build, TreeSet<Integer> ignore) throws IOException {
-		for (Iterator<CompartmentNode> it = compartments.iterator();it.hasNext();){
-			int cid=it.next().compartment().id();
-			sendTask(new EvolveSeedsTask(cid,decompose,build,ignore));
-		}
   }
 }

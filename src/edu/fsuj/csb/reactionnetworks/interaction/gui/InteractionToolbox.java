@@ -45,9 +45,8 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	private ActionHandler actionHandler;
 	private JButton disconnectClients;
 	private SubstancesTab substancesTab;
-	private JButton calculateProductsButton,calcPotentialAdditionals,searchProcessors;
+	private JButton calculateProductsButton,calcPotentialAdditionals,searchProcessors,fluxBalanceAnalysis;
 	private JTabbedPane taskTabs;
-	private JButton evolveSeeds;
 	private JCheckBox onlyOdle,skipUnbalancedReactions;
 	private OptimizationParametersTab parametersTab;
 	private StatusPanel statusPanel;
@@ -195,6 +194,11 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	
 	public VerticalPanel optimizationButtons(){
 		VerticalPanel optimizationButtonPanel=new VerticalPanel("Optimizations");
+		
+		fluxBalanceAnalysis=new JButton("<html>perform FBA");
+		Tools.notImplemented("fluxBalanceAnalysis.setToolTipText()");
+		fluxBalanceAnalysis.addActionListener(this);
+		optimizationButtonPanel.add(fluxBalanceAnalysis);		
 				
 		return optimizationButtonPanel;
 	}
@@ -213,15 +217,6 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		
 		taskButtons.add(graphTaskButtons());		
 		taskButtons.add(optimizationButtons());
-		
-		evolveSeeds=new JButton("<html>Calculate additionals<br/>with evolutionary Algorithm");
-		evolveSeeds.setToolTipText("<html>Takes one substance list as targets<br/>and the other as \"desired nutrients\"<br/>and tries to optimize (maximize) flow<br/>towards targets and decomposition<br/>of the <i>desired nutrients</i> while keeping<br/>all other inflow reactions low.</html>");
-		evolveSeeds.addActionListener(this);
-		taskButtons.add(evolveSeeds);
-
-
-
-
 		
 		skipUnbalancedReactions=new JCheckBox("<html>Skip unbalanced reactions");
 		skipUnbalancedReactions.setToolTipText("<html>Unbalanced reactions wil not be taken into account, when using methods which use stoichiometry.");
@@ -327,22 +322,6 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		System.exit(0);
   }
 
-	/**
-	 * starts the calls to the different seed optimizers
-	 * @param method if method is set to 1, the seed optimization will be performed by means of mixed linear integer programming, otherwise an evolutionary algorithm will be applied
-	 * @throws IOException
-	 */
-	private void optimizeSeeds() throws IOException {
-		TreeSet<Integer> decompositionList = substancesTab.degradeList();
-		if (decompositionList!=null && !decompositionList.isEmpty()){
-			TreeSet<Integer> buildList = substancesTab.produceList();
-			
-			if (buildList!=null && !buildList.isEmpty()){
-				actionHandler.evovleSeeds(compartmentTab.getUserList().getListed(), decompositionList, buildList,substancesTab.ignoreList());
-			}
-		}
-  }
-
 	public void stateChanged(ChangeEvent arg0) {
 		Object source=arg0.getSource();
 		if (source instanceof CompartmentList) taskTabs.setSelectedIndex(0);
@@ -405,8 +384,6 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 			if (source == disconnectClients) actionHandler.disconnect(onlyOdle.isSelected());
 			if (source == calcPotentialAdditionals) actionHandler.calcPotentialAdditionals(compartmentTab.getUserList().getListed(),substancesTab.degradeList(),substancesTab.ignoreList());
 			if (source == searchProcessors) actionHandler.searchProcessors(substancesTab.degradeList());
-			if (source == evolveSeeds) optimizeSeeds();
-			
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
