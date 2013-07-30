@@ -17,6 +17,8 @@ import edu.fsuj.csb.reactionnetworks.interaction.OptimizationSolution;
 import edu.fsuj.csb.reactionnetworks.interaction.SubstanceListNode;
 import edu.fsuj.csb.reactionnetworks.interaction.results.OptimizationResult;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.CalculationTask;
+import edu.fsuj.csb.reactionnetworks.interaction.tasks.ParameterSet;
+import edu.fsuj.csb.reactionnetworks.interaction.tasks.SubstanceSet;
 import edu.fsuj.csb.reactionnetworks.organismtools.DbCompartment;
 import edu.fsuj.csb.reactionnetworks.organismtools.DbReaction;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPCondition;
@@ -37,44 +39,22 @@ public class LinearProgrammingTask extends CalculationTask {
 	private static final long serialVersionUID = -8309620489674531282L;
 	private static final boolean INFLOW = true;
 	private static final boolean OUTFLOW = false;
-	private TreeSet<Integer> substancesThatShallBeConsumed;
-	private TreeSet<Integer> substancesThatShallBeProduced;
-	private TreeSet<Integer> substancesThatShallNotBeProduced;
-	private TreeSet<Integer> substancesThatShallNotBeConsumed;
-	private TreeSet<Integer> substancesThatShallNotBeBalanced;
+
 	private int compartmentId;
-	private boolean useMILP = true;
-	private boolean ignoreUnbalanced;
 	private Double inflowWeight=1.0;
 	private Double outflowWeight=1.0;
 	private Double reactionWeight=1.0;
+	private SubstanceSet substances;
+	private ParameterSet parameters;
 	private static Double limit = 100000.0;
 
-	/**
-	 * @param cid the id of the compartment, on which calculations are done
-	 * @param consume the set of ids of substances, that shall be degraded/consumed
-	 * @param produce the set of ids of substances, that shall be produced
-	 * @param noConsume the set of ids of substances, that shall not be taken up
-	 * @param noProduce the set of ids of substances, that shall not be produced
-	 * @param ignoredSubstances the set of ids that shall not be used at all
-	 * @param useMILP determines, whether the slower MILP shall be used
-	 * @param ignoreUnbalancedReactions determines, whether unbalanced reactions are allowed
-	 */
-	public LinearProgrammingTask(int cid, TreeSet<Integer> consume, TreeSet<Integer> produce, TreeSet<Integer> noConsume, TreeSet<Integer> noProduce, TreeSet<Integer> ignoredSubstances, boolean useMILP, boolean ignoreUnbalancedReactions) {
-		substancesThatShallBeConsumed = nonNullSet(consume);
-		substancesThatShallBeProduced = nonNullSet(produce);
-		substancesThatShallNotBeConsumed = nonNullSet(noConsume);
-		substancesThatShallNotBeProduced = nonNullSet(noProduce);
-		substancesThatShallNotBeBalanced = nonNullSet(ignoredSubstances);
-		compartmentId = cid;
-		this.useMILP = useMILP;
-		ignoreUnbalanced = ignoreUnbalancedReactions;
-	}
-
-	private static TreeSet<Integer> nonNullSet(TreeSet<Integer> set) {
-		if (set==null) return new TreeSet<Integer>();
-	  return set;
+	public LinearProgrammingTask(Integer compartmentId, SubstanceSet substanceSet, ParameterSet parameterSet) {
+		this.compartmentId=compartmentId;
+		this.substances=substanceSet;
+		this.parameters=parameterSet;
   }
+
+
 
 	@Override
 	public void run(CalculationClient calculationClient) throws IOException, NoTokenException, AlreadyBoundException, SQLException {
@@ -143,7 +123,7 @@ public class LinearProgrammingTask extends CalculationTask {
 		LPTerm outflowsTerm=null;
 		LPTerm termToMinimize=null;
 				
-		if (useMILP) {
+		if (parameters.useMILP()) {
 
 			for (Binding reactionBinding:reactionBindings(compartment)){ /* create terms for substances according to reactions */
 				solver.addCondition(reactionBinding.lowerLimit());
@@ -169,15 +149,15 @@ public class LinearProgrammingTask extends CalculationTask {
 			}
 			
 			/* force desired inflows and outflows */
-			for (Integer sid : substancesThatShallBeConsumed)	solver.addCondition(new LPCondition(inflow(sid), LPCondition.GREATER_THEN, 1.0));
-			for (Integer sid : substancesThatShallBeProduced)	solver.addCondition(new LPCondition(outflow(sid), LPCondition.GREATER_THEN, 1.0));
+			for (Integer sid : substances.consume())	solver.addCondition(new LPCondition(inflow(sid), LPCondition.GREATER_THEN, 1.0));
+			for (Integer sid : substances.produce())	solver.addCondition(new LPCondition(outflow(sid), LPCondition.GREATER_THEN, 1.0));
 			
 			
 			
 		} else { // not using MILP:
 			for (Integer rid:compartment.reactions()){ /* create terms for substances according to reactions */
 				Reaction reaction = Reaction.get(rid);
-				if (ignoreUnbalanced && !reaction.isBalanced()) continue;
+				if (parameters.ignoreUnbalanced() && !reaction.isBalanced()) continue;
 
 				if (reaction.firesForwardIn(compartment)) reactionsTerm=new LPSum(reactionsTerm, forward(rid));
 				if (reaction.firesBackwardIn(compartment)) reactionsTerm=new LPSum(reactionsTerm, backward(rid));
@@ -187,18 +167,18 @@ public class LinearProgrammingTask extends CalculationTask {
 				LPVariable inflow = inflow(sid);
 				LPVariable outflow = outflow(sid);
 
-				if (substancesThatShallBeConsumed.contains(sid)){
+				if (substances.consume().contains(sid)){
 					solver.addCondition(new LPCondition(inflow, LPCondition.GREATER_THEN, 1.0));				
 					inflowsTerm=new LPDiff(inflowsTerm, inflow);
 				} else {
-					if (!substancesThatShallNotBeConsumed.contains(sid)) inflowsTerm=new LPSum(inflowsTerm, inflow);
+					if (!substances.noConsume().contains(sid)) inflowsTerm=new LPSum(inflowsTerm, inflow);
 				}
 				
-				if (substancesThatShallBeProduced.contains(sid)){
+				if (substances.produce().contains(sid)){
 					solver.addCondition(new LPCondition(outflow, LPCondition.GREATER_THEN, 1.0));
 					outflowsTerm=new LPDiff(outflowsTerm, outflow);
 				} else {
-					if (!substancesThatShallNotBeProduced.contains(sid)) outflowsTerm=new LPSum(outflowsTerm, outflow);
+					if (!substances.noProduce().contains(sid)) outflowsTerm=new LPSum(outflowsTerm, outflow);
 				}
 			}
 		}
@@ -207,7 +187,7 @@ public class LinearProgrammingTask extends CalculationTask {
 		
 		int number=0;
 		for (OptimizationSolution solution:solutions){
-			if (useMILP){
+			if (parameters.useMILP()){
 				double sum=0;
 				LPTerm sumTerm=null;
 				for (Entry<Integer, Double> entry:solution.inflows().entrySet()){
@@ -339,16 +319,16 @@ public class LinearProgrammingTask extends CalculationTask {
 		Tools.startMethod("addOutflows(...)");
 		TreeSet<Binding> bindings = Binding.set();
 		for (Integer sid : allSubstances) {
-			if (substancesThatShallBeConsumed.contains(sid)){
-				Tools.indent("substancesThatShallBeConsumed contains "+sid);
+			if (substances.consume().contains(sid)){
+				Tools.indent("substances.consume() contains "+sid);
 				continue;
 			}
-			if (substancesThatShallNotBeProduced.contains(sid)){
-				System.out.println("substancesThatShallNotBeProduced contains "+sid);
+			if (substances.noProduce().contains(sid)){
+				System.out.println("substances.noProduce() contains "+sid);
 				continue;	 // do not add inflow for substance that (shall be produced) or (shall not be consumed)
 			} 
 			LPVariable outflow = addBoundaryFlow(balances, sid, OUTFLOW);
-			if (useMILP) {
+			if (parameters.useMILP()) {
 				LPVariable outflowSwitch = outflowSwitch(sid);
 				bindings.add(new Binding(outflow, outflowSwitch));
 			}
@@ -361,17 +341,17 @@ public class LinearProgrammingTask extends CalculationTask {
 		Tools.startMethod("addInflows(...)");
 		TreeSet<Binding> bindings = Binding.set();
 		for (Integer sid : allSubstances) {
-			if (substancesThatShallBeProduced.contains(sid)){
-				Tools.indent("substancesThatShallBeProduced contains "+sid);
+			if (substances.produce().contains(sid)){
+				Tools.indent("substances.produce() contains "+sid);
 				continue;
 			}
-			if (substancesThatShallNotBeConsumed.contains(sid)){
-				System.out.println("substancesThatShallNotBeConsumed contains "+sid);
+			if (substances.noConsume().contains(sid)){
+				System.out.println("substances.noConsume() contains "+sid);
 				 // do not add inflow for substance that (shall be produced) or (shall not be consumed)
 				continue;
 			}			
 			LPVariable inflow = addBoundaryFlow(balances, sid, INFLOW);
-			if (useMILP) {
+			if (parameters.useMILP()) {
 				LPVariable inflowSwitch = inflowSwitch(sid);
 				bindings.add(new Binding(inflow, inflowSwitch));
 			}
@@ -402,7 +382,7 @@ public class LinearProgrammingTask extends CalculationTask {
 		ReactionSet reactions = compartment.reactions();
 		for (Integer reactionID : reactions) { /* create terms for substances according to reactions */
 			Reaction reaction = Reaction.get(reactionID);
-			if (ignoreUnbalanced && !reaction.isBalanced()) continue;
+			if (parameters.ignoreUnbalanced() && !reaction.isBalanced()) continue;
 
 			if (reaction.firesForwardIn(compartment)) addForwardVelocity(reaction, balances);
 			if (reaction.firesBackwardIn(compartment)) addBackwardVelocity(reaction, balances);
@@ -417,7 +397,7 @@ public class LinearProgrammingTask extends CalculationTask {
 		for (Entry<Integer, Integer> entry : reaction.substrates().entrySet()) {
 			int substanceId = entry.getKey();
 			double stoich = entry.getValue();
-			if (substancesThatShallNotBeBalanced.contains(substanceId)) continue;
+			if (substances.ignoredSubstances().contains(substanceId)) continue;
 			LPTerm balanceForSubstance = mappingFromSubstancesToTerms.get(substanceId);
 			mappingFromSubstancesToTerms.put(substanceId, new LPSum(balanceForSubstance, stoich, backwardVelocity));
 			//Tools.indent("adding +"+substanceId);
@@ -425,7 +405,7 @@ public class LinearProgrammingTask extends CalculationTask {
 		for (Entry<Integer, Integer> entry : reaction.products().entrySet()) {
 			int substanceId = entry.getKey();
 			double stoich = entry.getValue();
-			if (substancesThatShallNotBeBalanced.contains(substanceId)) continue;
+			if (substances.ignoredSubstances().contains(substanceId)) continue;
 			LPTerm balanceForSubstance = mappingFromSubstancesToTerms.get(substanceId);
 			mappingFromSubstancesToTerms.put(substanceId, new LPDiff(balanceForSubstance, stoich, backwardVelocity));
 			//Tools.indent("adding -"+substanceId);
@@ -439,7 +419,7 @@ public class LinearProgrammingTask extends CalculationTask {
 		for (Entry<Integer, Integer> entry : reaction.products().entrySet()) {
 			int substanceId = entry.getKey();
 			double stoich = entry.getValue();
-			if (substancesThatShallNotBeBalanced.contains(substanceId)) continue;
+			if (substances.ignoredSubstances().contains(substanceId)) continue;
 			LPTerm balanceForSubstance = mappingFromSubstancesToTerms.get(substanceId);
 			mappingFromSubstancesToTerms.put(substanceId, new LPSum(balanceForSubstance, stoich, forwardVelocity));
 			//Tools.indent("adding +"+substanceId);
@@ -448,7 +428,7 @@ public class LinearProgrammingTask extends CalculationTask {
 		for (Entry<Integer, Integer> entry : reaction.substrates().entrySet()) {
 			int substanceId = entry.getKey();
 			double stoich = entry.getValue();
-			if (substancesThatShallNotBeBalanced.contains(substanceId)) continue;
+			if (substances.ignoredSubstances().contains(substanceId)) continue;
 			LPTerm balanceForSubstance = mappingFromSubstancesToTerms.get(substanceId);
 			mappingFromSubstancesToTerms.put(substanceId, new LPDiff(balanceForSubstance, stoich, forwardVelocity));
 			//Tools.indent("adding -"+substanceId);
@@ -487,10 +467,6 @@ public class LinearProgrammingTask extends CalculationTask {
 	public static LPVariable outflowSwitch(Integer substanceId) {
 		return new LPVariable("sO" + substanceId);
 	}
-
-	public TreeSet<Integer> ignoredSubstances() {
-	  return substancesThatShallNotBeBalanced;
-  }
 	
 	public int getCompartmentId() {
 	  return compartmentId;
@@ -502,9 +478,9 @@ public class LinearProgrammingTask extends CalculationTask {
 	}
 	
 	public DefaultMutableTreeNode outputTree() throws SQLException {
-		return new SubstanceListNode("desired output substances",substancesThatShallBeProduced);
+		return new SubstanceListNode("desired output substances",substances.produce());
   }
 	public DefaultMutableTreeNode inputTree() throws SQLException {
-		return new SubstanceListNode("desired input substances",substancesThatShallBeConsumed);
+		return new SubstanceListNode("desired input substances",substances.consume());
   }
 }
