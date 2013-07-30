@@ -109,7 +109,7 @@ public class ActionHandler extends Master {
 	 * @throws IOException
 	 */
 	public void calculateProducts(TreeSet<CompartmentNode> compartments, TreeSet<Integer> substanceIds) throws IOException {
-		if (warnforEmptyList(substanceIds)) return;
+		if (warnforEmptyList(substanceIds,"Nutrients")) return;
 		for (Iterator<CompartmentNode> speciesIterator = compartments.iterator(); speciesIterator.hasNext();) {
 			int cid = speciesIterator.next().compartment().id();
 			ProductCalculationTask pct = new ProductCalculationTask(cid, substanceIds);
@@ -224,7 +224,7 @@ public class ActionHandler extends Master {
 	 * @throws IOException
 	 */
 	public void calcPotentialAdditionals(TreeSet<CompartmentNode> compartments, TreeSet<Integer> substanceIds, TreeSet<Integer> internalSubstances) throws IOException {
-		if (warnforEmptyList(substanceIds)) return;
+		if (warnforEmptyList(substanceIds,"Nutrients")) return;
 		TreeSet<Integer> nutrients=new TreeSet<Integer>(ObjectComparator.get());
 		nutrients.addAll(substanceIds);
 		nutrients.addAll(internalSubstances);
@@ -241,27 +241,28 @@ public class ActionHandler extends Master {
 	 * @throws IOException
 	 */
 	public void searchProcessors(TreeSet<Integer>substanceIds) throws IOException {
-		if (warnforEmptyList(substanceIds)) return;
+		if (warnforEmptyList(substanceIds,"Substances")) return;
 		ProcessorSearchTask pst=new ProcessorSearchTask(substanceIds); 	  
 		sendTask(pst);
   }
 
 	/**
-	 * checks, whether the substance id list is null/empty and prints a warning if it is
-	 * @param substanceIds the list of substances to be checked
+	 * checks, whether the id list is null/empty and prints a warning if it is
+	 * @param ids the list of substances to be checked
 	 * @return true, only if the substance id list is neither null nor empty
 	 */
-	private boolean warnforEmptyList(TreeSet<Integer> substanceIds) {
-		if (substanceIds==null)	return true;
-		if (substanceIds.isEmpty()){
-			System.out.println("Substance list is empty!");
+	private boolean warnforEmptyList(TreeSet<Integer> ids, String type) {
+		if (ids==null)	return true;
+		if (ids.isEmpty()){
+			System.out.println("List of "+type+" is empty!");
 			return true;
 		}
 		return false;
   }
 
 	public void startFBA(TreeSet<Integer> compartmentIds, TreeSet<Integer> consume, TreeSet<Integer> produce, TreeSet<Integer> noConsume, TreeSet<Integer> noProduce, TreeSet<Integer> ignoredSubstances, boolean ignoreUnbalancedReactions) throws IOException {
-		if (compartmentIds.isEmpty()) System.out.println("NOTE: No compartment selected!");
+		if (warnforEmptyList(compartmentIds,"Organisms/Compartments")) return;
+		if (warnforEmptyList(consume,"Substances to consume") || warnforEmptyList(produce,"Substances to produce")) return;
 		for (Integer compartmentId:compartmentIds) startFBA(compartmentId, consume, produce, noConsume, noProduce, ignoredSubstances, ignoreUnbalancedReactions);
   }
 
