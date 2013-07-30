@@ -254,7 +254,7 @@ public class ActionHandler extends Master {
 	private boolean warnforEmptyList(TreeSet<Integer> ids, String type) {
 		if (ids==null)	return true;
 		if (ids.isEmpty()){
-			System.out.println("List of "+type+" is empty!");
+			System.out.println("NOTE: List of "+type+" is empty!");
 			return true;
 		}
 		return false;
@@ -267,6 +267,8 @@ public class ActionHandler extends Master {
   }
 
 	private void startFBA(Integer compartmentId, TreeSet<Integer> consume, TreeSet<Integer> produce, TreeSet<Integer> noConsume, TreeSet<Integer> noProduce, TreeSet<Integer> ignoredSubstances, boolean ignoreUnbalancedReactions) throws IOException {
+		if (compartmentId==null) System.out.println("NOTE: No compartment selected!");
+		if (warnforEmptyList(consume,"Substances to consume") || warnforEmptyList(produce,"Substances to produce")) return;
 		FBATask fba=new FBATask(compartmentId, consume, produce, noConsume, noProduce, ignoredSubstances, false, ignoreUnbalancedReactions);
 		
 		sendTask(fba);
