@@ -110,45 +110,50 @@ public class LinearProgrammingTask extends CalculationTask {
 
 		TreeSet<Integer> allSubstances = compartment.utilizedSubstances();
 
-		/* add inflows */
+		TreeSet<Integer> auxiliaryInflows = substances.calculateAuxiliaryInflows(allSubstances);
+		TreeSet<Integer> auxiliaryOutflows = substances.calculateAuxiliaryOutflows(allSubstances);
+		TreeSet<Integer> possibleInflows = substances.possibleInflows(allSubstances);
+		TreeSet<Integer> possibleOutFlows = substances.possibleOutflows(allSubstances);
 
-		TreeSet<Integer> inflows = new TreeSet<Integer>(allSubstances);
-		inflows.removeAll(substances.produce());
-		inflows.removeAll(substances.noConsume());
-		TreeSet<Binding> inflowBindings = addInflows(inflows, balances);
+		/* add inflows */
+		
+		TreeSet<Binding> inflowBindings = addInflows(possibleInflows,balances);
 
 		/* add outflows */
 
-		TreeSet<Integer> outflows = new TreeSet<Integer>(allSubstances);
-		outflows.removeAll(substances.consume());
-		outflows.removeAll(substances.noProduce());
-		TreeSet<Binding> outflowBindings = addOutflows(outflows, balances);
+		TreeSet<Binding> outflowBindings = addOutflows(possibleOutFlows, balances);
 
-		LPTerm inflowSum = null;
-		LPTerm reactionSum = null;
-		LPTerm outflowSum = null;
+		LPTerm desiredInflowSum = null;
+		LPTerm auxiliaryInflowSum = null;
+		LPTerm desiredOutflowSum = null;
+		LPTerm auxiliaryOutflowSum = null;
+		LPTerm internalReactionSum = null;
 		LPTerm termToMinimize = null;
 
-		if (parameters.useMILP()) {
+		if (parameters.useMILP()) { // TODO: Dieser Abschnitt muss überarbeitet werden
 
+			
 			/* bind reaction velocities to reaction switches and create sum of reaction switches */
-			reactionSum = buildReactionSwitchSum(solver, compartment);
+			internalReactionSum = buildReactionSwitchSum(solver, compartment);
 
 			/* bin inflow reaction velocities to their switches and create sum of inflow reaction switches */
-			inflowSum = buildInflowSwitchSum(solver, inflowBindings);
+			desiredInflowSum = buildInflowSwitchSum(solver, inflowBindings);
 
 			/* bin outflow reaction velocities to their switches and create sum of outflow reaction switches */
-			outflowSum = buildOutflowSwitchSum(solver, outflowBindings);
+			desiredOutflowSum = buildOutflowSwitchSum(solver, outflowBindings);
 
 
 
 		} else { // not using MILP:
-			reactionSum = buildReactionSum(solver, compartment);
-			inflowSum = buildInflowSum(solver, allSubstances);
-			outflowSum = buildOutflowSum(solver,allSubstances);
+			internalReactionSum = buildInternalReactionSum(solver, compartment);
+			desiredInflowSum = buildInflowSum(solver, substances.desiredInflows(),true);
+			auxiliaryInflowSum = buildInflowSum(solver, auxiliaryInflows);			
+			desiredOutflowSum = buildOutflowSum(solver,substances.desiredOutFlows(),true);
+			auxiliaryOutflowSum = buildOutflowSum(solver, auxiliaryOutflows);
 		}
 
-		termToMinimize = new LPSum(new LPSum(inflowWeight, inflowSum, outflowWeight, outflowSum), reactionWeight, reactionSum);
+		// TODO: von hier an überarbeiten
+		termToMinimize = new LPSum(new LPSum(inflowWeight, desiredInflowSum, outflowWeight, desiredOutflowSum), reactionWeight, internalReactionSum);
 
 		int number = 0;
 		for (OptimizationSolution solution : solutions) {
@@ -216,22 +221,27 @@ public class LinearProgrammingTask extends CalculationTask {
 	}
 
 	private LPTerm buildOutflowSum(LPSolveWrapper solver, TreeSet<Integer> allSubstances) {
+		return buildOutflowSum(solver,allSubstances,false);
+	}
+	private LPTerm buildOutflowSum(LPSolveWrapper solver, TreeSet<Integer> allSubstances,boolean addCondition) {
 		LPTerm result = null;
 		for (Integer sid : allSubstances) {
 			LPVariable outflow = outflow(sid);
-			if (substances.produce().contains(sid)) solver.addCondition(new LPCondition(outflow, LPCondition.GREATER_THEN, 1.0)); // force this substance to be consumed
-			if (substances.noProduce().contains(sid)) continue; // skip adding inflow term
+			if (addCondition) solver.addCondition(new LPCondition(outflow, LPCondition.GREATER_THEN, 1.0)); // force this substance to be consumed
 			result = simpleSum(result, outflow);
 		}
 		return result;
-		}
+	}
+	
+	private LPTerm buildInflowSum(LPSolveWrapper solver, TreeSet<Integer> inflows) {
+		return buildInflowSum(solver,inflows,false);
+	}
 
-	private LPTerm buildInflowSum(LPSolveWrapper solver, TreeSet<Integer> allSubstances) {
+	private LPTerm buildInflowSum(LPSolveWrapper solver, TreeSet<Integer> inflows, boolean addCondition) {
 		LPTerm result = null;
-		for (Integer sid : allSubstances) {
+		for (Integer sid : inflows) {
 			LPVariable inflow = inflow(sid);
-			if (substances.consume().contains(sid)) solver.addCondition(new LPCondition(inflow, LPCondition.GREATER_THEN, 1.0)); // force this substance to be consumed
-			if (substances.noConsume().contains(sid)) continue; // skip adding inflow term
+			if (addCondition) solver.addCondition(new LPCondition(inflow, LPCondition.GREATER_THEN, 1.0)); // force this substance to be consumed
 			result = simpleSum(result, inflow);
 		}
 		return result;
@@ -243,7 +253,7 @@ public class LinearProgrammingTask extends CalculationTask {
 		return new LPSum(term1, term2);
 	}
 
-	private LPTerm buildReactionSum(LPSolveWrapper solver, DbCompartment compartment) throws DataFormatException {
+	private LPTerm buildInternalReactionSum(LPSolveWrapper solver, DbCompartment compartment) throws DataFormatException {
 		LPTerm result = null;
 		for (Integer rid : compartment.reactions()) { /* create terms for substances according to reactions */
 			Reaction reaction = Reaction.get(rid);
@@ -325,10 +335,10 @@ public class LinearProgrammingTask extends CalculationTask {
 		return reactionBindings;
 	}
 
-	private TreeSet<Binding> addOutflows(TreeSet<Integer> outflowSubstances, TreeMap<Integer, LPTerm> balances) {
+	private TreeSet<Binding> addOutflows(TreeSet<Integer> possibleOutflows, TreeMap<Integer, LPTerm> balances) {
 		Tools.startMethod("addOutflows(...)");
 		TreeSet<Binding> bindings = Binding.set();
-		for (Integer sid : outflowSubstances) {
+		for (Integer sid : possibleOutflows) {
 			LPVariable outflow = addBoundaryFlow(balances, sid, OUTFLOW);
 			if (parameters.useMILP()) {
 				LPVariable outflowSwitch = outflowSwitch(sid);
@@ -339,10 +349,10 @@ public class LinearProgrammingTask extends CalculationTask {
 		return bindings;
 	}
 
-	private TreeSet<Binding> addInflows(TreeSet<Integer> inflowSubstances, TreeMap<Integer, LPTerm> balances) {
+	private TreeSet<Binding> addInflows(TreeSet<Integer> possibleInflows, TreeMap<Integer, LPTerm> balances) {
 		Tools.startMethod("addInflows(...)");
 		TreeSet<Binding> bindings = Binding.set();
-		for (Integer sid : inflowSubstances) {
+		for (Integer sid : possibleInflows) {
 			LPVariable inflow = addBoundaryFlow(balances, sid, INFLOW);
 			if (parameters.useMILP()) {
 				LPVariable inflowSwitch = inflowSwitch(sid);
