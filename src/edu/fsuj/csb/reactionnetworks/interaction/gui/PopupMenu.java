@@ -45,7 +45,7 @@ public class PopupMenu extends JPopupMenu implements ActionListener {
 		setLocation(pos);
 		
 		objectText=targetObject.toString();
-		System.out.println(targetObject.getClass());
+//		System.out.println(targetObject.getClass());
 
 		search = new JMenuItem("Search on Google");
 		search.addActionListener(this);
