@@ -23,6 +23,7 @@ import edu.fsuj.csb.reactionnetworks.interaction.tasks.StructuredTask;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.graph.AdditionsCalculationTask;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.graph.ProcessorSearchTask;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.graph.ProductCalculationTask;
+import edu.fsuj.csb.reactionnetworks.interaction.tasks.lp.FBATask;
 import edu.fsuj.csb.tools.organisms.gui.CompartmentNode;
 import edu.fsuj.csb.tools.xml.NoTokenException;
 import edu.fsuj.csb.tools.xml.ObjectComparator;
@@ -256,5 +257,16 @@ public class ActionHandler extends Master {
 			return true;
 		}
 		return false;
+  }
+
+	public void startFBA(TreeSet<Integer> compartmentIds) throws IOException {
+		for (Integer compartmentId:compartmentIds) startFBA(compartmentId);
+  }
+
+	private void startFBA(Integer compartmentId) throws IOException {
+		// TODO: add parameters
+		FBATask fba=new FBATask(compartmentId, null, null, null, null, null, false, false);
+		
+		sendTask(fba);
   }
 }

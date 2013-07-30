@@ -1,4 +1,4 @@
-package edu.fsuj.csb.reactionnetworks.interaction.tasks;
+package edu.fsuj.csb.reactionnetworks.interaction.tasks.lp;
 
 import java.io.IOException;
 import java.rmi.AlreadyBoundException;
@@ -16,6 +16,7 @@ import edu.fsuj.csb.reactionnetworks.interaction.CalculationClient;
 import edu.fsuj.csb.reactionnetworks.interaction.OptimizationSolution;
 import edu.fsuj.csb.reactionnetworks.interaction.SubstanceListNode;
 import edu.fsuj.csb.reactionnetworks.interaction.results.OptimizationResult;
+import edu.fsuj.csb.reactionnetworks.interaction.tasks.CalculationTask;
 import edu.fsuj.csb.reactionnetworks.organismtools.DbCompartment;
 import edu.fsuj.csb.reactionnetworks.organismtools.DbReaction;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPCondition;
