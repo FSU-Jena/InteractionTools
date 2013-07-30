@@ -27,7 +27,6 @@ import edu.fsuj.csb.gui.HorizontalPanel;
 import edu.fsuj.csb.gui.StatusPanel;
 import edu.fsuj.csb.gui.VerticalPanel;
 import edu.fsuj.csb.reactionnetworks.interaction.ActionHandler;
-import edu.fsuj.csb.reactionnetworks.interaction.tasks.ParameterSet;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.SubstanceSet;
 import edu.fsuj.csb.tools.configuration.Configuration;
 import edu.fsuj.csb.tools.newtork.pagefetcher.PageFetcher;
@@ -49,7 +48,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	private SubstancesTab substancesTab;
 	private JButton calculateProductsButton,calcPotentialAdditionals,searchProcessors,fluxBalanceAnalysis;
 	private JTabbedPane taskTabs;
-	private JCheckBox onlyOdle,skipUnbalancedReactions;
+	private JCheckBox onlyOdle;
 	private OptimizationParametersTab parametersTab;
 	private StatusPanel statusPanel;
 	private DatabasePane databasePane;
@@ -384,16 +383,12 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 			if (source == disconnectClients) actionHandler.disconnect(onlyOdle.isSelected());
 			if (source == calcPotentialAdditionals) actionHandler.calcPotentialAdditionals(compartmentTab.getUserList().getListed(),substancesTab.degradeList(),substancesTab.ignoreList());
 			if (source == searchProcessors) actionHandler.searchProcessors(substancesTab.degradeList());
-			if (source == fluxBalanceAnalysis) actionHandler.startFBA(compartmentTab.getUserSpecies(),getSubstanceSet(),parameters());
+			if (source == fluxBalanceAnalysis) actionHandler.startFBA(compartmentTab.getUserSpecies(),getSubstanceSet(),parametersTab.optimizationParameterSet());
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
 		frame.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 	}
-
-	private ParameterSet parameters() {
-	  return new ParameterSet(false, skipUnbalancedReactions.isSelected());
-  }
 
 	private SubstanceSet getSubstanceSet() {		
 		return new SubstanceSet(substancesTab.degradeList(),substancesTab.produceList(),null,substancesTab.noOutflowList(),substancesTab.ignoreList());
