@@ -19,22 +19,22 @@ public class SubstanceSet implements Serializable{
   }
 
 	public TreeSet<Integer> consume() {
-	  return degradeList;
+	  return new TreeSet<Integer>(degradeList);
   }
 
 	public TreeSet<Integer> produce() {
-	  return produceList;
+		return new TreeSet<Integer>( produceList);
   }
 
 	public TreeSet<Integer> noProduce() {
-	  return noOutflowList;
+		return new TreeSet<Integer>( noOutflowList);
   }
 
 	public TreeSet<Integer> noConsume() {
-	  return noInflowList;
+		return new TreeSet<Integer>( noInflowList);
   }
 
 	public TreeSet<Integer> ignoredSubstances() {
-	  return ignoreList;
+		return new TreeSet<Integer>( ignoreList);
   }
 }
