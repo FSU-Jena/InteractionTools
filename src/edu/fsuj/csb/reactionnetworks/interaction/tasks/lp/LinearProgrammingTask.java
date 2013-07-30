@@ -126,29 +126,25 @@ public class LinearProgrammingTask extends CalculationTask {
 		outflows.removeAll(substances.noProduce());		
 		TreeSet<Binding> outflowBindings = addOutflows(outflows, balances);
 		
-		LPTerm inflowsTerm=null;
-		LPTerm reactionBindTerms=null;
-		LPTerm outflowsTerm=null;
+		LPTerm inflowSum=null;
+		LPTerm reactionSum=null;
+		LPTerm outflowSum=null;
 		LPTerm termToMinimize=null;
 				
 		if (parameters.useMILP()) {
 
-			reactionBindTerms=bindReactionsToReactionSwitches(solver, compartment);			
-			inflowsTerm=bindInflowsToInflowSwitches(solver,inflowBindings);
-			outflowsTerm=bindOutflowsToOutflowSwitches(solver, outflowBindings);
+			reactionSum=buildReactionSwitchSum(solver, compartment);			
+			inflowSum=buildInflowSwitchSum(solver,inflowBindings);
+			outflowSum=buildOutflowSwitchSum(solver, outflowBindings);
 
 			/* force desired inflows and outflows */
 			for (Integer sid : substances.consume())	solver.addCondition(new LPCondition(inflow(sid), LPCondition.GREATER_THEN, 1.0));
 			for (Integer sid : substances.produce())	solver.addCondition(new LPCondition(outflow(sid), LPCondition.GREATER_THEN, 1.0));
 			
 		} else { // not using MILP:
-			for (Integer rid:compartment.reactions()){ /* create terms for substances according to reactions */
-				Reaction reaction = Reaction.get(rid);
-				if (parameters.ignoreUnbalanced() && !reaction.isBalanced()) continue;
+			
+			reactionSum=buildReactionSum(solver,compartment);
 
-				if (reaction.firesForwardIn(compartment)) reactionBindTerms=new LPSum(reactionBindTerms, forward(rid));
-				if (reaction.firesBackwardIn(compartment)) reactionBindTerms=new LPSum(reactionBindTerms, backward(rid));
-			}
 			
 			for (Integer sid : allSubstances)	{
 				LPVariable inflow = inflow(sid);
@@ -156,21 +152,21 @@ public class LinearProgrammingTask extends CalculationTask {
 
 				if (substances.consume().contains(sid)){
 					solver.addCondition(new LPCondition(inflow, LPCondition.GREATER_THEN, 1.0));				
-					inflowsTerm=new LPDiff(inflowsTerm, inflow);
+					inflowSum=new LPDiff(inflowSum, inflow);
 				} else {
-					if (!substances.noConsume().contains(sid)) inflowsTerm=new LPSum(inflowsTerm, inflow);
+					if (!substances.noConsume().contains(sid)) inflowSum=new LPSum(inflowSum, inflow);
 				}
 				
 				if (substances.produce().contains(sid)){
 					solver.addCondition(new LPCondition(outflow, LPCondition.GREATER_THEN, 1.0));
-					outflowsTerm=new LPDiff(outflowsTerm, outflow);
+					outflowSum=new LPDiff(outflowSum, outflow);
 				} else {
-					if (!substances.noProduce().contains(sid)) outflowsTerm=new LPSum(outflowsTerm, outflow);
+					if (!substances.noProduce().contains(sid)) outflowSum=new LPSum(outflowSum, outflow);
 				}
 			}
 		}
 		
-		termToMinimize=new LPSum(new LPSum(inflowWeight,inflowsTerm, outflowWeight,outflowsTerm), reactionWeight,reactionBindTerms);
+		termToMinimize=new LPSum(new LPSum(inflowWeight,inflowSum, outflowWeight,outflowSum), reactionWeight,reactionSum);
 		
 		int number=0;
 		for (OptimizationSolution solution:solutions){
@@ -236,49 +232,62 @@ public class LinearProgrammingTask extends CalculationTask {
 		Tools.endMethod(solution);
 		return solution;
 	}
+	
+	LPTerm simpleSum(LPTerm term1,LPTerm term2){
+		if (term1==null) return term2;
+		if (term2==null) return term1;
+		return new LPSum(term1, term2);
+	}
 
-	private LPTerm bindOutflowsToOutflowSwitches(LPSolveWrapper solver, TreeSet<Binding> outflowBindings) {
+	private LPTerm buildReactionSum(LPSolveWrapper solver, DbCompartment compartment) throws DataFormatException {
+		LPTerm result=null;
+		for (Integer rid:compartment.reactions()){ /* create terms for substances according to reactions */
+			Reaction reaction = Reaction.get(rid);
+			if (parameters.ignoreUnbalanced() && !reaction.isBalanced()) continue;
+			if (reaction.firesForwardIn(compartment)) result=simpleSum(result, forward(rid));
+			if (reaction.firesBackwardIn(compartment)) result=simpleSum(result, backward(rid));
+		}
+		return result;
+	}
+
+	private LPTerm buildReactionSwitchSum(LPSolveWrapper solver, Compartment compartment) throws SQLException {
+		LPTerm result=null;
+		for (Binding reactionBinding:reactionBindings(compartment)){ /* create terms for substances according to reactions */
+			solver.addCondition(reactionBinding.lowerLimit());
+			solver.addCondition(reactionBinding.upperLimit());
+			solver.addBinVar(reactionBinding.switchVar());
+			result=simpleSum(result, reactionBinding.switchVar());
+		}
+		return result;
+  }
+
+	private LPTerm buildOutflowSwitchSum(LPSolveWrapper solver, TreeSet<Binding> outflowBindings) {
 		LPTerm result=null;
 		for (Binding outflowBinding:outflowBindings){
 			solver.addCondition(outflowBinding.lowerLimit());
 			solver.addCondition(outflowBinding.upperLimit());
 			solver.addBinVar(outflowBinding.switchVar());
-			if (result==null){
-				result=outflowBinding.switchVar();
-			} else result=new LPSum(result, outflowBinding.switchVar());			
+			result=simpleSum(result, outflowBinding.switchVar());			
 		}
 		return result;
   }
 
 
 
-	private LPTerm bindInflowsToInflowSwitches(LPSolveWrapper solver, TreeSet<Binding> inflowBindings) {
+	private LPTerm buildInflowSwitchSum(LPSolveWrapper solver, TreeSet<Binding> inflowBindings) {
 		LPTerm result=null;
 		for (Binding inflowBinding:inflowBindings){
 			solver.addCondition(inflowBinding.lowerLimit());
 			solver.addCondition(inflowBinding.upperLimit());
 			solver.addBinVar(inflowBinding.switchVar());
-			if (result==null){
-				result=inflowBinding.switchVar();
-			} else result=new LPSum(result, inflowBinding.switchVar());
+			result=simpleSum(result, inflowBinding.switchVar());
 		}		
 		return result;
   }
 
 
 
-	private LPTerm bindReactionsToReactionSwitches(LPSolveWrapper solver, Compartment compartment) throws SQLException {
-		LPTerm result=null;
-		for (Binding reactionBinding:reactionBindings(compartment)){ /* create terms for substances according to reactions */
-			solver.addCondition(reactionBinding.lowerLimit());
-			solver.addCondition(reactionBinding.upperLimit());
-			solver.addBinVar(reactionBinding.switchVar());
-			if (result==null){
-				result=reactionBinding.switchVar();
-			} else result=new LPSum(result, reactionBinding.switchVar());
-		}
-		return result;
-  }
+
 
 
 
