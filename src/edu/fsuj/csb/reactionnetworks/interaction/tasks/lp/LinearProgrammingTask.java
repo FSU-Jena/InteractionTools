@@ -41,19 +41,17 @@ public class LinearProgrammingTask extends CalculationTask {
 	private static final boolean OUTFLOW = false;
 
 	private int compartmentId;
-	private Double inflowWeight=1.0;
-	private Double outflowWeight=1.0;
-	private Double reactionWeight=1.0;
+	private Double inflowWeight = 1.0;
+	private Double outflowWeight = 1.0;
+	private Double reactionWeight = 1.0;
 	private SubstanceSet substances;
 	private ParameterSet parameters;
 
 	public LinearProgrammingTask(Integer compartmentId, SubstanceSet substanceSet, ParameterSet parameterSet) {
-		this.compartmentId=compartmentId;
-		this.substances=substanceSet;
-		this.parameters=parameterSet;
-  }
-
-
+		this.compartmentId = compartmentId;
+		this.substances = substanceSet;
+		this.parameters = parameterSet;
+	}
 
 	@Override
 	public void run(CalculationClient calculationClient) throws IOException, NoTokenException, AlreadyBoundException, SQLException {
@@ -95,133 +93,117 @@ public class LinearProgrammingTask extends CalculationTask {
 		} catch (DataFormatException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
-	    e.printStackTrace();
-    }
+			e.printStackTrace();
+		}
 	}
 
 	protected OptimizationSolution runInternal(TreeSet<OptimizationSolution> solutions) throws DataFormatException, SQLException, IOException, InterruptedException {
-		Tools.startMethod("runInternal("+solutions+")");
-		
+		Tools.startMethod("runInternal(" + solutions + ")");
+
 		/* prepare */
 		LPSolveWrapper solver = new LPSolveWrapper();
 		DbCompartment compartment = DbCompartment.load(compartmentId);
-		
+
 		/* create reaction balances */
 
 		TreeMap<Integer, LPTerm> balances = createSubatanceBalancesFromReactions(compartment);
 
 		TreeSet<Integer> allSubstances = compartment.utilizedSubstances();
-		
+
 		/* add inflows */
 
-		TreeSet<Integer> inflows=new TreeSet<Integer>(allSubstances);
+		TreeSet<Integer> inflows = new TreeSet<Integer>(allSubstances);
 		inflows.removeAll(substances.produce());
 		inflows.removeAll(substances.noConsume());
 		TreeSet<Binding> inflowBindings = addInflows(inflows, balances);
-		
+
 		/* add outflows */
-		
-		TreeSet<Integer> outflows=new TreeSet<Integer>(allSubstances);
+
+		TreeSet<Integer> outflows = new TreeSet<Integer>(allSubstances);
 		outflows.removeAll(substances.consume());
-		outflows.removeAll(substances.noProduce());		
+		outflows.removeAll(substances.noProduce());
 		TreeSet<Binding> outflowBindings = addOutflows(outflows, balances);
-		
-		LPTerm inflowSum=null;
-		LPTerm reactionSum=null;
-		LPTerm outflowSum=null;
-		LPTerm termToMinimize=null;
-				
+
+		LPTerm inflowSum = null;
+		LPTerm reactionSum = null;
+		LPTerm outflowSum = null;
+		LPTerm termToMinimize = null;
+
 		if (parameters.useMILP()) {
 
-			reactionSum=buildReactionSwitchSum(solver, compartment);			
-			inflowSum=buildInflowSwitchSum(solver,inflowBindings);
-			outflowSum=buildOutflowSwitchSum(solver, outflowBindings);
+			/* bind reaction velocities to reaction switches and create sum of reaction switches */
+			reactionSum = buildReactionSwitchSum(solver, compartment);
 
-			/* force desired inflows and outflows */
-			for (Integer sid : substances.consume())	solver.addCondition(new LPCondition(inflow(sid), LPCondition.GREATER_THEN, 1.0));
-			for (Integer sid : substances.produce())	solver.addCondition(new LPCondition(outflow(sid), LPCondition.GREATER_THEN, 1.0));
-			
+			/* bin inflow reaction velocities to their switches and create sum of inflow reaction switches */
+			inflowSum = buildInflowSwitchSum(solver, inflowBindings);
+
+			/* bin outflow reaction velocities to their switches and create sum of outflow reaction switches */
+			outflowSum = buildOutflowSwitchSum(solver, outflowBindings);
+
+
+
 		} else { // not using MILP:
-			
-			reactionSum=buildReactionSum(solver,compartment);
-
-			
-			for (Integer sid : allSubstances)	{
-				LPVariable inflow = inflow(sid);
-				LPVariable outflow = outflow(sid);
-
-				if (substances.consume().contains(sid)){
-					solver.addCondition(new LPCondition(inflow, LPCondition.GREATER_THEN, 1.0));				
-					inflowSum=new LPDiff(inflowSum, inflow);
-				} else {
-					if (!substances.noConsume().contains(sid)) inflowSum=new LPSum(inflowSum, inflow);
-				}
-				
-				if (substances.produce().contains(sid)){
-					solver.addCondition(new LPCondition(outflow, LPCondition.GREATER_THEN, 1.0));
-					outflowSum=new LPDiff(outflowSum, outflow);
-				} else {
-					if (!substances.noProduce().contains(sid)) outflowSum=new LPSum(outflowSum, outflow);
-				}
-			}
+			reactionSum = buildReactionSum(solver, compartment);
+			inflowSum = buildInflowSum(solver, allSubstances);
+			outflowSum = buildOutflowSum(solver,allSubstances);
 		}
-		
-		termToMinimize=new LPSum(new LPSum(inflowWeight,inflowSum, outflowWeight,outflowSum), reactionWeight,reactionSum);
-		
-		int number=0;
-		for (OptimizationSolution solution:solutions){
-			if (parameters.useMILP()){
-				double sum=0;
-				LPTerm sumTerm=null;
-				for (Entry<Integer, Double> entry:solution.inflows().entrySet()){
-					sum+=entry.getValue();
-					sumTerm=new LPSum(sumTerm, inflowSwitch(entry.getKey()));					
+
+		termToMinimize = new LPSum(new LPSum(inflowWeight, inflowSum, outflowWeight, outflowSum), reactionWeight, reactionSum);
+
+		int number = 0;
+		for (OptimizationSolution solution : solutions) {
+			if (parameters.useMILP()) {
+				double sum = 0;
+				LPTerm sumTerm = null;
+				for (Entry<Integer, Double> entry : solution.inflows().entrySet()) {
+					sum += entry.getValue();
+					sumTerm = new LPSum(sumTerm, inflowSwitch(entry.getKey()));
 				}
-				for (Entry<Integer, Double> entry:solution.outflows().entrySet()){
-					sum+=entry.getValue();
-					sumTerm=new LPSum(sumTerm, inflowSwitch(entry.getKey()));					
+				for (Entry<Integer, Double> entry : solution.outflows().entrySet()) {
+					sum += entry.getValue();
+					sumTerm = new LPSum(sumTerm, inflowSwitch(entry.getKey()));
 				}
-				for (Entry<Integer, Double> entry:solution.forwardReactions().entrySet()){
-					sum+=entry.getValue();
-					sumTerm=new LPSum(sumTerm, forwardSwitch(entry.getKey()));					
+				for (Entry<Integer, Double> entry : solution.forwardReactions().entrySet()) {
+					sum += entry.getValue();
+					sumTerm = new LPSum(sumTerm, forwardSwitch(entry.getKey()));
 				}
-				for (Entry<Integer, Double> entry:solution.backwardReactions().entrySet()){
-					sum+=entry.getValue();
-					sumTerm=new LPSum(sumTerm, backwardSwitch(entry.getKey()));					
+				for (Entry<Integer, Double> entry : solution.backwardReactions().entrySet()) {
+					sum += entry.getValue();
+					sumTerm = new LPSum(sumTerm, backwardSwitch(entry.getKey()));
 				}
-				LPCondition solutionExclusion = new LPCondition(sumTerm,LPCondition.LESS_THEN,sum);
-				solutionExclusion.setComment("Exclude Solution #"+(++number));
+				LPCondition solutionExclusion = new LPCondition(sumTerm, LPCondition.LESS_THEN, sum);
+				solutionExclusion.setComment("Exclude Solution #" + (++number));
 				solver.addCondition(solutionExclusion);
 			} else {
-				double sum=-0.0001;
-				LPTerm sumTerm=null;
-				for (Entry<Integer, Double> entry:solution.inflows().entrySet()){
-					sum+=entry.getValue();
-					sumTerm=new LPSum(sumTerm, inflow(entry.getKey()));					
+				double sum = -0.0001;
+				LPTerm sumTerm = null;
+				for (Entry<Integer, Double> entry : solution.inflows().entrySet()) {
+					sum += entry.getValue();
+					sumTerm = new LPSum(sumTerm, inflow(entry.getKey()));
 				}
-				for (Entry<Integer, Double> entry:solution.outflows().entrySet()){
-					sum+=entry.getValue();
-					sumTerm=new LPSum(sumTerm, outflow(entry.getKey()));					
+				for (Entry<Integer, Double> entry : solution.outflows().entrySet()) {
+					sum += entry.getValue();
+					sumTerm = new LPSum(sumTerm, outflow(entry.getKey()));
 				}
-				for (Entry<Integer, Double> entry:solution.forwardReactions().entrySet()){
-					sum+=entry.getValue();
-					sumTerm=new LPSum(sumTerm, forward(entry.getKey()));					
+				for (Entry<Integer, Double> entry : solution.forwardReactions().entrySet()) {
+					sum += entry.getValue();
+					sumTerm = new LPSum(sumTerm, forward(entry.getKey()));
 				}
-				for (Entry<Integer, Double> entry:solution.backwardReactions().entrySet()){
-					sum+=entry.getValue();
-					sumTerm=new LPSum(sumTerm, backward(entry.getKey()));					
+				for (Entry<Integer, Double> entry : solution.backwardReactions().entrySet()) {
+					sum += entry.getValue();
+					sumTerm = new LPSum(sumTerm, backward(entry.getKey()));
 				}
-				LPCondition solutionExclusion = new LPCondition(sumTerm,LPCondition.LESS_THEN,sum);
-				solutionExclusion.setComment("Exclude Solution #"+(++number));
+				LPCondition solutionExclusion = new LPCondition(sumTerm, LPCondition.LESS_THEN, sum);
+				solutionExclusion.setComment("Exclude Solution #" + (++number));
 				solver.addCondition(solutionExclusion);
 			}
 		}
 
-		for (Entry<Integer, LPTerm> balance:balances.entrySet()) {
+		for (Entry<Integer, LPTerm> balance : balances.entrySet()) {
 			LPTerm term = balance.getValue();
-			int var=balance.getKey();
-			LPCondition cond=new LPCondition(term, LPCondition.EQUAL, 0.0);
-			cond.setComment("Balance for Substance "+var);
+			int var = balance.getKey();
+			LPCondition cond = new LPCondition(term, LPCondition.EQUAL, 0.0);
+			cond.setComment("Balance for Substance " + var);
 			solver.addCondition(cond);
 		}
 		solver.minimize(termToMinimize);
@@ -232,95 +214,116 @@ public class LinearProgrammingTask extends CalculationTask {
 		Tools.endMethod(solution);
 		return solution;
 	}
-	
-	LPTerm simpleSum(LPTerm term1,LPTerm term2){
-		if (term1==null) return term2;
-		if (term2==null) return term1;
+
+	private LPTerm buildOutflowSum(LPSolveWrapper solver, TreeSet<Integer> allSubstances) {
+		LPTerm result = null;
+		for (Integer sid : allSubstances) {
+			LPVariable outflow = outflow(sid);
+			if (substances.produce().contains(sid)) solver.addCondition(new LPCondition(outflow, LPCondition.GREATER_THEN, 1.0)); // force this substance to be consumed
+			if (substances.noProduce().contains(sid)) continue; // skip adding inflow term
+			result = simpleSum(result, outflow);
+		}
+		return result;
+		}
+
+	private LPTerm buildInflowSum(LPSolveWrapper solver, TreeSet<Integer> allSubstances) {
+		LPTerm result = null;
+		for (Integer sid : allSubstances) {
+			LPVariable inflow = inflow(sid);
+			if (substances.consume().contains(sid)) solver.addCondition(new LPCondition(inflow, LPCondition.GREATER_THEN, 1.0)); // force this substance to be consumed
+			if (substances.noConsume().contains(sid)) continue; // skip adding inflow term
+			result = simpleSum(result, inflow);
+		}
+		return result;
+	}
+
+	LPTerm simpleSum(LPTerm term1, LPTerm term2) {
+		if (term1 == null) return term2;
+		if (term2 == null) return term1;
 		return new LPSum(term1, term2);
 	}
 
 	private LPTerm buildReactionSum(LPSolveWrapper solver, DbCompartment compartment) throws DataFormatException {
-		LPTerm result=null;
-		for (Integer rid:compartment.reactions()){ /* create terms for substances according to reactions */
+		LPTerm result = null;
+		for (Integer rid : compartment.reactions()) { /* create terms for substances according to reactions */
 			Reaction reaction = Reaction.get(rid);
 			if (parameters.ignoreUnbalanced() && !reaction.isBalanced()) continue;
-			if (reaction.firesForwardIn(compartment)) result=simpleSum(result, forward(rid));
-			if (reaction.firesBackwardIn(compartment)) result=simpleSum(result, backward(rid));
+			if (reaction.firesForwardIn(compartment)) result = simpleSum(result, forward(rid));
+			if (reaction.firesBackwardIn(compartment)) result = simpleSum(result, backward(rid));
 		}
 		return result;
 	}
 
 	private LPTerm buildReactionSwitchSum(LPSolveWrapper solver, Compartment compartment) throws SQLException {
-		LPTerm result=null;
-		for (Binding reactionBinding:reactionBindings(compartment)){ /* create terms for substances according to reactions */
+		LPTerm result = null;
+		for (Binding reactionBinding : reactionBindings(compartment)) { /* create terms for substances according to reactions */
 			solver.addCondition(reactionBinding.lowerLimit());
 			solver.addCondition(reactionBinding.upperLimit());
 			solver.addBinVar(reactionBinding.switchVar());
-			result=simpleSum(result, reactionBinding.switchVar());
+			result = simpleSum(result, reactionBinding.switchVar());
 		}
 		return result;
-  }
+	}
 
 	private LPTerm buildOutflowSwitchSum(LPSolveWrapper solver, TreeSet<Binding> outflowBindings) {
-		LPTerm result=null;
-		for (Binding outflowBinding:outflowBindings){
+		LPTerm result = null;
+		for (Binding outflowBinding : outflowBindings) {
 			solver.addCondition(outflowBinding.lowerLimit());
 			solver.addCondition(outflowBinding.upperLimit());
 			solver.addBinVar(outflowBinding.switchVar());
-			result=simpleSum(result, outflowBinding.switchVar());			
+			result = simpleSum(result, outflowBinding.switchVar());
 		}
+		/* force desired outflows */
+		for (Integer sid : substances.produce())
+			solver.addCondition(new LPCondition(outflow(sid), LPCondition.GREATER_THEN, 1.0));
+
 		return result;
-  }
-
-
+	}
 
 	private LPTerm buildInflowSwitchSum(LPSolveWrapper solver, TreeSet<Binding> inflowBindings) {
-		LPTerm result=null;
-		for (Binding inflowBinding:inflowBindings){
+		LPTerm result = null;
+		for (Binding inflowBinding : inflowBindings) {
 			solver.addCondition(inflowBinding.lowerLimit());
 			solver.addCondition(inflowBinding.upperLimit());
 			solver.addBinVar(inflowBinding.switchVar());
-			result=simpleSum(result, inflowBinding.switchVar());
-		}		
+			result = simpleSum(result, inflowBinding.switchVar());
+		}
+		/* force desired inflows */
+		for (Integer sid : substances.consume()) solver.addCondition(new LPCondition(inflow(sid), LPCondition.GREATER_THEN, 1.0));
 		return result;
-  }
-
-
-
-
-
-
+	}
 
 	/**
 	 * actually create a solution object. this method may be overwritten
+	 * 
 	 * @param solver the solver handle
 	 * @return the solution object
 	 */
 	protected OptimizationSolution createSolution(LPSolveWrapper solver) {
 		OptimizationSolution solution = new OptimizationSolution();
-		
-		for (Entry<LPVariable, Double> entry:solver.getSolution().entrySet()){
-			double val=entry.getValue();
-			if (val!=0.0) {
-				String key=entry.getKey().toString();
-				if (key.startsWith("O")) solution.addOutflow(Integer.parseInt(key.substring(1)),val);
-				if (key.startsWith("I")) solution.addInflow(Integer.parseInt(key.substring(1)),val);
-				if (key.startsWith("F")) solution.addForwardReaction(Integer.parseInt(key.substring(1)),val);
-				if (key.startsWith("B")) solution.addBackwardReaction(Integer.parseInt(key.substring(1)),val);
+
+		for (Entry<LPVariable, Double> entry : solver.getSolution().entrySet()) {
+			double val = entry.getValue();
+			if (val != 0.0) {
+				String key = entry.getKey().toString();
+				if (key.startsWith("O")) solution.addOutflow(Integer.parseInt(key.substring(1)), val);
+				if (key.startsWith("I")) solution.addInflow(Integer.parseInt(key.substring(1)), val);
+				if (key.startsWith("F")) solution.addForwardReaction(Integer.parseInt(key.substring(1)), val);
+				if (key.startsWith("B")) solution.addBackwardReaction(Integer.parseInt(key.substring(1)), val);
 			}
 		}
-	  return solution; 
-  }
+		return solution;
+	}
 
 	private TreeSet<Binding> reactionBindings(Compartment compartment) throws SQLException {
-	  TreeSet<Binding> reactionBindings=Binding.set();		
-		for (int reactionId:compartment.reactions()){
-			DbReaction reaction=DbReaction.load(reactionId);
+		TreeSet<Binding> reactionBindings = Binding.set();
+		for (int reactionId : compartment.reactions()) {
+			DbReaction reaction = DbReaction.load(reactionId);
 			if (reaction.firesForwardIn(compartment)) reactionBindings.add(new Binding(forward(reactionId), forwardSwitch(reactionId)));
 			if (reaction.firesBackwardIn(compartment)) reactionBindings.add(new Binding(backward(reactionId), backwardSwitch(reactionId)));
 		}
 		return reactionBindings;
-  }
+	}
 
 	private TreeSet<Binding> addOutflows(TreeSet<Integer> outflowSubstances, TreeMap<Integer, LPTerm> balances) {
 		Tools.startMethod("addOutflows(...)");
@@ -339,7 +342,7 @@ public class LinearProgrammingTask extends CalculationTask {
 	private TreeSet<Binding> addInflows(TreeSet<Integer> inflowSubstances, TreeMap<Integer, LPTerm> balances) {
 		Tools.startMethod("addInflows(...)");
 		TreeSet<Binding> bindings = Binding.set();
-		for (Integer sid : inflowSubstances) {		
+		for (Integer sid : inflowSubstances) {
 			LPVariable inflow = addBoundaryFlow(balances, sid, INFLOW);
 			if (parameters.useMILP()) {
 				LPVariable inflowSwitch = inflowSwitch(sid);
@@ -351,7 +354,7 @@ public class LinearProgrammingTask extends CalculationTask {
 	}
 
 	private LPVariable addBoundaryFlow(TreeMap<Integer, LPTerm> balances, Integer sid, boolean direction) {
-		Tools.startMethod("addBoundaryFlow(...,"+sid+", "+((direction==INFLOW)?"inflow":"outflow")+")");
+		Tools.startMethod("addBoundaryFlow(...," + sid + ", " + ((direction == INFLOW) ? "inflow" : "outflow") + ")");
 		LPTerm balanceForSubstance = balances.get(sid);
 		LPVariable flowVariable;
 		if (direction == INFLOW) {
@@ -367,7 +370,7 @@ public class LinearProgrammingTask extends CalculationTask {
 	}
 
 	private TreeMap<Integer, LPTerm> createSubatanceBalancesFromReactions(Compartment compartment) throws DataFormatException {
-		Tools.startMethod("createBasicBalances("+compartment+")");
+		Tools.startMethod("createBasicBalances(" + compartment + ")");
 		TreeMap<Integer, LPTerm> substanceBalances = new TreeMap<Integer, LPTerm>(ObjectComparator.get());
 		ReactionSet reactions = compartment.reactions();
 		for (Integer reactionID : reactions) { /* create terms for substances according to reactions */
@@ -382,7 +385,7 @@ public class LinearProgrammingTask extends CalculationTask {
 	}
 
 	private void addBackwardVelocity(Reaction reaction, TreeMap<Integer, LPTerm> mappingFromSubstancesToTerms) {
-		Tools.startMethod("addBackwardVelocity("+reaction+")");
+		Tools.startMethod("addBackwardVelocity(" + reaction + ")");
 		LPVariable backwardVelocity = backward(reaction.id());
 		for (Entry<Integer, Integer> entry : reaction.substrates().entrySet()) {
 			int substanceId = entry.getKey();
@@ -390,7 +393,7 @@ public class LinearProgrammingTask extends CalculationTask {
 			if (substances.ignoredSubstances().contains(substanceId)) continue;
 			LPTerm balanceForSubstance = mappingFromSubstancesToTerms.get(substanceId);
 			mappingFromSubstancesToTerms.put(substanceId, new LPSum(balanceForSubstance, stoich, backwardVelocity));
-			//Tools.indent("adding +"+substanceId);
+			// Tools.indent("adding +"+substanceId);
 		}
 		for (Entry<Integer, Integer> entry : reaction.products().entrySet()) {
 			int substanceId = entry.getKey();
@@ -398,13 +401,13 @@ public class LinearProgrammingTask extends CalculationTask {
 			if (substances.ignoredSubstances().contains(substanceId)) continue;
 			LPTerm balanceForSubstance = mappingFromSubstancesToTerms.get(substanceId);
 			mappingFromSubstancesToTerms.put(substanceId, new LPDiff(balanceForSubstance, stoich, backwardVelocity));
-			//Tools.indent("adding -"+substanceId);
+			// Tools.indent("adding -"+substanceId);
 		}
 		Tools.endMethod();
 	}
 
 	private void addForwardVelocity(Reaction reaction, TreeMap<Integer, LPTerm> mappingFromSubstancesToTerms) {
-		Tools.startMethod("addForwardVelocity("+reaction+")");
+		Tools.startMethod("addForwardVelocity(" + reaction + ")");
 		LPVariable forwardVelocity = forward(reaction.id());
 		for (Entry<Integer, Integer> entry : reaction.products().entrySet()) {
 			int substanceId = entry.getKey();
@@ -412,7 +415,7 @@ public class LinearProgrammingTask extends CalculationTask {
 			if (substances.ignoredSubstances().contains(substanceId)) continue;
 			LPTerm balanceForSubstance = mappingFromSubstancesToTerms.get(substanceId);
 			mappingFromSubstancesToTerms.put(substanceId, new LPSum(balanceForSubstance, stoich, forwardVelocity));
-			//Tools.indent("adding +"+substanceId);
+			// Tools.indent("adding +"+substanceId);
 
 		}
 		for (Entry<Integer, Integer> entry : reaction.substrates().entrySet()) {
@@ -421,25 +424,25 @@ public class LinearProgrammingTask extends CalculationTask {
 			if (substances.ignoredSubstances().contains(substanceId)) continue;
 			LPTerm balanceForSubstance = mappingFromSubstancesToTerms.get(substanceId);
 			mappingFromSubstancesToTerms.put(substanceId, new LPDiff(balanceForSubstance, stoich, forwardVelocity));
-			//Tools.indent("adding -"+substanceId);
+			// Tools.indent("adding -"+substanceId);
 		}
 		Tools.endMethod();
 	}
 
 	private LPVariable forward(int reactionid) {
-		return new LPVariable("F" + reactionid); 
+		return new LPVariable("F" + reactionid);
 	}
 
 	private LPVariable backward(int reactionid) {
-		return new LPVariable("B" + reactionid); 
+		return new LPVariable("B" + reactionid);
 	}
 
 	private LPVariable forwardSwitch(int reactionid) {
-		return new LPVariable("sF" + reactionid); 
+		return new LPVariable("sF" + reactionid);
 	}
 
 	private LPVariable backwardSwitch(int reactionid) {
-		return new LPVariable("sB" + reactionid); 
+		return new LPVariable("sB" + reactionid);
 	}
 
 	public static LPVariable inflow(Integer substanceId) {
@@ -457,20 +460,21 @@ public class LinearProgrammingTask extends CalculationTask {
 	public static LPVariable outflowSwitch(Integer substanceId) {
 		return new LPVariable("sO" + substanceId);
 	}
-	
+
 	public int getCompartmentId() {
-	  return compartmentId;
-  }
-	
-	protected String filename(){
-  	SimpleDateFormat formatter = new SimpleDateFormat("yy-MM-dd HH.mm.ss");
-		return "OptimizationTask " + formatter.format(new Date()) + "."+ getNumber()  + ".lp";
+		return compartmentId;
 	}
-	
+
+	protected String filename() {
+		SimpleDateFormat formatter = new SimpleDateFormat("yy-MM-dd HH.mm.ss");
+		return "OptimizationTask " + formatter.format(new Date()) + "." + getNumber() + ".lp";
+	}
+
 	public DefaultMutableTreeNode outputTree() throws SQLException {
-		return new SubstanceListNode("desired output substances",substances.produce());
-  }
+		return new SubstanceListNode("desired output substances", substances.produce());
+	}
+
 	public DefaultMutableTreeNode inputTree() throws SQLException {
-		return new SubstanceListNode("desired input substances",substances.consume());
-  }
+		return new SubstanceListNode("desired input substances", substances.consume());
+	}
 }
