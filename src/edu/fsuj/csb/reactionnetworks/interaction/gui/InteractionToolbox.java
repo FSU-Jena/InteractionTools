@@ -57,7 +57,6 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	private ResultPanel resultPane;
 	private HorizontalPanel taskPane;
 	private VerticalPanel taskButtonPanel;
-	private JButton findPath;
 	private Configuration configuration;
 	/**
 	 * create a new window instance
@@ -215,11 +214,6 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		taskButtons.add(graphTaskButtons());		
 		taskButtons.add(optimizationButtons());
 		
-		findPath=new JButton("<html>Find paths from<br/>substances-to-degrade<br/>to substances-to-produce");
-		findPath.setToolTipText("<html>Tries to find connections between the substances to degrade<br/>and the substances that shall be built.");
-		findPath.addActionListener(this);
-		taskButtons.add(findPath);
-		
 		evolveSeeds=new JButton("<html>Calculate additionals<br/>with evolutionary Algorithm");
 		evolveSeeds.setToolTipText("<html>Takes one substance list as targets<br/>and the other as \"desired nutrients\"<br/>and tries to optimize (maximize) flow<br/>towards targets and decomposition<br/>of the <i>desired nutrients</i> while keeping<br/>all other inflow reactions low.</html>");
 		evolveSeeds.addActionListener(this);
@@ -348,10 +342,6 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 			}
 		}
   }
-	
-	private void findPath() throws IOException {
-		actionHandler.findPath(compartmentTab.getUserSpecies(),substancesTab.degradeList(),substancesTab.produceList(),substancesTab.ignoreList());
-  }
 
 	public void stateChanged(ChangeEvent arg0) {
 		Object source=arg0.getSource();
@@ -416,7 +406,6 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 			if (source == calcPotentialAdditionals) actionHandler.calcPotentialAdditionals(compartmentTab.getUserList().getListed(),substancesTab.degradeList(),substancesTab.ignoreList());
 			if (source == searchProcessors) actionHandler.searchProcessors(substancesTab.degradeList());
 			if (source == evolveSeeds) optimizeSeeds();
-			if (source == findPath) findPath();
 			
 		} catch (IOException e1) {
 			e1.printStackTrace();

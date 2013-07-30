@@ -20,7 +20,6 @@ import edu.fsuj.csb.distributedcomputing.tools.Master;
 import edu.fsuj.csb.reactionnetworks.interaction.results.CalculationResult;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.CalculationTask;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.EvolveSeedsTask;
-import edu.fsuj.csb.reactionnetworks.interaction.tasks.FindPathTask;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.StructuredTask;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.graph.AdditionsCalculationTask;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.graph.ProcessorSearchTask;
@@ -274,9 +273,4 @@ public class ActionHandler extends Master {
 			sendTask(new EvolveSeedsTask(cid,decompose,build,ignore));
 		}
   }
-
-	public void findPath(TreeSet<Integer> compartmentList, TreeSet<Integer> degradeList, TreeSet<Integer> produceList, TreeSet<Integer> ignoreList) throws IOException {
-		sendTask(new FindPathTask(compartmentList,degradeList,produceList,ignoreList));
-  }
-
 }
