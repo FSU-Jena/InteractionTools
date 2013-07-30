@@ -3,18 +3,16 @@ package edu.fsuj.csb.reactionnetworks.interaction.tasks;
 import java.io.Serializable;
 import java.util.TreeSet;
 
-import sun.reflect.generics.tree.Tree;
-
 import edu.fsuj.csb.tools.xml.Tools;
 
 public class SubstanceSet implements Serializable{
 
   private static final long serialVersionUID = -9036588405259981961L;
-	private TreeSet<Integer> desiredInflows,desiredOutFlows,forbiddenInflows,forbiddenOutflows,ignoredSubstances;
+	private TreeSet<Integer> desiredInflows,desiredOutflows,forbiddenInflows,forbiddenOutflows,ignoredSubstances;
 
-	public SubstanceSet(TreeSet<Integer> desiredInflows, TreeSet<Integer> desiredOutFlows, TreeSet<Integer> forbiddenInflows, TreeSet<Integer> forbiddenOutflows, TreeSet<Integer> ignoredSubstances) {
+	public SubstanceSet(TreeSet<Integer> desiredInflows, TreeSet<Integer> desiredOutflows, TreeSet<Integer> forbiddenInflows, TreeSet<Integer> forbiddenOutflows, TreeSet<Integer> ignoredSubstances) {
 		this.desiredInflows=Tools.nonNullSet(desiredInflows);
-		this.desiredOutFlows=Tools.nonNullSet(desiredOutFlows);
+		this.desiredOutflows=Tools.nonNullSet(desiredOutflows);
 		this.forbiddenOutflows=Tools.nonNullSet(forbiddenOutflows);
 		this.forbiddenInflows=Tools.nonNullSet(forbiddenInflows);
 		this.ignoredSubstances=Tools.nonNullSet(ignoredSubstances);
@@ -25,7 +23,7 @@ public class SubstanceSet implements Serializable{
   }
 
 	public TreeSet<Integer> desiredOutFlows() {
-		return new TreeSet<Integer>( desiredOutFlows);
+		return new TreeSet<Integer>( desiredOutflows);
   }
 
 	public TreeSet<Integer> forbiddenOutflows() {
@@ -41,20 +39,30 @@ public class SubstanceSet implements Serializable{
   }
 
 	public TreeSet<Integer> calculateAuxiliaryInflows(TreeSet<Integer> allSubstances) {
-		TreeSet<Integer> result=new TreeSet<Integer>(allSubstances);
+		TreeSet<Integer> result=possibleInflows(allSubstances);
 		result.removeAll(desiredInflows);
-		result.removeAll(forbiddenInflows);
-		result.removeAll(desiredOutFlows);
-		result.removeAll(ignoredSubstances);
 	  return result;
   }
 	
 	public TreeSet<Integer> calculateAuxiliaryOutflows(TreeSet<Integer> allSubstances){
+		TreeSet<Integer> result=possibleOutflows(allSubstances);
+		result.removeAll(desiredOutflows);
+		return result;
+	}
+
+	public TreeSet<Integer> possibleInflows(TreeSet<Integer> allSubstances) {
 		TreeSet<Integer> result=new TreeSet<Integer>(allSubstances);
-		result.removeAll(desiredOutFlows);
+		result.removeAll(forbiddenInflows);
+		result.removeAll(desiredOutflows);
+		result.removeAll(ignoredSubstances);
+	  return result;
+  }
+	
+	public TreeSet<Integer> possibleOutflows(TreeSet<Integer> allSubstances) {
+		TreeSet<Integer> result=new TreeSet<Integer>(allSubstances);
 		result.removeAll(forbiddenOutflows);
 		result.removeAll(desiredInflows);
 		result.removeAll(ignoredSubstances);
-		return result;
-	}
+	  return result;
+  }
 }
