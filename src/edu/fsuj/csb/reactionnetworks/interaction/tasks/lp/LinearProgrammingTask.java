@@ -32,7 +32,7 @@ import edu.fsuj.csb.tools.xml.NoTokenException;
 import edu.fsuj.csb.tools.xml.ObjectComparator;
 import edu.fsuj.csb.tools.xml.Tools;
 
-public class OptimizationTask extends CalculationTask {
+public class LinearProgrammingTask extends CalculationTask {
 
 	private static final long serialVersionUID = -8309620489674531282L;
 	private static final boolean INFLOW = true;
@@ -60,7 +60,7 @@ public class OptimizationTask extends CalculationTask {
 	 * @param useMILP determines, whether the slower MILP shall be used
 	 * @param ignoreUnbalancedReactions determines, whether unbalanced reactions are allowed
 	 */
-	public OptimizationTask(int cid, TreeSet<Integer> consume, TreeSet<Integer> produce, TreeSet<Integer> noConsume, TreeSet<Integer> noProduce, TreeSet<Integer> ignoredSubstances, boolean useMILP, boolean ignoreUnbalancedReactions) {
+	public LinearProgrammingTask(int cid, TreeSet<Integer> consume, TreeSet<Integer> produce, TreeSet<Integer> noConsume, TreeSet<Integer> noProduce, TreeSet<Integer> ignoredSubstances, boolean useMILP, boolean ignoreUnbalancedReactions) {
 		substancesThatShallBeConsumed = nonNullSet(consume);
 		substancesThatShallBeProduced = nonNullSet(produce);
 		substancesThatShallNotBeConsumed = nonNullSet(noConsume);

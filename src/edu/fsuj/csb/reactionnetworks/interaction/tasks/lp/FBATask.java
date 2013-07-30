@@ -2,7 +2,7 @@ package edu.fsuj.csb.reactionnetworks.interaction.tasks.lp;
 
 import java.util.TreeSet;
 
-public class FBATask extends OptimizationTask {
+public class FBATask extends LinearProgrammingTask {
 
   private static final long serialVersionUID = 2619391610630359556L;
 
