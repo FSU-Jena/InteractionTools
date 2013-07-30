@@ -46,7 +46,6 @@ public class LinearProgrammingTask extends CalculationTask {
 	private Double reactionWeight=1.0;
 	private SubstanceSet substances;
 	private ParameterSet parameters;
-	private static Double limit = 100000.0;
 
 	public LinearProgrammingTask(Integer compartmentId, SubstanceSet substanceSet, ParameterSet parameterSet) {
 		this.compartmentId=compartmentId;
@@ -128,48 +127,27 @@ public class LinearProgrammingTask extends CalculationTask {
 		TreeSet<Binding> outflowBindings = addOutflows(outflows, balances);
 		
 		LPTerm inflowsTerm=null;
-		LPTerm reactionsTerm=null;
+		LPTerm reactionBindTerms=null;
 		LPTerm outflowsTerm=null;
 		LPTerm termToMinimize=null;
 				
 		if (parameters.useMILP()) {
 
-			for (Binding reactionBinding:reactionBindings(compartment)){ /* create terms for substances according to reactions */
-				solver.addCondition(reactionBinding.lowerLimit());
-				solver.addCondition(reactionBinding.upperLimit());
-				solver.addBinVar(reactionBinding.switchVar());
-				reactionsTerm=new LPSum(reactionsTerm, reactionBinding.switchVar());
-			}
-			
+			reactionBindTerms=bindReactionsToReactionSwitches(solver, compartment);			
+			inflowsTerm=bindInflowsToInflowSwitches(solver,inflowBindings);
+			outflowsTerm=bindOutflowsToOutflowSwitches(solver, outflowBindings);
 
-			for (Binding inflowBinding:inflowBindings){
-				solver.addCondition(inflowBinding.lowerLimit());
-				solver.addCondition(inflowBinding.upperLimit());
-				solver.addBinVar(inflowBinding.switchVar());
-				inflowsTerm=new LPSum(inflowsTerm, inflowBinding.switchVar());
-			}
-			
-
-			for (Binding outflowBinding:outflowBindings){
-				solver.addCondition(outflowBinding.lowerLimit());
-				solver.addCondition(outflowBinding.upperLimit());
-				solver.addBinVar(outflowBinding.switchVar());
-				outflowsTerm=new LPSum(inflowsTerm, outflowBinding.switchVar());
-			}
-			
 			/* force desired inflows and outflows */
 			for (Integer sid : substances.consume())	solver.addCondition(new LPCondition(inflow(sid), LPCondition.GREATER_THEN, 1.0));
 			for (Integer sid : substances.produce())	solver.addCondition(new LPCondition(outflow(sid), LPCondition.GREATER_THEN, 1.0));
-			
-			
 			
 		} else { // not using MILP:
 			for (Integer rid:compartment.reactions()){ /* create terms for substances according to reactions */
 				Reaction reaction = Reaction.get(rid);
 				if (parameters.ignoreUnbalanced() && !reaction.isBalanced()) continue;
 
-				if (reaction.firesForwardIn(compartment)) reactionsTerm=new LPSum(reactionsTerm, forward(rid));
-				if (reaction.firesBackwardIn(compartment)) reactionsTerm=new LPSum(reactionsTerm, backward(rid));
+				if (reaction.firesForwardIn(compartment)) reactionBindTerms=new LPSum(reactionBindTerms, forward(rid));
+				if (reaction.firesBackwardIn(compartment)) reactionBindTerms=new LPSum(reactionBindTerms, backward(rid));
 			}
 			
 			for (Integer sid : allSubstances)	{
@@ -192,7 +170,7 @@ public class LinearProgrammingTask extends CalculationTask {
 			}
 		}
 		
-		termToMinimize=new LPSum(new LPSum(inflowWeight,inflowsTerm, outflowWeight,outflowsTerm), reactionWeight,reactionsTerm);
+		termToMinimize=new LPSum(new LPSum(inflowWeight,inflowsTerm, outflowWeight,outflowsTerm), reactionWeight,reactionBindTerms);
 		
 		int number=0;
 		for (OptimizationSolution solution:solutions){
@@ -259,6 +237,51 @@ public class LinearProgrammingTask extends CalculationTask {
 		return solution;
 	}
 
+	private LPTerm bindOutflowsToOutflowSwitches(LPSolveWrapper solver, TreeSet<Binding> outflowBindings) {
+		LPTerm result=null;
+		for (Binding outflowBinding:outflowBindings){
+			solver.addCondition(outflowBinding.lowerLimit());
+			solver.addCondition(outflowBinding.upperLimit());
+			solver.addBinVar(outflowBinding.switchVar());
+			if (result==null){
+				result=outflowBinding.switchVar();
+			} else result=new LPSum(result, outflowBinding.switchVar());			
+		}
+		return result;
+  }
+
+
+
+	private LPTerm bindInflowsToInflowSwitches(LPSolveWrapper solver, TreeSet<Binding> inflowBindings) {
+		LPTerm result=null;
+		for (Binding inflowBinding:inflowBindings){
+			solver.addCondition(inflowBinding.lowerLimit());
+			solver.addCondition(inflowBinding.upperLimit());
+			solver.addBinVar(inflowBinding.switchVar());
+			if (result==null){
+				result=inflowBinding.switchVar();
+			} else result=new LPSum(result, inflowBinding.switchVar());
+		}		
+		return result;
+  }
+
+
+
+	private LPTerm bindReactionsToReactionSwitches(LPSolveWrapper solver, Compartment compartment) throws SQLException {
+		LPTerm result=null;
+		for (Binding reactionBinding:reactionBindings(compartment)){ /* create terms for substances according to reactions */
+			solver.addCondition(reactionBinding.lowerLimit());
+			solver.addCondition(reactionBinding.upperLimit());
+			solver.addBinVar(reactionBinding.switchVar());
+			if (result==null){
+				result=reactionBinding.switchVar();
+			} else result=new LPSum(result, reactionBinding.switchVar());
+		}
+		return result;
+  }
+
+
+
 	/**
 	 * actually create a solution object. this method may be overwritten
 	 * @param solver the solver handle
@@ -290,40 +313,6 @@ public class LinearProgrammingTask extends CalculationTask {
 		return reactionBindings;
   }
 
-	static class Binding {
-		
-		private LPCondition lowerLimit;
-		private LPCondition upperLimit;
-		private LPVariable switchVar;
-		
-		public Binding(LPVariable flow, LPVariable flowSwitch) {
-			Tools.startMethod("new Binding("+flow+", "+flowSwitch+")");
-			lowerLimit = new LPCondition(new LPDiff(flowSwitch, flow),LPCondition.LESS_OR_EQUAL, 0.0);
-			lowerLimit.setComment("force velocity>1 if switch=1");
-
-			upperLimit = new LPCondition(new LPDiff(flow, limit,flowSwitch),LPCondition.LESS_OR_EQUAL,0.0);
-			upperLimit.setComment("force velocity=0 if switch==0 ");
-			switchVar=flowSwitch;
-			Tools.endMethod();
-		}
-
-		public LPCondition upperLimit() {
-	    return upperLimit;
-    }
-
-		public LPCondition lowerLimit() {
-	    return lowerLimit;
-    }
-		
-		public LPVariable switchVar(){
-			return switchVar;
-		}
-
-		public static TreeSet<Binding> set() {
-			return new TreeSet<Binding>(ObjectComparator.get());
-		}
-	}
-
 	private TreeSet<Binding> addOutflows(TreeSet<Integer> outflowSubstances, TreeMap<Integer, LPTerm> balances) {
 		Tools.startMethod("addOutflows(...)");
 		TreeSet<Binding> bindings = Binding.set();
@@ -341,8 +330,7 @@ public class LinearProgrammingTask extends CalculationTask {
 	private TreeSet<Binding> addInflows(TreeSet<Integer> inflowSubstances, TreeMap<Integer, LPTerm> balances) {
 		Tools.startMethod("addInflows(...)");
 		TreeSet<Binding> bindings = Binding.set();
-		for (Integer sid : inflowSubstances) {
-		
+		for (Integer sid : inflowSubstances) {		
 			LPVariable inflow = addBoundaryFlow(balances, sid, INFLOW);
 			if (parameters.useMILP()) {
 				LPVariable inflowSwitch = inflowSwitch(sid);
