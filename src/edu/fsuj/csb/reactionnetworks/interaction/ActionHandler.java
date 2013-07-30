@@ -260,14 +260,13 @@ public class ActionHandler extends Master {
 		return false;
   }
 
-	public void startFBA(TreeSet<Integer> compartmentIds) throws IOException {
-		if (compartmentIds.isEmpty()) System.out.println("No compartment selected!");
-		for (Integer compartmentId:compartmentIds) startFBA(compartmentId);
+	public void startFBA(TreeSet<Integer> compartmentIds, TreeSet<Integer> consume, TreeSet<Integer> produce, TreeSet<Integer> noConsume, TreeSet<Integer> noProduce, TreeSet<Integer> ignoredSubstances, boolean ignoreUnbalancedReactions) throws IOException {
+		if (compartmentIds.isEmpty()) System.out.println("NOTE: No compartment selected!");
+		for (Integer compartmentId:compartmentIds) startFBA(compartmentId, consume, produce, noConsume, noProduce, ignoredSubstances, ignoreUnbalancedReactions);
   }
 
-	private void startFBA(Integer compartmentId) throws IOException {
-		// TODO: add parameters
-		FBATask fba=new FBATask(compartmentId, null, null, null, null, null, false, false);
+	private void startFBA(Integer compartmentId, TreeSet<Integer> consume, TreeSet<Integer> produce, TreeSet<Integer> noConsume, TreeSet<Integer> noProduce, TreeSet<Integer> ignoredSubstances, boolean ignoreUnbalancedReactions) throws IOException {
+		FBATask fba=new FBATask(compartmentId, consume, produce, noConsume, noProduce, ignoredSubstances, false, ignoreUnbalancedReactions);
 		
 		sendTask(fba);
   }
