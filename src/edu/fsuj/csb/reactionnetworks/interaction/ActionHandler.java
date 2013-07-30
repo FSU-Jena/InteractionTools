@@ -98,6 +98,7 @@ public class ActionHandler extends Master {
 			} catch (InterruptedException e) {}
 			handle = getIdleHandle();
 		}
+		System.out.print(formatter.format(new Date())+": ");
 		handle.send(ct);
 	}
 
@@ -260,6 +261,7 @@ public class ActionHandler extends Master {
   }
 
 	public void startFBA(TreeSet<Integer> compartmentIds) throws IOException {
+		if (compartmentIds.isEmpty()) System.out.println("No compartment selected!");
 		for (Integer compartmentId:compartmentIds) startFBA(compartmentId);
   }
 
