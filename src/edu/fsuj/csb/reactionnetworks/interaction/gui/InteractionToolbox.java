@@ -220,9 +220,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		taskButtons.add(graphTaskButtons());		
 		taskButtons.add(optimizationButtons());
 		
-		skipUnbalancedReactions=new JCheckBox("<html>Skip unbalanced reactions");
-		skipUnbalancedReactions.setToolTipText("<html>Unbalanced reactions wil not be taken into account, when using methods which use stoichiometry.");
-		taskButtons.add(skipUnbalancedReactions);
+
 		
 		
 		taskButtons.scale();
