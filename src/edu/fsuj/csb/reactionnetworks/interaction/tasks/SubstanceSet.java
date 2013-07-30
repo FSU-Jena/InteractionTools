@@ -1,11 +1,13 @@
 package edu.fsuj.csb.reactionnetworks.interaction.tasks;
 
+import java.io.Serializable;
 import java.util.TreeSet;
 
 import edu.fsuj.csb.tools.xml.Tools;
 
-public class SubstanceSet {
+public class SubstanceSet implements Serializable{
 
+  private static final long serialVersionUID = -9036588405259981961L;
 	private TreeSet<Integer> degradeList,produceList,noInflowList,noOutflowList,ignoreList;
 
 	public SubstanceSet(TreeSet<Integer> degradeList, TreeSet<Integer> produceList, TreeSet<Integer> noInflowList, TreeSet<Integer> noOutflowList, TreeSet<Integer> ignoreList) {
