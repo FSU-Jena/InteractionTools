@@ -41,9 +41,6 @@ public class LinearProgrammingTask extends CalculationTask {
 	private static final boolean OUTFLOW = false;
 
 	private int compartmentId;
-	private Double inflowWeight = 1.0;
-	private Double outflowWeight = 1.0;
-	private Double reactionWeight = 1.0;
 	private SubstanceSet substances;
 	private ParameterSet parameters;
 
@@ -86,7 +83,7 @@ public class LinearProgrammingTask extends CalculationTask {
 				System.out.println("Reactions: " + solution.forwardReactions() + " - " + solution.backwardReactions());
 				solutions.add(solution); // don't allow inflow of the substances in the solution in the next turn
 				calculationClient.sendObject(new OptimizationResult(this, solution));
-				break; // TODO: remove
+				break; // TODO: add break condition
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -152,8 +149,13 @@ public class LinearProgrammingTask extends CalculationTask {
 			auxiliaryOutflowSum = buildOutflowSum(solver, auxiliaryOutflows);
 		}
 
+		LPTerm auxiliaryBoundaryFlows=new LPSum(parameters.auxiliaryInflowWeight(), auxiliaryInflowSum, parameters.auxiliaryOutflowWeight(), auxiliaryOutflowSum);
+		LPTerm auxiliaryFlows=new LPSum(parameters.reactionWeight(), internalReactionSum, auxiliaryBoundaryFlows);
+		
+		LPTerm desiredFlows=new LPSum(parameters.desiredInflowWeight(), desiredInflowSum, parameters.desiredOutflowWeight(), desiredOutflowSum);
+		termToMinimize = new LPDiff(auxiliaryFlows, desiredFlows);
+
 		// TODO: von hier an überarbeiten
-		termToMinimize = new LPSum(new LPSum(inflowWeight, desiredInflowSum, outflowWeight, desiredOutflowSum), reactionWeight, internalReactionSum);
 
 		int number = 0;
 		for (OptimizationSolution solution : solutions) {
@@ -284,7 +286,7 @@ public class LinearProgrammingTask extends CalculationTask {
 			result = simpleSum(result, outflowBinding.switchVar());
 		}
 		/* force desired outflows */
-		for (Integer sid : substances.produce())
+		for (Integer sid : substances.desiredOutFlows())
 			solver.addCondition(new LPCondition(outflow(sid), LPCondition.GREATER_THEN, 1.0));
 
 		return result;
@@ -299,7 +301,7 @@ public class LinearProgrammingTask extends CalculationTask {
 			result = simpleSum(result, inflowBinding.switchVar());
 		}
 		/* force desired inflows */
-		for (Integer sid : substances.consume()) solver.addCondition(new LPCondition(inflow(sid), LPCondition.GREATER_THEN, 1.0));
+		for (Integer sid : substances.desiredInflows()) solver.addCondition(new LPCondition(inflow(sid), LPCondition.GREATER_THEN, 1.0));
 		return result;
 	}
 
@@ -481,10 +483,10 @@ public class LinearProgrammingTask extends CalculationTask {
 	}
 
 	public DefaultMutableTreeNode outputTree() throws SQLException {
-		return new SubstanceListNode("desired output substances", substances.produce());
+		return new SubstanceListNode("desired output substances", substances.desiredOutFlows());
 	}
 
 	public DefaultMutableTreeNode inputTree() throws SQLException {
-		return new SubstanceListNode("desired input substances", substances.consume());
+		return new SubstanceListNode("desired input substances", substances.desiredInflows());
 	}
 }
