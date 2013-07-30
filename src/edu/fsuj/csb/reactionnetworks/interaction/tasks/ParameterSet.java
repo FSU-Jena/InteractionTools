@@ -7,15 +7,15 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 	public class ParameterSet implements Serializable{
     private static final long serialVersionUID = -868195336437264452L;
-		private int numberOfAllReactions,numberOfInflows,rateOfInflows,numberOfOutflows,rateOfOutflows;
+		private int numberOfAllReactions,auxiliaryInflowWeight,desiredInflowWeight,auxiliaryOutflowWeight,desiredOutflowWeight;
 		private boolean ignoreUnbalancedReactions,useMilp;
 		
-		public ParameterSet(int numberOfAllReactions, int numberOfInflows, int rateOfInflows, int numberOfOutflows, int rateOfOutflows, boolean ignoreUnbalancedReactions,boolean useMilp) {
-			this.numberOfInflows=numberOfInflows;
-			this.numberOfOutflows=numberOfOutflows;
+		public ParameterSet(int numberOfAllReactions, int auxiliaryInflowWeight, int desiredInflowWeight, int auxiliaryOutflowWeight, int desiredOutflowWeight, boolean ignoreUnbalancedReactions,boolean useMilp) {
+			this.auxiliaryInflowWeight=auxiliaryInflowWeight;
+			this.auxiliaryOutflowWeight=auxiliaryOutflowWeight;
 			this.numberOfAllReactions=numberOfAllReactions;
-			this.rateOfInflows=rateOfInflows;
-			this.rateOfOutflows=rateOfOutflows;
+			this.desiredInflowWeight=desiredInflowWeight;
+			this.desiredOutflowWeight=desiredOutflowWeight;
 			this.ignoreUnbalancedReactions=ignoreUnbalancedReactions;
 			this.useMilp=useMilp;
     }
@@ -23,10 +23,10 @@ import javax.swing.tree.DefaultMutableTreeNode;
 		public DefaultMutableTreeNode tree(){
 			DefaultMutableTreeNode parameters=new DefaultMutableTreeNode("Parameters:");
 			parameters.add(new DefaultMutableTreeNode("Importance of minimization of total reaction number: "+getNumberOfAllReactions()));
-			parameters.add(new DefaultMutableTreeNode("Importance of minimization of number of inflows: "+numberOfInflows));
-			parameters.add(new DefaultMutableTreeNode("Importance of minimization of number of outflows: "+numberOfOutflows));
-			parameters.add(new DefaultMutableTreeNode("Importance of maximization of rate of desired inflows: "+rateOfInflows));
-			parameters.add(new DefaultMutableTreeNode("Importance of maximization of rate of target outflows: "+rateOfOutflows));
+			parameters.add(new DefaultMutableTreeNode("Importance of minimization of auxiliary inflows: "+auxiliaryInflowWeight));
+			parameters.add(new DefaultMutableTreeNode("Importance of minimization of auxiliary outflows: "+auxiliaryOutflowWeight));
+			parameters.add(new DefaultMutableTreeNode("Importance of maximization of desired inflows: "+desiredInflowWeight));
+			parameters.add(new DefaultMutableTreeNode("Importance of maximization of desired outflows: "+desiredOutflowWeight));
 			return parameters;
 		}
 
@@ -34,20 +34,20 @@ import javax.swing.tree.DefaultMutableTreeNode;
 	    return numberOfAllReactions;
     }
 
-		public int getNumberOfInflows() {
-	    return numberOfInflows;
+		public double auxiliaryInflowWeight() {
+	    return auxiliaryInflowWeight;
     }
 
-		public int getNumberOfOutflows() {
-	    return numberOfOutflows;
+		public double auxiliaryOutflowWeight() {
+	    return auxiliaryOutflowWeight;
     }
 
-		public int getRateOfInflows() {
-	    return rateOfInflows;
+		public double desiredInflowWeight() {
+	    return desiredInflowWeight;
     }
 
-		public int getRateOfOutflows() {
-	    return rateOfOutflows;
+		public double desiredOutflowWeight() {
+	    return desiredOutflowWeight;
     }
 		
 		public boolean skipUnbalancedReactions(){
