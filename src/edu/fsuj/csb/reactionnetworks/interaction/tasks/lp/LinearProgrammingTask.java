@@ -109,14 +109,23 @@ public class LinearProgrammingTask extends CalculationTask {
 		
 		/* create reaction balances */
 
-		TreeMap<Integer, LPTerm> balances = createReactionBalances(compartment);
+		TreeMap<Integer, LPTerm> balances = createSubatanceBalancesFromReactions(compartment);
 
 		TreeSet<Integer> allSubstances = compartment.utilizedSubstances();
 		
-		/* add inflows and outflows */
+		/* add inflows */
 
-		TreeSet<Binding> inflowBindings = addInflows(allSubstances, balances);
-		TreeSet<Binding> outflowBindings = addOutflows(allSubstances, balances);
+		TreeSet<Integer> inflows=new TreeSet<Integer>(allSubstances);
+		inflows.removeAll(substances.produce());
+		inflows.removeAll(substances.noConsume());
+		TreeSet<Binding> inflowBindings = addInflows(inflows, balances);
+		
+		/* add outflows */
+		
+		TreeSet<Integer> outflows=new TreeSet<Integer>(allSubstances);
+		outflows.removeAll(substances.consume());
+		outflows.removeAll(substances.noProduce());		
+		TreeSet<Binding> outflowBindings = addOutflows(outflows, balances);
 		
 		LPTerm inflowsTerm=null;
 		LPTerm reactionsTerm=null;
@@ -315,18 +324,10 @@ public class LinearProgrammingTask extends CalculationTask {
 		}
 	}
 
-	private TreeSet<Binding> addOutflows(TreeSet<Integer> allSubstances, TreeMap<Integer, LPTerm> balances) {
+	private TreeSet<Binding> addOutflows(TreeSet<Integer> outflowSubstances, TreeMap<Integer, LPTerm> balances) {
 		Tools.startMethod("addOutflows(...)");
 		TreeSet<Binding> bindings = Binding.set();
-		for (Integer sid : allSubstances) {
-			if (substances.consume().contains(sid)){
-				Tools.indent("substances.consume() contains "+sid);
-				continue;
-			}
-			if (substances.noProduce().contains(sid)){
-				System.out.println("substances.noProduce() contains "+sid);
-				continue;	 // do not add inflow for substance that (shall be produced) or (shall not be consumed)
-			} 
+		for (Integer sid : outflowSubstances) {
 			LPVariable outflow = addBoundaryFlow(balances, sid, OUTFLOW);
 			if (parameters.useMILP()) {
 				LPVariable outflowSwitch = outflowSwitch(sid);
@@ -337,19 +338,11 @@ public class LinearProgrammingTask extends CalculationTask {
 		return bindings;
 	}
 
-	private TreeSet<Binding> addInflows(TreeSet<Integer> allSubstances, TreeMap<Integer, LPTerm> balances) {
+	private TreeSet<Binding> addInflows(TreeSet<Integer> inflowSubstances, TreeMap<Integer, LPTerm> balances) {
 		Tools.startMethod("addInflows(...)");
 		TreeSet<Binding> bindings = Binding.set();
-		for (Integer sid : allSubstances) {
-			if (substances.produce().contains(sid)){
-				Tools.indent("substances.produce() contains "+sid);
-				continue;
-			}
-			if (substances.noConsume().contains(sid)){
-				System.out.println("substances.noConsume() contains "+sid);
-				 // do not add inflow for substance that (shall be produced) or (shall not be consumed)
-				continue;
-			}			
+		for (Integer sid : inflowSubstances) {
+		
 			LPVariable inflow = addBoundaryFlow(balances, sid, INFLOW);
 			if (parameters.useMILP()) {
 				LPVariable inflowSwitch = inflowSwitch(sid);
@@ -376,19 +369,19 @@ public class LinearProgrammingTask extends CalculationTask {
 		return flowVariable;
 	}
 
-	private TreeMap<Integer, LPTerm> createReactionBalances(Compartment compartment) throws DataFormatException {
+	private TreeMap<Integer, LPTerm> createSubatanceBalancesFromReactions(Compartment compartment) throws DataFormatException {
 		Tools.startMethod("createBasicBalances("+compartment+")");
-		TreeMap<Integer, LPTerm> balances = new TreeMap<Integer, LPTerm>(ObjectComparator.get());
+		TreeMap<Integer, LPTerm> substanceBalances = new TreeMap<Integer, LPTerm>(ObjectComparator.get());
 		ReactionSet reactions = compartment.reactions();
 		for (Integer reactionID : reactions) { /* create terms for substances according to reactions */
 			Reaction reaction = Reaction.get(reactionID);
 			if (parameters.ignoreUnbalanced() && !reaction.isBalanced()) continue;
 
-			if (reaction.firesForwardIn(compartment)) addForwardVelocity(reaction, balances);
-			if (reaction.firesBackwardIn(compartment)) addBackwardVelocity(reaction, balances);
+			if (reaction.firesForwardIn(compartment)) addForwardVelocity(reaction, substanceBalances);
+			if (reaction.firesBackwardIn(compartment)) addBackwardVelocity(reaction, substanceBalances);
 		}
-		Tools.endMethod(balances);
-		return balances;
+		Tools.endMethod(substanceBalances);
+		return substanceBalances;
 	}
 
 	private void addBackwardVelocity(Reaction reaction, TreeMap<Integer, LPTerm> mappingFromSubstancesToTerms) {
