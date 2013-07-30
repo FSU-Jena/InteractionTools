@@ -49,7 +49,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	private JButton calculateProductsButton,calcPotentialAdditionals,searchProcessors;
 	private JTabbedPane taskTabs;
 	private JButton optimizeSeeds,evolveSeeds;
-	private JCheckBox onlyOdle,skipUnbalancedReactions,useMilp;
+	private JCheckBox onlyOdle,useMilp;
 	private OptimizationParametersTab parametersTab;
 	private StatusPanel statusPanel;
 	private DatabasePane databasePane;
@@ -235,9 +235,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 
 
 		
-		skipUnbalancedReactions=new JCheckBox("<html>Skip unbalanced reactions");
-		skipUnbalancedReactions.setToolTipText("<html>Unbalanced reactions wil not be taken into account, when using methods which use stoichiometry.");
-		taskButtons.add(skipUnbalancedReactions);
+
 		
 		
 		taskButtons.scale();
@@ -351,7 +349,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 			
 			if (buildList!=null && !buildList.isEmpty()){
 				if (method==1){
-					actionHandler.optimizeSeeds(compartmentTab.getUserList().getListed(),decompositionList,buildList,substancesTab.ignoreList(),substancesTab.noOutflowList(),parametersTab.optimizationParameterSet(),skipUnbalancedReactions.isSelected(),useMilp.isSelected());
+					actionHandler.optimizeSeeds(compartmentTab.getUserList().getListed(),decompositionList,buildList,substancesTab.ignoreList(),substancesTab.noOutflowList(),parametersTab.optimizationParameterSet(),parametersTab.optimizationParameterSet().skipUnbalancedReactions(),useMilp.isSelected());
 				} else {
 					actionHandler.evovleSeeds(compartmentTab.getUserList().getListed(), decompositionList, buildList,substancesTab.ignoreList());
 				}

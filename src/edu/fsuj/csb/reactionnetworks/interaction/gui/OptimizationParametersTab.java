@@ -2,6 +2,7 @@ package edu.fsuj.csb.reactionnetworks.interaction.gui;
 
 import java.io.Serializable;
 
+import javax.swing.JCheckBox;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import edu.fsuj.csb.gui.IntegerInputField;
@@ -12,13 +13,15 @@ public class OptimizationParametersTab extends VerticalPanel {
 	public class OptimizationParameterSet implements Serializable{
     private static final long serialVersionUID = -868195336437264452L;
 		private int numberOfAllReactions,numberOfInflows,rateOfInflows,numberOfOutflows,rateOfOutflows;
+		private boolean skipUnbalancedReactions;
 		
-		public OptimizationParameterSet(int numberOfAllReactions, int numberOfInflows, int rateOfInflows, int numberOfOutflows, int rateOfOutflows) {
+		public OptimizationParameterSet(int numberOfAllReactions, int numberOfInflows, int rateOfInflows, int numberOfOutflows, int rateOfOutflows, boolean skipUnbalancedReactions) {
 			this.numberOfInflows=numberOfInflows;
 			this.numberOfOutflows=numberOfOutflows;
 			this.numberOfAllReactions=numberOfAllReactions;
 			this.rateOfInflows=rateOfInflows;
 			this.rateOfOutflows=rateOfOutflows;
+			this.skipUnbalancedReactions=skipUnbalancedReactions;
     }
 		
 		public DefaultMutableTreeNode tree(){
@@ -50,11 +53,16 @@ public class OptimizationParametersTab extends VerticalPanel {
 		public int getRateOfOutflows() {
 	    return rateOfOutflows;
     }
+		
+		public boolean skipUnbalancedReactions(){
+			return skipUnbalancedReactions;
+		}
 	}
 
   private static final long serialVersionUID = -5681082612373593097L;
   
   private IntegerInputField numberOfAllReactions,numberOfInflows,rateOfInflows,numberOfOutflows,rateOfOutflows;
+	private JCheckBox skipUnbalancedReactions;
 
 	public OptimizationParametersTab() {
 		super();
@@ -75,11 +83,15 @@ public class OptimizationParametersTab extends VerticalPanel {
 		outflow.scale();
 		add(outflow);		
 		
+		skipUnbalancedReactions=new JCheckBox("<html>Skip unbalanced reactions");
+		skipUnbalancedReactions.setToolTipText("<html>Unbalanced reactions wil not be taken into account, when using methods which use stoichiometry.");
+		add(skipUnbalancedReactions);
+		
 		scale();
   }
 	
 	public OptimizationParameterSet optimizationParameterSet(){
-		return new OptimizationParameterSet(numberOfAllReactions.wert(),numberOfInflows.wert(),rateOfInflows.wert(),numberOfOutflows.wert(),rateOfOutflows.wert());
+		return new OptimizationParameterSet(numberOfAllReactions.wert(),numberOfInflows.wert(),rateOfInflows.wert(),numberOfOutflows.wert(),rateOfOutflows.wert(),skipUnbalancedReactions.isSelected());
 	}
 	
 }
