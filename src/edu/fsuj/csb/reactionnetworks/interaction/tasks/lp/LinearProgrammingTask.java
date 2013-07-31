@@ -119,33 +119,29 @@ public class LinearProgrammingTask extends CalculationTask {
 		LPTerm internalReactionSum = null;
 		LPTerm termToMinimize = null;
 
-		if (parameters.useMILP()) {			
+		if (parameters.useMILP()) {
+			
 			// bind reaction velocities to reaction switches and create sum of reaction switches //
 			internalReactionSum = buildInternalReactionSwitchSum(solver, compartment);
 
 			// add inflows //
 			desiredInflowSum = buildInflowSwitchSum(solver, balances, substances.desiredInflows(), true);
 			auxiliaryInflowSum = buildInflowSwitchSum(solver, balances, auxiliaryInflows);
-			// bind outflow reaction velocities to their switches and create sum of outflow reaction switches //
+			// add outflows //
 			desiredOutflowSum = buildOutflowSwitchSum(solver, balances, substances.desiredOutFlows(),true);
 			auxiliaryOutflowSum = buildOutflowSwitchSum(solver, balances, auxiliaryOutflows);			
 
 		} else { // not using MILP:
-
+			
 			internalReactionSum = buildInternalReactionSum(solver, compartment);
 			
-			/* add inflows */
-			
-			addInflows(possibleInflows,balances);
+			// add inflows //	
 			desiredInflowSum = buildInflowSum(solver,balances, substances.desiredInflows(),true);
 			auxiliaryInflowSum = buildInflowSum(solver,balances, auxiliaryInflows);			
 			
-			/* add outflows */
-
-			addOutflows(possibleOutFlows, balances);
+			// add outflows //
 			desiredOutflowSum = buildOutflowSum(solver,balances,substances.desiredOutFlows(),true);
-			auxiliaryOutflowSum = buildOutflowSum(solver,balances, auxiliaryOutflows);
-						
+			auxiliaryOutflowSum = buildOutflowSum(solver,balances, auxiliaryOutflows);						
 		}
 
 		LPTerm auxiliaryBoundaryFlows=new LPSum(parameters.auxiliaryInflowWeight(), auxiliaryInflowSum, parameters.auxiliaryOutflowWeight(), auxiliaryOutflowSum);
@@ -258,11 +254,7 @@ public class LinearProgrammingTask extends CalculationTask {
 		Tools.endMethod(result);
 		return result;
 	}
-	private void addInflows(TreeSet<Integer> possibleInflows, TreeMap<Integer, LPTerm> balances) {
-		Tools.startMethod("addInflows(...)");
-		for (Integer sid : possibleInflows) addBoundaryFlow(balances, sid, INFLOW);
-		Tools.endMethod();
-	}
+
 
 
   private LPTerm buildOutflowSum(LPSolveWrapper solver, TreeMap<Integer, LPTerm> balances, TreeSet<Integer> outflows) {
@@ -295,11 +287,7 @@ public class LinearProgrammingTask extends CalculationTask {
 		Tools.endMethod(result);
 		return result;
 	}
-	private void addOutflows(TreeSet<Integer> possibleOutflows, TreeMap<Integer, LPTerm> balances) {
-		Tools.startMethod("addOutflows(...)");
-		for (Integer sid : possibleOutflows) addBoundaryFlow(balances, sid, OUTFLOW);
-		Tools.endMethod();		
-	}
+
 	
 	
 	private LPTerm buildInternalReactionSum(LPSolveWrapper solver, DbCompartment compartment) throws DataFormatException, SQLException {
