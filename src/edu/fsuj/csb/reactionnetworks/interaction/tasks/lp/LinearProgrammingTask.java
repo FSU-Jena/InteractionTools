@@ -100,17 +100,9 @@ public class LinearProgrammingTask extends CalculationTask {
 		/* prepare */
 		LPSolveWrapper solver = new LPSolveWrapper();
 		DbCompartment compartment = DbCompartment.load(compartmentId);
-
-		/* create reaction balances */
-
-		TreeMap<Integer, LPTerm> balances = createSubatanceBalancesFromReactions(compartment);
-
 		TreeSet<Integer> allSubstances = compartment.utilizedSubstances();
-
 		TreeSet<Integer> auxiliaryInflows = substances.calculateAuxiliaryInflows(allSubstances);
 		TreeSet<Integer> auxiliaryOutflows = substances.calculateAuxiliaryOutflows(allSubstances);
-		TreeSet<Integer> possibleInflows = substances.possibleInflows(allSubstances);
-		TreeSet<Integer> possibleOutFlows = substances.possibleOutflows(allSubstances);
 
 		LPTerm desiredInflowSum = null;
 		LPTerm auxiliaryInflowSum = null;
@@ -119,9 +111,12 @@ public class LinearProgrammingTask extends CalculationTask {
 		LPTerm internalReactionSum = null;
 		LPTerm termToMinimize = null;
 
+		// create substance balances from internal reactions //
+		TreeMap<Integer, LPTerm> balances = createSubatanceBalancesFromReactions(compartment);
+
 		if (parameters.useMILP()) {
 			
-			// bind reaction velocities to reaction switches and create sum of reaction switches //
+			// bind internal reaction velocities to switches and create sum of internal reaction switches //
 			internalReactionSum = buildInternalReactionSwitchSum(solver, compartment);
 
 			// add inflows //
@@ -133,7 +128,8 @@ public class LinearProgrammingTask extends CalculationTask {
 
 		} else { // not using MILP:
 			
-			internalReactionSum = buildInternalReactionSum(solver, compartment);
+			// create sum of internal reactions //
+			internalReactionSum = buildInternalReactionSum(compartment);
 			
 			// add inflows //	
 			desiredInflowSum = buildInflowSum(solver,balances, substances.desiredInflows(),true);
@@ -144,8 +140,8 @@ public class LinearProgrammingTask extends CalculationTask {
 			auxiliaryOutflowSum = buildOutflowSum(solver,balances, auxiliaryOutflows);						
 		}
 
-		LPTerm auxiliaryBoundaryFlows=new LPSum(parameters.auxiliaryInflowWeight(), auxiliaryInflowSum, parameters.auxiliaryOutflowWeight(), auxiliaryOutflowSum);
-		LPTerm auxiliaryFlows=new LPSum(parameters.reactionWeight(), internalReactionSum, auxiliaryBoundaryFlows);
+		LPTerm boundaryFlows=new LPSum(parameters.auxiliaryInflowWeight(), auxiliaryInflowSum, parameters.auxiliaryOutflowWeight(), auxiliaryOutflowSum);
+		LPTerm auxiliaryFlows=new LPSum(parameters.reactionWeight(), internalReactionSum, boundaryFlows);
 		
 		LPTerm desiredFlows=new LPSum(parameters.desiredInflowWeight(), desiredInflowSum, parameters.desiredOutflowWeight(), desiredOutflowSum);
 		termToMinimize = new LPDiff(auxiliaryFlows, desiredFlows);
@@ -288,17 +284,28 @@ public class LinearProgrammingTask extends CalculationTask {
 		return result;
 	}
 
-	
-	
-	private LPTerm buildInternalReactionSum(LPSolveWrapper solver, DbCompartment compartment) throws DataFormatException, SQLException {
-		LPTerm result = null;
+	private TreeMap<Integer, LPTerm> createSubatanceBalancesFromReactions(Compartment compartment) throws DataFormatException, SQLException {
+		Tools.startMethod("createBasicBalances(" + compartment + ")");
+		TreeMap<Integer, LPTerm> substanceBalances = new TreeMap<Integer, LPTerm>(ObjectComparator.get());
+		for (Integer reactionID : compartment.reactions()) { /* create terms for substances according to reactions */
+			DbReaction reaction = DbReaction.load(reactionID);
+			if (parameters.ignoreUnbalanced() && !reaction.isBalanced()) continue;
+			if (reaction.firesForwardIn(compartment)) addForwardVelocity(reaction, substanceBalances);
+			if (reaction.firesBackwardIn(compartment)) addBackwardVelocity(reaction, substanceBalances);
+		}
+		Tools.endMethod(substanceBalances);
+		return substanceBalances;
+	}
+		
+private LPTerm buildInternalReactionSum(DbCompartment compartment) throws DataFormatException, SQLException {
+		LPTerm reactionSum = null;
 		for (Integer rid : compartment.reactions()) { /* create terms for substances according to reactions */
 			DbReaction reaction = DbReaction.load(rid);
 			if (parameters.ignoreUnbalanced() && !reaction.isBalanced()) continue;
-			if (reaction.firesForwardIn(compartment)) result = simpleSum(result, forward(rid));
-			if (reaction.firesBackwardIn(compartment)) result = simpleSum(result, backward(rid));
+			if (reaction.firesForwardIn(compartment)) reactionSum = simpleSum(reactionSum, forward(rid));
+			if (reaction.firesBackwardIn(compartment)) reactionSum = simpleSum(reactionSum, backward(rid));
 		}
-		return result;
+		return reactionSum;
 	}
 	private LPTerm buildInternalReactionSwitchSum(LPSolveWrapper solver, Compartment compartment) throws SQLException, DataFormatException {		
 		LPTerm result = null;
@@ -321,6 +328,7 @@ public class LinearProgrammingTask extends CalculationTask {
 	
 
 
+	
 	/**
 	 * actually create a solution object. this method may be overwritten
 	 * 
@@ -363,20 +371,7 @@ public class LinearProgrammingTask extends CalculationTask {
 		return flowVariable;
 	}
 
-	private TreeMap<Integer, LPTerm> createSubatanceBalancesFromReactions(Compartment compartment) throws DataFormatException {
-		Tools.startMethod("createBasicBalances(" + compartment + ")");
-		TreeMap<Integer, LPTerm> substanceBalances = new TreeMap<Integer, LPTerm>(ObjectComparator.get());
-		ReactionSet reactions = compartment.reactions();
-		for (Integer reactionID : reactions) { /* create terms for substances according to reactions */
-			Reaction reaction = Reaction.get(reactionID);
-			if (parameters.ignoreUnbalanced() && !reaction.isBalanced()) continue;
 
-			if (reaction.firesForwardIn(compartment)) addForwardVelocity(reaction, substanceBalances);
-			if (reaction.firesBackwardIn(compartment)) addBackwardVelocity(reaction, substanceBalances);
-		}
-		Tools.endMethod(substanceBalances);
-		return substanceBalances;
-	}
 
 	private void addBackwardVelocity(Reaction reaction, TreeMap<Integer, LPTerm> mappingFromSubstancesToTerms) {
 		Tools.startMethod("addBackwardVelocity(" + reaction + ")");
@@ -406,7 +401,6 @@ public class LinearProgrammingTask extends CalculationTask {
 		for (Entry<Integer, Integer> entry : reaction.products().entrySet()) {
 			int substanceId = entry.getKey();
 			double stoich = entry.getValue();
-			if (substances.ignoredSubstances().contains(substanceId)) continue;
 			LPTerm balanceForSubstance = mappingFromSubstancesToTerms.get(substanceId);
 			mappingFromSubstancesToTerms.put(substanceId, new LPSum(balanceForSubstance, stoich, forwardVelocity));
 			// Tools.indent("adding +"+substanceId);
@@ -415,7 +409,6 @@ public class LinearProgrammingTask extends CalculationTask {
 		for (Entry<Integer, Integer> entry : reaction.substrates().entrySet()) {
 			int substanceId = entry.getKey();
 			double stoich = entry.getValue();
-			if (substances.ignoredSubstances().contains(substanceId)) continue;
 			LPTerm balanceForSubstance = mappingFromSubstancesToTerms.get(substanceId);
 			mappingFromSubstancesToTerms.put(substanceId, new LPDiff(balanceForSubstance, stoich, forwardVelocity));
 			// Tools.indent("adding -"+substanceId);
