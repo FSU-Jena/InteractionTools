@@ -15,7 +15,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import edu.fsuj.csb.reactionnetworks.interaction.CalculationClient;
 import edu.fsuj.csb.reactionnetworks.interaction.OptimizationSolution;
 import edu.fsuj.csb.reactionnetworks.interaction.SubstanceListNode;
-import edu.fsuj.csb.reactionnetworks.interaction.results.OptimizationResult;
+import edu.fsuj.csb.reactionnetworks.interaction.results.lp.LinearProgrammingResult;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.CalculationTask;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.ParameterSet;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.SubstanceSet;
@@ -59,7 +59,7 @@ public class LinearProgrammingTask extends CalculationTask {
 				solutions = OptimizationSolution.set();
 				OptimizationSolution solution = runInternal(); // start the actual calculation
 				if (!addNewSolution(solution)) break;
-				calculationClient.sendObject(new OptimizationResult(this, solution));
+				calculationClient.sendObject(new LinearProgrammingResult(this, solution));
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
