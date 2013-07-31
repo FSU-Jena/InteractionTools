@@ -10,7 +10,7 @@ import javax.swing.tree.MutableTreeNode;
 
 import edu.fsuj.csb.reactionnetworks.interaction.CalculationClient;
 import edu.fsuj.csb.reactionnetworks.interaction.OptimizationSolution;
-import edu.fsuj.csb.reactionnetworks.interaction.results.lp.LinearProgrammingResult;
+import edu.fsuj.csb.reactionnetworks.interaction.results.lp.FBAResult;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.ParameterSet;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.SubstanceSet;
 import edu.fsuj.csb.tools.xml.NoTokenException;
