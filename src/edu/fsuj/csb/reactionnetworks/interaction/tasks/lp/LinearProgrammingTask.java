@@ -300,19 +300,20 @@ public class LinearProgrammingTask extends CalculationTask {
 	 * @return the solution object
 	 */
 	protected OptimizationSolution createSolution(LPSolveWrapper solver) {
-		OptimizationSolution solution = new OptimizationSolution();
-
-		for (Entry<LPVariable, Double> entry : solver.getSolution().entrySet()) {
+		OptimizationSolution result = new OptimizationSolution();
+		TreeMap<LPVariable, Double> solution = solver.getSolution();
+		if (solution==null) return null;
+		for (Entry<LPVariable, Double> entry : solution.entrySet()) {
 			double val = entry.getValue();
 			if (val != 0.0) {
 				String key = entry.getKey().toString();
-				if (key.startsWith("O")) solution.addOutflow(Integer.parseInt(key.substring(1)), val);
-				if (key.startsWith("I")) solution.addInflow(Integer.parseInt(key.substring(1)), val);
-				if (key.startsWith("F")) solution.addForwardReaction(Integer.parseInt(key.substring(1)), val);
-				if (key.startsWith("B")) solution.addBackwardReaction(Integer.parseInt(key.substring(1)), val);
+				if (key.startsWith("O")) result.addOutflow(Integer.parseInt(key.substring(1)), val);
+				if (key.startsWith("I")) result.addInflow(Integer.parseInt(key.substring(1)), val);
+				if (key.startsWith("F")) result.addForwardReaction(Integer.parseInt(key.substring(1)), val);
+				if (key.startsWith("B")) result.addBackwardReaction(Integer.parseInt(key.substring(1)), val);
 			}
 		}
-		return solution;
+		return result;
 	}
 
 	private LPVariable addBoundaryFlow(TreeMap<Integer, LPTerm> balances, Integer sid, boolean direction) {

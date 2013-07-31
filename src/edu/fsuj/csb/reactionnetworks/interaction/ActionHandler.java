@@ -20,7 +20,6 @@ import edu.fsuj.csb.distributedcomputing.tools.Master;
 import edu.fsuj.csb.reactionnetworks.interaction.results.CalculationResult;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.CalculationTask;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.ParameterSet;
-import edu.fsuj.csb.reactionnetworks.interaction.tasks.StructuredTask;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.SubstanceSet;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.graph.AdditionsCalculationTask;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.graph.ProcessorSearchTask;
@@ -44,38 +43,7 @@ public class ActionHandler extends Master {
 	private JTree resultTree;
 	//private NetworkLoader networkLoader;
 	private TreeMap<Integer, DefaultMutableTreeNode> mappingFromTaskNumbersToResultCollectors = new TreeMap<Integer, DefaultMutableTreeNode>(ObjectComparator.get());
-	private TreeMap<Integer,StructuredTask> mappingFromSubtasktToOwner = new TreeMap<Integer, StructuredTask>(ObjectComparator.get());
 	private SimpleDateFormat formatter = new SimpleDateFormat("yy-MM-dd HH:mm:ss");
-
-	/**
-	 * this thread is used to send a calculation task without blocking the main application while waiting for a client
-	 * @author Stephan Richter
-	 *
-	 */
-	private class sendThread extends Thread {
-		private CalculationTask ct;
-		/**
-		 * creates a new thread instance
-		 * @param ct the calculation task, which shall be sent
-		 */
-		public sendThread(CalculationTask ct){
-			this.ct=ct;
-		}
-		
-		/* (non-Javadoc)
-		 * @see java.lang.Thread#run()
-		 */
-		public void run(){
-			try {
-	      sleep(100);
-      } catch (InterruptedException e) {}
-			try {
-	      sendTask(ct);
-      } catch (IOException e) {
-      	e.printStackTrace();
-      }
-		}
-	}
 
 	/**
 	 * creates a new action handler instane
@@ -120,24 +88,6 @@ public class ActionHandler extends Master {
 	}
 	
 	/**
-	 * checks, whether a given CalculationResult is assigned to a structured task, i.e. whether the result is a calculation intermediate
-	 * @param cr the calculation result, which will be tested
-	 * @return true, if there is a mapping from the calculation result to a structured task
-	 */
-	public boolean belongsToStructuredTask(CalculationResult cr){
-		return mappingFromSubtasktToOwner.containsKey(cr.getTask().getNumber());
-	}
-	
-	/**
-	 * requests the task an intermediate calculation result belongs to
-	 * @param cr the calculation result
-	 * @return the structured task it belongs to, or null, if it does not belong to a structured task
-	 */
-	public StructuredTask getOwningTask(CalculationResult cr){
-		return mappingFromSubtasktToOwner.get(cr.getTask().getNumber());
-	}
-
-	/**
 	 * ovverides the Master.handleObject method:
 	 * implements actions to respond to recieved objects (basically, handling of calculation results)
 	 */
@@ -146,15 +96,7 @@ public class ActionHandler extends Master {
 		
 		if (o instanceof CalculationResult) {
 			CalculationResult calculationResult = (CalculationResult) o;
-			if (!calculationResult.result().equals("done"))	{
-				System.out.println(formatter.format(date)+": recieved "+o.getClass().getSimpleName());
-				if (belongsToStructuredTask(calculationResult)){ // if we catch an intermediate result: add it to it's owning task
-					StructuredTask owningTask = getOwningTask(calculationResult);
-					owningTask.addIntermediateResult(calculationResult.result());
-					if (owningTask.readyToRun()) (new sendThread(owningTask)).start(); // if all preprocessing is done: start the actual task
-					return;
-				}
-			}			
+			if (!calculationResult.result().equals("done"))	System.out.println(formatter.format(date)+": recieved "+o.getClass().getSimpleName());
 			try {
 				handleResult(calculationResult);
 				SwingUtilities.updateComponentTreeUI(resultTree);
