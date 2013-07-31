@@ -1,8 +1,6 @@
 package edu.fsuj.csb.reactionnetworks.interaction.results;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.rmi.AlreadyBoundException;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -13,7 +11,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import edu.fsuj.csb.reactionnetworks.interaction.SubstanceListNode;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.graph.AdditionsCalculationTask;
-import edu.fsuj.csb.tools.xml.NoTokenException;
 
 /**
  * the result of a AdditionsCalculationTask, i.e. a set of substances, which maximizes the yield of a given compartments reaction set
@@ -34,22 +31,13 @@ public class AdditionsCalculationResult extends CalculationResult implements Ser
   }
 	
   /* (non-Javadoc)
-   * @see edu.fsuj.csb.reactionnetworks.interaction.CalculationResult#treeRepresentation()
-   */
-  public DefaultMutableTreeNode treeRepresentation() throws IOException, NoTokenException, AlreadyBoundException, SQLException {
-		DefaultMutableTreeNode result = superTreeRepresentation();
-		result.add(resultTreeRepresentation());
-		return result;
-	}
-
-  /* (non-Javadoc)
    * @see edu.fsuj.csb.reactionnetworks.interaction.CalculationResult#resultTreeRepresentation()
    */
-  public DefaultMutableTreeNode resultTreeRepresentation() throws SQLException{
+  public DefaultMutableTreeNode treeRepresentation() throws SQLException{
 		if (getTask() instanceof AdditionsCalculationTask){ // then the result set is a set of integers representing substance ids
 			@SuppressWarnings("unchecked")
       TreeMap<String, TreeSet<Integer>> bestAdditionals = (TreeMap<String,TreeSet<Integer>>) result;
-			DefaultMutableTreeNode result=new DefaultMutableTreeNode("additionals");
+			DefaultMutableTreeNode result=new DefaultMutableTreeNode("Result: additionals");
 			for (Iterator<Entry<String, TreeSet<Integer>>> it = bestAdditionals.entrySet().iterator();it.hasNext();){
 				Entry<String, TreeSet<Integer>> entry = it.next();
 				String s=entry.getKey();				

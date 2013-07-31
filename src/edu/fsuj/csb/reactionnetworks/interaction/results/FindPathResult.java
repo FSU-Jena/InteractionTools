@@ -20,8 +20,8 @@ public class FindPathResult extends CalculationResult {
 	  super(calculationTask, result);
   }
 
-	public DefaultMutableTreeNode resultTreeRepresentation() throws SQLException {
-		DefaultMutableTreeNode rep = super.resultTreeRepresentation();
+	public DefaultMutableTreeNode treeRepresentation() throws SQLException {
+		DefaultMutableTreeNode rep = new DefaultMutableTreeNode("Result");
 		@SuppressWarnings("unchecked")
     TreeSet<Vector<Integer>> traces=(TreeSet<Vector<Integer>>) result;
 		for (Vector<Integer> trace:traces){

@@ -415,7 +415,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		Component frame=SwingUtilities.getRoot(this);
 		frame.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 		try {
-			if (source == calculateSeedsButton) actionHandler.calcSeeds(compartmentTab.getUserList().getListed(),substancesTab.produceList(),substancesTab.ignoreList(),skipUnbalancedReactions.isSelected(),useMilp.isSelected());
+			if (source == calculateSeedsButton) actionHandler.calcSeeds(compartmentTab.getUserList().getListed(),substancesTab.produceList(),substancesTab.ignoreList(),parametersTab.skipUnbalancedReactions(),useMilp.isSelected());
 			if (source == calculateProductsButton){
 						TreeSet<Integer> nutrients = substancesTab.degradeList();
 						nutrients.addAll(substancesTab.ignoreList());

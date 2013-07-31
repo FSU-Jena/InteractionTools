@@ -1,8 +1,6 @@
 package edu.fsuj.csb.reactionnetworks.interaction.results;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.rmi.AlreadyBoundException;
 import java.sql.SQLException;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -14,7 +12,6 @@ import edu.fsuj.csb.reactionnetworks.interaction.SubstanceListNode;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.graph.ProcessorSearchTask;
 import edu.fsuj.csb.reactionnetworks.organismtools.DbCompartment;
 import edu.fsuj.csb.tools.organisms.gui.CompartmentNode;
-import edu.fsuj.csb.tools.xml.NoTokenException;
 
 public class ProcessorCalculationResult extends CalculationResult implements Serializable {
 
@@ -30,8 +27,8 @@ public class ProcessorCalculationResult extends CalculationResult implements Ser
 	
 	@SuppressWarnings("unchecked")
   @Override
-	public DefaultMutableTreeNode treeRepresentation() throws IOException, NoTokenException, AlreadyBoundException, SQLException {
-		DefaultMutableTreeNode result = superTreeRepresentation();
+	public DefaultMutableTreeNode treeRepresentation() throws SQLException {
+		DefaultMutableTreeNode result = new DefaultMutableTreeNode("Result");
 		result.add(new SubstanceListNode("Spontaneously formed substances", idsOfspontaneouslyReachedSubstances));
 		TreeMap<Integer, TreeMap<Integer, TreeSet<Integer>>> mappingFromNumberOfProcessedSubstancesToSpeciesToProcessedSubstances=(TreeMap<Integer, TreeMap<Integer, TreeSet<Integer>>>) super.result;
 		for (Entry<Integer, TreeMap<Integer, TreeSet<Integer>>> entry:mappingFromNumberOfProcessedSubstancesToSpeciesToProcessedSubstances.entrySet()){

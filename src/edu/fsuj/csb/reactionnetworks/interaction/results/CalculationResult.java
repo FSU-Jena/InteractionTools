@@ -62,9 +62,11 @@ public class CalculationResult implements Serializable {
 	 * @throws AlreadyBoundException
 	 * @throws SQLException 
 	 */
-	public DefaultMutableTreeNode superTreeRepresentation() throws IOException, NoTokenException, AlreadyBoundException, SQLException {		
+	public DefaultMutableTreeNode getTreeRepresentation() throws IOException, NoTokenException, AlreadyBoundException, SQLException {		
 		DefaultMutableTreeNode node=new DefaultMutableTreeNode("Task "+leadingZeros(task.getNumber()));
-		node.insert(task.treeRepresentation(), 0);
+		System.out.println(task.getClass().getSimpleName());
+		node.add(task.treeRepresentation());
+		node.add(treeRepresentation());
 		return node;
 	}
 	
@@ -73,7 +75,7 @@ public class CalculationResult implements Serializable {
 	 * @throws SQLException 
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-  public DefaultMutableTreeNode resultTreeRepresentation() throws SQLException{		
+  public DefaultMutableTreeNode treeRepresentation() throws SQLException{		
 		if (task instanceof ProductCalculationTask){ // then the result set is a set of integers representing substance ids
 			Collection<Integer> resultset = ((Collection<Integer>) result);
 			DefaultMutableTreeNode node=new DefaultMutableTreeNode("newly produced substances ("+(resultset.size()-((ProductCalculationTask)task).getSubstances().size())+" items)");
@@ -91,20 +93,6 @@ public class CalculationResult implements Serializable {
 		return null;
 	}
 	
-	/**
-	 * @return a tree representation for the result and the task to which this result belongs. Can be overridden by extending classes to display the result hierarchically
-	 * @throws IOException
-	 * @throws NoTokenException
-	 * @throws AlreadyBoundException
-	 * @throws SQLException 
-	 */
-	@SuppressWarnings({ })
-  public DefaultMutableTreeNode treeRepresentation() throws IOException, NoTokenException, AlreadyBoundException, SQLException {
-		DefaultMutableTreeNode result = superTreeRepresentation();
-		if (this.result instanceof TreeSet)	result.add(resultTreeRepresentation());
-		return result;
-	}
-
 	/**
 	 * @return get the task, to which this result belongs
 	 */
