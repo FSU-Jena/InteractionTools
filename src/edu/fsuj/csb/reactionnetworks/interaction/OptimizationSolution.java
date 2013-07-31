@@ -71,6 +71,5 @@ public class OptimizationSolution implements Serializable{
 
 	public void addBackwardReaction(Integer key, double value) {
 		backward.put(key, value);	  
-  }
-	
+  }	
 }
