@@ -49,4 +49,19 @@ import edu.fsuj.csb.tools.xml.Tools;
 		public static TreeSet<Binding> set() {
 			return new TreeSet<Binding>(ObjectComparator.get());
 		}
+		
+		public static LPVariable forwardSwitch(int reactionid) {
+			return new LPVariable("sF" + reactionid);
+		}
+
+		public static LPVariable backwardSwitch(int reactionid) {
+			return new LPVariable("sB" + reactionid);
+		}
+		public static LPVariable inflowSwitch(Integer substanceId) {
+			return new LPVariable("sI" + substanceId);
+		}
+
+		public static LPVariable outflowSwitch(Integer substanceId) {
+			return new LPVariable("sO" + substanceId);
+		}
 	}
