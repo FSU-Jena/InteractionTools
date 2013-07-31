@@ -29,7 +29,6 @@ import edu.fsuj.csb.tools.LPSolverWrapper.LPTerm;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPVariable;
 import edu.fsuj.csb.tools.organisms.Compartment;
 import edu.fsuj.csb.tools.organisms.Reaction;
-import edu.fsuj.csb.tools.organisms.ReactionSet;
 import edu.fsuj.csb.tools.xml.NoTokenException;
 import edu.fsuj.csb.tools.xml.ObjectComparator;
 import edu.fsuj.csb.tools.xml.Tools;
@@ -49,41 +48,53 @@ public class LinearProgrammingTask extends CalculationTask {
 		this.substances = substanceSet;
 		this.parameters = parameterSet;
 	}
+	
+	private class Solutions{
+		TreeSet<OptimizationSolution> solutions = OptimizationSolution.set(); // set of (set of substances, that must be supplied)
+		int solutionSize = Integer.MAX_VALUE; // for monitoring the size of the solutions
+		int number = 1;
+
+		public boolean addNew(OptimizationSolution solution) {
+			if (solution == null) {
+				System.out.println("Solution #" + number + ": no solution found.");
+				return false;
+			}
+			int inflowSize = solution.inflows().size();
+			if (inflowSize > solutionSize) { // if the size of the solution increases, we're getting suboptimal solutions. so: quit!
+				System.out.println("found no more solution with size " + solutionSize);
+				System.out.println("next solution: #" + (number++) + ": Inflows " + solution.inflows() + " / Outflows " + solution.outflows());
+				System.out.println("Reactions: " + solution.forwardReactions() + " - " + solution.backwardReactions());
+				return false;
+			}
+			if (inflowSize < solutionSize) { // normaly the size of the solutions should not decrease, as this would mean, we have found suboptimal solutions before...
+				if (solutionSize != Integer.MAX_VALUE) {
+					System.err.println("uh oh! found smaller solution (" + solution + "). this was not expected.");
+					return false;
+				} else solutionSize = inflowSize;
+			}
+			System.out.println("solution #" + (number++) + ": Inflows " + solution.inflows() + " / Outflows " + solution.outflows());
+			System.out.println("Reactions: " + solution.forwardReactions() + " - " + solution.backwardReactions());
+			solutions.add(solution); // don't allow inflow of the substances in the solution in the next turn
+			return true;
+	  }
+
+		public boolean isEmpty() {			
+	    return solutions.isEmpty();
+    }
+	}
 
 	@Override
 	public void run(CalculationClient calculationClient) throws IOException, NoTokenException, AlreadyBoundException, SQLException {
+		Solutions solutions=new Solutions();
 		try {
-			TreeSet<OptimizationSolution> solutions = OptimizationSolution.set(); // set of (set of substances, that must be supplied)
-			int solutionSize = Integer.MAX_VALUE; // for monitoring the size of the solutions
-			int number = 1;
+
 			while (true) {
 
 				OptimizationSolution solution = runInternal(solutions); // start the actual calculation
 
-				if (solution == null) {
-					System.out.println("Solution #" + number + ": no solution found.");
-					break;
-				}
-				int inflowSize = solution.inflows().size();
-				if (inflowSize > solutionSize) { // if the size of the solution increases, we're getting suboptimal solutions. so: quit!
-					System.out.println("found no more solution with size " + solutionSize);
-					System.out.println("next solution: #" + (number++) + ": Inflows " + solution.inflows() + " / Outflows " + solution.outflows());
-					System.out.println("Reactions: " + solution.forwardReactions() + " - " + solution.backwardReactions());
-					break;
-				}
-				if (inflowSize < solutionSize) { // normaly the size of the solutions should not decrease, as this would mean, we have found suboptimal solutions before...
-					if (solutionSize == Integer.MAX_VALUE) {
-						solutionSize = inflowSize;
-					} else {
-						System.err.println("uh oh! found smaller solution (" + solution + "). this was not expected.");
-						break;
-					}
-				}
-				System.out.println("solution #" + (number++) + ": Inflows " + solution.inflows() + " / Outflows " + solution.outflows());
-				System.out.println("Reactions: " + solution.forwardReactions() + " - " + solution.backwardReactions());
-				solutions.add(solution); // don't allow inflow of the substances in the solution in the next turn
-				calculationClient.sendObject(new OptimizationResult(this, solution));
-				break; // TODO: add break condition
+			
+				if (!solutions.addNew(solution)) break;
+				calculationClient.sendObject(new OptimizationResult(this, solution));				
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -94,7 +105,9 @@ public class LinearProgrammingTask extends CalculationTask {
 		}
 	}
 
-	protected OptimizationSolution runInternal(TreeSet<OptimizationSolution> solutions) throws DataFormatException, SQLException, IOException, InterruptedException {
+
+
+	protected OptimizationSolution runInternal(Solutions solutions) throws DataFormatException, SQLException, IOException, InterruptedException {
 		Tools.startMethod("runInternal(" + solutions + ")");
 
 		/* prepare */
@@ -146,64 +159,10 @@ public class LinearProgrammingTask extends CalculationTask {
 		LPTerm desiredFlows=new LPSum(parameters.desiredInflowWeight(), desiredInflowSum, parameters.desiredOutflowWeight(), desiredOutflowSum);
 		termToMinimize = new LPDiff(auxiliaryFlows, desiredFlows);
 
-		// TODO: von hier an überarbeiten
+		if (solutions.isEmpty()) excludeEarlierSolutions(solver,solutions);
 
-		int number = 0;
-		for (OptimizationSolution solution : solutions) {
-			if (parameters.useMILP()) {
-				double sum = 0;
-				LPTerm sumTerm = null;
-				for (Entry<Integer, Double> entry : solution.inflows().entrySet()) {
-					sum += entry.getValue();
-					sumTerm = new LPSum(sumTerm, Binding.inflowSwitch(entry.getKey()));
-				}
-				for (Entry<Integer, Double> entry : solution.outflows().entrySet()) {
-					sum += entry.getValue();
-					sumTerm = new LPSum(sumTerm, Binding.inflowSwitch(entry.getKey()));
-				}
-				for (Entry<Integer, Double> entry : solution.forwardReactions().entrySet()) {
-					sum += entry.getValue();
-					sumTerm = new LPSum(sumTerm, Binding.forwardSwitch(entry.getKey()));
-				}
-				for (Entry<Integer, Double> entry : solution.backwardReactions().entrySet()) {
-					sum += entry.getValue();
-					sumTerm = new LPSum(sumTerm, Binding.backwardSwitch(entry.getKey()));
-				}
-				LPCondition solutionExclusion = new LPCondition(sumTerm, LPCondition.LESS_THEN, sum);
-				solutionExclusion.setComment("Exclude Solution #" + (++number));
-				solver.addCondition(solutionExclusion);
-			} else {
-				double sum = -0.0001;
-				LPTerm sumTerm = null;
-				for (Entry<Integer, Double> entry : solution.inflows().entrySet()) {
-					sum += entry.getValue();
-					sumTerm = new LPSum(sumTerm, inflow(entry.getKey()));
-				}
-				for (Entry<Integer, Double> entry : solution.outflows().entrySet()) {
-					sum += entry.getValue();
-					sumTerm = new LPSum(sumTerm, outflow(entry.getKey()));
-				}
-				for (Entry<Integer, Double> entry : solution.forwardReactions().entrySet()) {
-					sum += entry.getValue();
-					sumTerm = new LPSum(sumTerm, forward(entry.getKey()));
-				}
-				for (Entry<Integer, Double> entry : solution.backwardReactions().entrySet()) {
-					sum += entry.getValue();
-					sumTerm = new LPSum(sumTerm, backward(entry.getKey()));
-				}
-				LPCondition solutionExclusion = new LPCondition(sumTerm, LPCondition.LESS_THEN, sum);
-				solutionExclusion.setComment("Exclude Solution #" + (++number));
-				solver.addCondition(solutionExclusion);
-			}
-		}
+		setBalancesToZero(solver,balances);
 
-		for (Entry<Integer, LPTerm> balance : balances.entrySet()) {
-			LPTerm term = balance.getValue();
-			int var = balance.getKey();
-			LPCondition cond = new LPCondition(term, LPCondition.EQUAL, 0.0);
-			cond.setComment("Balance for Substance " + var);
-			solver.addCondition(cond);
-		}
 		solver.minimize(termToMinimize);
 		solver.setTaskfileName(filename().replace(" ", "_").replace(":", "."));
 		solver.start();
@@ -213,6 +172,20 @@ public class LinearProgrammingTask extends CalculationTask {
 		return solution;
 	}
 	
+	private void setBalancesToZero(LPSolveWrapper solver, TreeMap<Integer, LPTerm> balances) {
+		for (Entry<Integer, LPTerm> balance : balances.entrySet()) {
+			LPTerm balanceTerm = balance.getValue();
+			int substanceId = balance.getKey();
+			LPCondition cond = new LPCondition(balanceTerm, LPCondition.EQUAL, 0.0);
+			cond.setComment("Balance for Substance " + substanceId);
+			solver.addCondition(cond);
+		}
+  }
+
+	private void excludeEarlierSolutions(LPSolveWrapper solver, Solutions solutions) {
+		Tools.notImplemented("LinearProgrammingTask.excludeEarlierSolutions(solver,solutions)");
+	}
+
 	LPTerm simpleSum(LPTerm term1, LPTerm term2) {
 		if (term1 == null) return term2;
 		if (term2 == null) return term1;
@@ -351,10 +324,6 @@ private LPTerm buildInternalReactionSum(DbCompartment compartment) throws DataFo
 		return solution;
 	}
 
-
-
-
-
 	private LPVariable addBoundaryFlow(TreeMap<Integer, LPTerm> balances, Integer sid, boolean direction) {
 		Tools.startMethod("addBoundaryFlow(...," + sid + ", " + ((direction == INFLOW) ? "inflow" : "outflow") + ")");
 		LPTerm balanceForSubstance = balances.get(sid);
@@ -370,8 +339,6 @@ private LPTerm buildInternalReactionSum(DbCompartment compartment) throws DataFo
 		Tools.endMethod(flowVariable);
 		return flowVariable;
 	}
-
-
 
 	private void addBackwardVelocity(Reaction reaction, TreeMap<Integer, LPTerm> mappingFromSubstancesToTerms) {
 		Tools.startMethod("addBackwardVelocity(" + reaction + ")");
@@ -394,7 +361,6 @@ private LPTerm buildInternalReactionSum(DbCompartment compartment) throws DataFo
 		}
 		Tools.endMethod();
 	}
-
 	private void addForwardVelocity(Reaction reaction, TreeMap<Integer, LPTerm> mappingFromSubstancesToTerms) {
 		Tools.startMethod("addForwardVelocity(" + reaction + ")");
 		LPVariable forwardVelocity = forward(reaction.id());
@@ -419,26 +385,19 @@ private LPTerm buildInternalReactionSum(DbCompartment compartment) throws DataFo
 	private LPVariable forward(int reactionid) {
 		return new LPVariable("F" + reactionid);
 	}
-
 	private LPVariable backward(int reactionid) {
 		return new LPVariable("B" + reactionid);
 	}
-
-
-
 	public static LPVariable inflow(Integer substanceId) {
 		return new LPVariable("I" + substanceId);
 	}
-
 	public static LPVariable outflow(Integer substanceId) {
 		return new LPVariable("O" + substanceId);
 	}
 
-
 	public int getCompartmentId() {
 		return compartmentId;
 	}
-
 	protected String filename() {
 		SimpleDateFormat formatter = new SimpleDateFormat("yy-MM-dd HH.mm.ss");
 		return "OptimizationTask " + formatter.format(new Date()) + "." + getNumber() + ".lp";
