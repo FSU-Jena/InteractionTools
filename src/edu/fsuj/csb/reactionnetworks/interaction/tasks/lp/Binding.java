@@ -16,9 +16,9 @@ import edu.fsuj.csb.tools.xml.Tools;
 		private LPCondition upperLimit;
 		private LPVariable switchVar;
 		
-		public Binding(LPVariable flow, LPVariable flowSwitch, LPSolveWrapper solver) {
-			Tools.startMethod("new Binding("+flow+", "+flowSwitch+")");
-			
+		public Binding(LPVariable flow, LPSolveWrapper solver) {
+			Tools.startMethod("new Binding("+flow+")");
+			LPVariable flowSwitch = new LPVariable("s"+flow);
 			lowerLimit = new LPCondition(new LPDiff(flowSwitch, flow),LPCondition.LESS_OR_EQUAL, 0.0);
 			lowerLimit.setComment("force velocity>1 if switch=1");
 			solver.addCondition(lowerLimit);
