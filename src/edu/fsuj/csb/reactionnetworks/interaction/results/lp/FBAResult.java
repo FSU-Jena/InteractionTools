@@ -12,5 +12,4 @@ public class FBAResult extends LinearProgrammingResult implements Serializable {
 	public FBAResult(CalculationTask calculationTask, OptimizationSolution result) {
 	  super(calculationTask, result);
   }
-
 }
