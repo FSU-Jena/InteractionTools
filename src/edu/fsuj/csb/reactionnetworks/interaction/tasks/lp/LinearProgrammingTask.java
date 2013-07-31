@@ -87,12 +87,8 @@ public class LinearProgrammingTask extends CalculationTask {
 	public void run(CalculationClient calculationClient) throws IOException, NoTokenException, AlreadyBoundException, SQLException {
 		Solutions solutions=new Solutions();
 		try {
-
 			while (true) {
-
-				OptimizationSolution solution = runInternal(solutions); // start the actual calculation
-
-			
+				OptimizationSolution solution = runInternal(solutions); // start the actual calculation			
 				if (!solutions.addNew(solution)) break;
 				calculationClient.sendObject(new OptimizationResult(this, solution));				
 			}
@@ -104,8 +100,6 @@ public class LinearProgrammingTask extends CalculationTask {
 			e.printStackTrace();
 		}
 	}
-
-
 
 	protected OptimizationSolution runInternal(Solutions solutions) throws DataFormatException, SQLException, IOException, InterruptedException {
 		Tools.startMethod("runInternal(" + solutions + ")");
