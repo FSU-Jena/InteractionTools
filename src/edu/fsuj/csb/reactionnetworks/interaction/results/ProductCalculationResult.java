@@ -1,8 +1,6 @@
 package edu.fsuj.csb.reactionnetworks.interaction.results;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.rmi.AlreadyBoundException;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.TreeSet;
@@ -11,7 +9,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import edu.fsuj.csb.reactionnetworks.interaction.SubstanceListNode;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.graph.ProductCalculationTask;
-import edu.fsuj.csb.tools.xml.NoTokenException;
 
 public class ProductCalculationResult extends CalculationResult implements Serializable {
 
@@ -20,15 +17,10 @@ public class ProductCalculationResult extends CalculationResult implements Seria
 	public ProductCalculationResult(ProductCalculationTask productCalculationTask, Collection<Integer> productIds) {
 		super(productCalculationTask, productIds);
   }
-	@SuppressWarnings({})
-	public DefaultMutableTreeNode treeRepresentation() throws IOException, NoTokenException, AlreadyBoundException, SQLException {
-		DefaultMutableTreeNode result = superTreeRepresentation();
-		result.add(resultTreeRepresentation());
-		return result;
-	}
+
 
 	@SuppressWarnings("unchecked")
-  public DefaultMutableTreeNode resultTreeRepresentation() throws SQLException {		
-		return new SubstanceListNode("produced substances", (TreeSet<Integer>) this.result);
+  public DefaultMutableTreeNode treeRepresentation() throws SQLException {		
+		return new SubstanceListNode("Result: produced substances", (TreeSet<Integer>) this.result);
 	}
 }

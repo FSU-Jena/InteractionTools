@@ -42,5 +42,9 @@ public class OptimizationParametersTab extends VerticalPanel {
 	public ParameterSet optimizationParameterSet(){
 		return new ParameterSet(numberOfAllReactions.wert(),numberOfInflows.wert(),rateOfInflows.wert(),numberOfOutflows.wert(),rateOfOutflows.wert(),skipUnbalancedReactions.isSelected(),false);
 	}
+
+	public boolean skipUnbalancedReactions() {
+	  return skipUnbalancedReactions.isSelected();
+  }
 	
 }

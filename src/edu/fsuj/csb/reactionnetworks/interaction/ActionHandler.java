@@ -195,7 +195,7 @@ public class ActionHandler extends Master {
 			DefaultMutableTreeNode node = mappingFromTaskNumbersToResultCollectors.get(taskNumber);
 
 			if (node==null){
-				node = result.treeRepresentation();
+				node = result.getTreeRepresentation();
 				if (result.result().equals("done"))	node.setUserObject(node.toString()+" ✗");
 				
 				/* add result */
@@ -205,7 +205,7 @@ public class ActionHandler extends Master {
 				if (result.result().equals("done"))	{
 					node.setUserObject(node.toString()+" ✓");
 				} else {
-					DefaultMutableTreeNode resultTreeRepresentation = result.resultTreeRepresentation();
+					DefaultMutableTreeNode resultTreeRepresentation = result.getTreeRepresentation();
 					if (resultTreeRepresentation!=null)	node.add(resultTreeRepresentation);
 				}
 			}
