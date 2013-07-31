@@ -264,13 +264,13 @@ public class ActionHandler extends Master {
 
 	public void startFBA(TreeSet<Integer> compartmentIds, SubstanceSet substanceSet, ParameterSet parameterSet) throws IOException {
 		if (warnforEmptyList(compartmentIds,"Organisms/Compartments")) return;
-		if (warnforEmptyList(substanceSet.consume(),"Substances to consume") || warnforEmptyList(substanceSet.produce(),"Substances to produce")) return;
+		if (warnforEmptyList(substanceSet.desiredInflows(),"Substances to consume") || warnforEmptyList(substanceSet.desiredOutFlows(),"Substances to produce")) return;
 		for (Integer compartmentId:compartmentIds) startFBA(compartmentId, substanceSet, parameterSet);
   }
 
 	private void startFBA(Integer compartmentId, SubstanceSet substanceSet, ParameterSet parameterSet) throws IOException{
 		if (compartmentId==null) System.out.println("NOTE: No compartment selected!");
-		if (warnforEmptyList(substanceSet.consume(),"Substances to consume") || warnforEmptyList(substanceSet.produce(),"Substances to produce")) return;
+		if (warnforEmptyList(substanceSet.desiredInflows(),"Substances to consume") || warnforEmptyList(substanceSet.desiredOutFlows(),"Substances to produce")) return;
 		FBATask fba=new FBATask(compartmentId, substanceSet, parameterSet);		
 		sendTask(fba);
   }
