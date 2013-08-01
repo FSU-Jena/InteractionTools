@@ -61,4 +61,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 		public boolean ignoreUnbalanced() {
 	    return ignoreUnbalancedReactions;
     }
+		
+		public String toString() {		 
+		  return "Parameters:\n - importance of desired inflows: "+desiredInflowWeight+"\n - importance of desired outflows: "+desiredOutflowWeight+"\n - importance of reduction of auxiliary inflows: "+auxiliaryInflowWeight+"\n - importance of reduction of auxiliary outflows: "+auxiliaryOutflowWeight+"\n - importance of reduction of internal reactions: "+reactionWeight;
+		}
 	}

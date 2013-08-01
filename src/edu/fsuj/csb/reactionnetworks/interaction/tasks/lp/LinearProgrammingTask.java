@@ -21,6 +21,7 @@ import edu.fsuj.csb.reactionnetworks.interaction.tasks.ParameterSet;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.SubstanceSet;
 import edu.fsuj.csb.reactionnetworks.organismtools.DbCompartment;
 import edu.fsuj.csb.reactionnetworks.organismtools.DbReaction;
+import edu.fsuj.csb.reactionnetworks.organismtools.DbSubstance;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPCondition;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPDiff;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPSolveWrapper;
@@ -170,13 +171,13 @@ public class LinearProgrammingTask extends CalculationTask {
 		return true;
 	}
 
-	private void setBalancesToZero(LPSolveWrapper solver, TreeMap<Integer, LPTerm> balances) {
+	private void setBalancesToZero(LPSolveWrapper solver, TreeMap<Integer, LPTerm> balances) throws SQLException {
 		Tools.startMethod("LinearProgrammingTask.setBalancesToZero("+solver+", "+balances.toString().substring(0,10)+")");
 		for (Entry<Integer, LPTerm> balance : balances.entrySet()) {
 			LPTerm balanceTerm = balance.getValue();
 			int substanceId = balance.getKey();
 			LPCondition cond = new LPCondition(balanceTerm, LPCondition.EQUAL, 0.0);
-			cond.setComment("Balance for Substance " + substanceId);
+			cond.setComment("Balance for Substance " + DbSubstance.load(substanceId));
 			solver.addCondition(cond);
 		}
 		Tools.endMethod();
