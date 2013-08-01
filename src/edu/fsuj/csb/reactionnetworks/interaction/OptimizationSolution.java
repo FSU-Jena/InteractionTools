@@ -1,9 +1,17 @@
 package edu.fsuj.csb.reactionnetworks.interaction;
 
 import java.io.Serializable;
+import java.sql.SQLException;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import javax.swing.tree.DefaultMutableTreeNode;
+
+import edu.fsuj.csb.reactionnetworks.organismtools.DbReaction;
+import edu.fsuj.csb.reactionnetworks.organismtools.DbSubstance;
+import edu.fsuj.csb.tools.organisms.gui.ReactionNode;
+import edu.fsuj.csb.tools.organisms.gui.SubstanceNode;
 import edu.fsuj.csb.tools.xml.ObjectComparator;
 
 public class OptimizationSolution implements Serializable{
@@ -71,5 +79,41 @@ public class OptimizationSolution implements Serializable{
 
 	public void addBackwardReaction(Integer key, double value) {
 		backward.put(key, value);	  
+  }
+
+	public DefaultMutableTreeNode tree() throws SQLException {
+		DefaultMutableTreeNode result=new DefaultMutableTreeNode("Solution");
+		result.add(inflowTree());
+		result.add(reactionTree());
+		result.add(outflowTree());
+	  return result;
+  }
+
+	private DefaultMutableTreeNode reactionTree() throws SQLException {
+		DefaultMutableTreeNode reactionTree=new DefaultMutableTreeNode("Reactions");
+	  for (Entry<Integer, Double> reaction:reactions().entrySet()){
+	  	ReactionNode rn=new ReactionNode(DbReaction.load(reaction.getKey()));
+	  	rn.add(new DefaultMutableTreeNode("Rate: "+reaction.getValue()));
+	  	reactionTree.add(rn);	  	
+	  }
+	  return reactionTree;
+  }
+	private DefaultMutableTreeNode outflowTree() throws SQLException {
+		DefaultMutableTreeNode outflowTree=new DefaultMutableTreeNode("Outflows");
+		for (Entry<Integer, Double> outflow:outflows.entrySet()){
+			SubstanceNode sn=new SubstanceNode(DbSubstance.load(outflow.getKey()));
+			sn.add(new DefaultMutableTreeNode("Rate: "+outflow.getValue()));
+			outflowTree.add(sn);
+		}
+		return outflowTree;
+  }
+	private DefaultMutableTreeNode inflowTree() throws SQLException {
+		DefaultMutableTreeNode inflowTree=new DefaultMutableTreeNode("Inflows");
+		for (Entry<Integer, Double> inflow:inflows.entrySet()){
+			SubstanceNode sn=new SubstanceNode(DbSubstance.load(inflow.getKey()));
+			sn.add(new DefaultMutableTreeNode("Rate: "+inflow.getValue()));
+			inflowTree.add(sn);
+		}
+		return inflowTree;
   }	
 }

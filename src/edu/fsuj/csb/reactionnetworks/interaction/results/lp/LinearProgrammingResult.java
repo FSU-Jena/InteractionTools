@@ -18,6 +18,7 @@ public class LinearProgrammingResult extends CalculationResult implements Serial
   }
 
   public DefaultMutableTreeNode treeRepresentation() throws SQLException {		
-		return new DefaultMutableTreeNode("Result:");
+		return ((OptimizationSolution) result).tree();
+		
 	}
 }

@@ -59,8 +59,6 @@ public class CalculationResult implements Serializable  {
 	 */
 	public DefaultMutableTreeNode getTreeRepresentation() throws IOException, NoTokenException, AlreadyBoundException, SQLException {		
 		DefaultMutableTreeNode node=new DefaultMutableTreeNode("Task "+leadingZeros(task.getNumber()));
-		System.out.println(task.getClass());
-		System.out.println(getClass());
 		node.add(task.treeRepresentation());
 		node.add(treeRepresentation());
 		return node;
