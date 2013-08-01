@@ -398,4 +398,7 @@ public class SubstanceList extends VerticalPanel implements ChangeListener,TreeS
 	public static SubstanceList getNoOutflowList() {
 	  return noOutflowList;
   }
+	public static SubstanceList getNoInflowList() {
+	  return noInflowList;
+  }
 }

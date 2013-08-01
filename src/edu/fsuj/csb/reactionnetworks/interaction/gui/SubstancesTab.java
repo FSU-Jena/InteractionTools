@@ -236,7 +236,19 @@ public class SubstancesTab extends HorizontalPanel implements ActionListener, Co
 		if (dummy==null) return null;
 	  return dummy.getListed();
   }
+	
+	public TreeSet<Integer> noInflowList() {
+		SubstanceList dummy =  SubstanceList.getNoInflowList();
+		if (dummy==null) return null;
+	  return dummy.getListed();
+  }
 
+	public TreeSet<Integer> noOutflowList() {
+		SubstanceList dummy =  SubstanceList.getNoOutflowList();
+		if (dummy==null) return null;
+	  return dummy.getListed();
+  }
+	
 	public void scaleScrollPanes(Dimension d) {
 		int width=(d.width-lmp.getWidth()-60)/2;
 		choosableSubstances.scaleScrollPane(new Dimension(width-30,d.height-searchPanel.getHeight()-70));
@@ -258,10 +270,6 @@ public class SubstancesTab extends HorizontalPanel implements ActionListener, Co
 		list5.scale();
   }
 
-	public TreeSet<Integer> noOutflowList() {
-		SubstanceList dummy =  SubstanceList.getNoOutflowList();
-		if (dummy==null) return null;
-	  return dummy.getListed();
-  }
+
 
 }

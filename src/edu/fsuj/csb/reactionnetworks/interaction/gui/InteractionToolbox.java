@@ -391,7 +391,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	}
 
 	private SubstanceSet getSubstanceSet() {		
-		return new SubstanceSet(substancesTab.degradeList(),substancesTab.produceList(),null,substancesTab.noOutflowList(),substancesTab.ignoreList());
+		return new SubstanceSet(substancesTab.degradeList(),substancesTab.produceList(),substancesTab.noInflowList(),substancesTab.noOutflowList(),substancesTab.ignoreList());
   }
 
 
