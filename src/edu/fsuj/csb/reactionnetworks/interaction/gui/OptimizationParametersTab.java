@@ -82,7 +82,7 @@ public class OptimizationParametersTab extends VerticalPanel {
 		outflow.add(numberOfOutflows=new IntegerInputField("Importance of minimzation of number of OUTFLOW REACTIONS",0));
 		numberOfOutflows.setzewert(1);
 		outflow.add(rateOfOutflows=new IntegerInputField("Importance of maximization of rate of TARGET OUTFLOW REACTIONS",0));
-		rateOfInflows.setzewert(1);
+		rateOfOutflows.setzewert(1);
 		outflow.scale();
 		add(outflow);		
 		
