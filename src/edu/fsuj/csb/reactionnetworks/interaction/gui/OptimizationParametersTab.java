@@ -66,13 +66,15 @@ public class OptimizationParametersTab extends VerticalPanel {
 
 	public OptimizationParametersTab() {
 		super();
-		numberOfAllReactions=new IntegerInputField("Importance of minimzation of number of ALL REACTIONS",0);
-		add(numberOfAllReactions);
+		
+		add(numberOfAllReactions=new IntegerInputField("Importance of minimzation of number of ALL REACTIONS",0));
+		numberOfAllReactions.setzewert(1);
 		
 		VerticalPanel inflow=new VerticalPanel("Inflows");
 		inflow.add(numberOfInflows=new IntegerInputField("Importance of minimzation of number of INFLOW REACTIONS",0));
 		numberOfInflows.setzewert(1);
 		inflow.add(rateOfInflows=new IntegerInputField("Importance of maximization of rate of DESIRED INFLOW REACTIONS",0));
+		rateOfInflows.setzewert(1);
 		inflow.scale();
 		add(inflow);
 		
@@ -80,6 +82,7 @@ public class OptimizationParametersTab extends VerticalPanel {
 		outflow.add(numberOfOutflows=new IntegerInputField("Importance of minimzation of number of OUTFLOW REACTIONS",0));
 		numberOfOutflows.setzewert(1);
 		outflow.add(rateOfOutflows=new IntegerInputField("Importance of maximization of rate of TARGET OUTFLOW REACTIONS",0));
+		rateOfInflows.setzewert(1);
 		outflow.scale();
 		add(outflow);		
 		
