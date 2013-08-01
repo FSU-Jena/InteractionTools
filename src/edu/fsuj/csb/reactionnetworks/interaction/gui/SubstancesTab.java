@@ -38,10 +38,7 @@ public class SubstancesTab extends HorizontalPanel implements ActionListener, Co
 	private JButton clearButton;
 	private ListModificationPanel lmp;
 	private HorizontalPanel searchPanel;
-	private SubstanceList list1;
-	private SubstanceList list2;
-	private SubstanceList list3;
-	private SubstanceList list4;
+	private SubstanceList list1,list2,list3,list4,list5;
 	private SubstanceSearchBox searchBox;
 	
 	public SubstancesTab() throws IOException, NoTokenException, AlreadyBoundException, SQLException {
@@ -74,6 +71,11 @@ public class SubstancesTab extends HorizontalPanel implements ActionListener, Co
 	  substanceLists.add(list4=new SubstanceList("Substances List 4",true));
 	  selectedSubstancesTabs.add(list4,"List 4");	  
 	  PopupMenu.addSubstanceList(list4);
+	  list4.addActionListener(this);
+	  
+	  substanceLists.add(list5=new SubstanceList("Substances List 5",true));
+	  selectedSubstancesTabs.add(list5,"List 5");	  
+	  PopupMenu.addSubstanceList(list5);
 	  list4.addActionListener(this);
 	  return selectedSubstancesTabs;
   }
@@ -243,15 +245,17 @@ public class SubstancesTab extends HorizontalPanel implements ActionListener, Co
 		searchBox.setPreferredSize(dim);
 
 		selectedSubstancesTabs.setPreferredSize(new Dimension(width+30,d.height-40));
-		d=new Dimension(width+10,d.height-140);
+		d=new Dimension(width+10,d.height-200);
 		list1.scaleScrollPane(d);
 		list2.scaleScrollPane(d);
 		list3.scaleScrollPane(d);
 		list4.scaleScrollPane(d);
+		list5.scaleScrollPane(d);
 		list1.scale();
 		list2.scale();
 		list3.scale();
 		list4.scale();
+		list5.scale();
   }
 
 	public TreeSet<Integer> noOutflowList() {
