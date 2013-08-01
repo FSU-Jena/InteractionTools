@@ -176,8 +176,7 @@ public class LinearProgrammingTask extends CalculationTask {
 		for (Entry<Integer, LPTerm> balance : balances.entrySet()) {
 			LPTerm balanceTerm = balance.getValue();
 			int substanceId = balance.getKey();
-			LPCondition cond = new LPCondition(balanceTerm, LPCondition.EQUAL, 0.0);
-			cond.setComment("Balance for Substance " + DbSubstance.load(substanceId));
+			LPCondition cond = new LPCondition(balanceTerm, LPCondition.EQUAL, 0.0,"Balance for Substance " + DbSubstance.load(substanceId));
 			solver.addCondition(cond);
 		}
 		Tools.endMethod();
@@ -195,61 +194,61 @@ public class LinearProgrammingTask extends CalculationTask {
 		return new LPSum(term1, term2);
 	}
 
-	private LPTerm buildInflowSum(LPSolveWrapper solver, TreeMap<Integer, LPTerm> balances, TreeSet<Integer> inflows) {
+	private LPTerm buildInflowSum(LPSolveWrapper solver, TreeMap<Integer, LPTerm> balances, TreeSet<Integer> inflows) throws SQLException {
 		return buildInflowSum(solver, balances, inflows, false);
 	}
 
-	private LPTerm buildInflowSum(LPSolveWrapper solver, TreeMap<Integer, LPTerm> balances, TreeSet<Integer> inflows, boolean isDesired) {
+	private LPTerm buildInflowSum(LPSolveWrapper solver, TreeMap<Integer, LPTerm> balances, TreeSet<Integer> inflows, boolean isDesired) throws SQLException {
 		Tools.startMethod("LinearProgrammingTask.buildInflowSum("+solver+", {balances}, [inflows], "+isDesired+")");
 		LPTerm result = null;
 
 		for (Integer sid : inflows) {
 			LPVariable inflow = addBoundaryFlow(balances, sid, INFLOW); // adds the inflow to the balance of the substance
 			result = simpleSum(result, inflow); // adds the inflow to the sum of inflows
-			if (isDesired) solver.addCondition(new LPCondition(inflow, LPCondition.GREATER_THEN, 1.0)); // force this substance to be consumed
+			if (isDesired) solver.addCondition(new LPCondition(inflow, LPCondition.GREATER_THEN, 1.0,"force inflow of "+DbSubstance.load(sid))); // force this substance to be consumed
 		}
 		Tools.endMethod(result);
 		return result;
 	}
 
-	private LPTerm buildInflowSwitchSum(LPSolveWrapper solver, TreeMap<Integer, LPTerm> balances, TreeSet<Integer> inflows) {
+	private LPTerm buildInflowSwitchSum(LPSolveWrapper solver, TreeMap<Integer, LPTerm> balances, TreeSet<Integer> inflows) throws SQLException {
 		return buildInflowSwitchSum(solver, balances, inflows, false);
 	}
 
-	private LPTerm buildInflowSwitchSum(LPSolveWrapper solver, TreeMap<Integer, LPTerm> balances, TreeSet<Integer> inflows, boolean isDesired) {
+	private LPTerm buildInflowSwitchSum(LPSolveWrapper solver, TreeMap<Integer, LPTerm> balances, TreeSet<Integer> inflows, boolean isDesired) throws SQLException {
 		Tools.startMethod("LinearProgrammingTask.buildInflowSwitchSum("+solver+", "+balances+", "+inflows+", "+isDesired+")");
 		LPTerm result = null;
 		for (Integer sid : inflows) {
 			LPVariable inflow = addBoundaryFlow(balances, sid, INFLOW); // adds the inflow to the balance of the substance
 			Binding inflowBinding = new Binding(inflow, solver); // create switch for the flow and connect it to the flow
 			result = simpleSum(result, inflowBinding.switchVar()); // add the switch to the sum of inflows
-			if (isDesired) solver.addCondition(new LPCondition(inflow, LPCondition.GREATER_THEN, 1.0)); // force this susbtance to be consumed
+			if (isDesired) solver.addCondition(new LPCondition(inflow, LPCondition.GREATER_THEN, 1.0,"force inflow of "+DbSubstance.load(sid))); // force this susbtance to be consumed
 		}
 		Tools.endMethod(result);
 		return result;
 	}
 
-	private LPTerm buildOutflowSum(LPSolveWrapper solver, TreeMap<Integer, LPTerm> balances, TreeSet<Integer> outflows) {
+	private LPTerm buildOutflowSum(LPSolveWrapper solver, TreeMap<Integer, LPTerm> balances, TreeSet<Integer> outflows) throws SQLException {
 		return buildOutflowSum(solver, balances, outflows, false);
 	}
 
-	private LPTerm buildOutflowSum(LPSolveWrapper solver, TreeMap<Integer, LPTerm> balances, TreeSet<Integer> outflows, boolean addCondition) {
+	private LPTerm buildOutflowSum(LPSolveWrapper solver, TreeMap<Integer, LPTerm> balances, TreeSet<Integer> outflows, boolean addCondition) throws SQLException {
 		Tools.startMethod("LinearProgrammingTask.buildOutflowSum("+solver+", "+balances+", "+outflows+", "+addCondition+")");
 		LPTerm result = null;
 		for (Integer sid : outflows) {
 			LPVariable outflow = addBoundaryFlow(balances, sid, OUTFLOW); // adds the outflow to the balance of the substance
 			result = simpleSum(result, outflow); // adds the outflow to the sum of outflows
-			if (addCondition) solver.addCondition(new LPCondition(outflow, LPCondition.GREATER_THEN, 1.0)); // force this substance to be produced
+			if (addCondition) solver.addCondition(new LPCondition(outflow, LPCondition.GREATER_THEN, 1.0,"force outflow of "+DbSubstance.load(sid))); // force this substance to be produced
 		}
 		Tools.endMethod(result);
 		return result;
 	}
 
-	private LPTerm buildOutflowSwitchSum(LPSolveWrapper solver, TreeMap<Integer, LPTerm> balances, TreeSet<Integer> outflows) {
+	private LPTerm buildOutflowSwitchSum(LPSolveWrapper solver, TreeMap<Integer, LPTerm> balances, TreeSet<Integer> outflows) throws SQLException {
 		return buildOutflowSwitchSum(solver, balances, outflows, false);
 	}
 
-	private LPTerm buildOutflowSwitchSum(LPSolveWrapper solver, TreeMap<Integer, LPTerm> balances, TreeSet<Integer> outflows, boolean isDesired) {
+	private LPTerm buildOutflowSwitchSum(LPSolveWrapper solver, TreeMap<Integer, LPTerm> balances, TreeSet<Integer> outflows, boolean isDesired) throws SQLException {
 
 		Tools.startMethod("LinearProgrammingTask.buildOutflowSwitchSum("+solver+", "+balances+", "+outflows+", "+isDesired+")");
 		LPTerm result = null;
@@ -257,7 +256,7 @@ public class LinearProgrammingTask extends CalculationTask {
 			LPVariable outflow = addBoundaryFlow(balances, sid, OUTFLOW); // adds the inflow to the balance of the substance
 			Binding outflowBinding = new Binding(outflow, solver); // create switch for the flow and connect it to the flow
 			result = simpleSum(result, outflowBinding.switchVar()); // add the switch to the sum of inflows
-			if (isDesired) solver.addCondition(new LPCondition(outflow, LPCondition.GREATER_THEN, 1.0)); // force this susbtance to be consumed
+			if (isDesired) solver.addCondition(new LPCondition(outflow, LPCondition.GREATER_THEN, 1.0,"force outflow of "+DbSubstance.load(sid))); // force this susbtance to be consumed
 		}
 		Tools.endMethod(result);
 		return result;

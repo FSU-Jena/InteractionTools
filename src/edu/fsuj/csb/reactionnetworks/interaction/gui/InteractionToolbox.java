@@ -74,6 +74,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		System.out.println("Creating GUI components:");
 		createComponents();
 		popUp();
+		PageFetcher.setRetry(5);
 	}
 
 	/**
