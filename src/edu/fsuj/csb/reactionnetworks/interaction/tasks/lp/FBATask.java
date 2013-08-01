@@ -13,7 +13,10 @@ import edu.fsuj.csb.reactionnetworks.interaction.OptimizationSolution;
 import edu.fsuj.csb.reactionnetworks.interaction.results.lp.FBAResult;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.ParameterSet;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.SubstanceSet;
+import edu.fsuj.csb.reactionnetworks.organismtools.DbCompartment;
+import edu.fsuj.csb.tools.organisms.gui.CompartmentNode;
 import edu.fsuj.csb.tools.xml.NoTokenException;
+import edu.fsuj.csb.tools.xml.Tools;
 
 public class FBATask extends LinearProgrammingTask {
 
@@ -24,17 +27,17 @@ public class FBATask extends LinearProgrammingTask {
   }
 
 	public boolean addNewSolution(OptimizationSolution solution) {
+		Tools.startMethod("FBATask.addNewSolution("+solution.toString().substring(0,50)+")");
+		Tools.endMethod(false);
 		return false;
 	}
 	
+	@Override
 	public void run(CalculationClient calculationClient) throws IOException, NoTokenException, AlreadyBoundException, SQLException {
+		Tools.startMethod("FBATask.run("+calculationClient+")");
 		try {
-			while (true) {
-				solutions = OptimizationSolution.set();
-				OptimizationSolution solution = runInternal(); // start the actual calculation
-				if (!addNewSolution(solution)) break;
-				calculationClient.sendObject(new FBAResult(this, solution));
-			}
+			OptimizationSolution solution = runInternal(); // start the actual calculation
+			calculationClient.sendObject(new FBAResult(this, solution));
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (DataFormatException e) {
@@ -42,6 +45,7 @@ public class FBATask extends LinearProgrammingTask {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+		Tools.endMethod();
 	}
 	
 	/**
@@ -52,9 +56,14 @@ public class FBATask extends LinearProgrammingTask {
 	 * @throws SQLException 
 	 */
 	public MutableTreeNode treeRepresentation() throws IOException, NoTokenException, AlreadyBoundException, SQLException {
+		Tools.startMethod("FBATask.treeRepresentation()");
 		DefaultMutableTreeNode result = new DefaultMutableTreeNode(this.getClass().getSimpleName());
+		DefaultMutableTreeNode node = new DefaultMutableTreeNode("Compartment/Organism/Species");
+		node.add(new CompartmentNode(DbCompartment.load(getCompartmentId())));
+		result.add(node);
 		result.add(inputTree());
 		result.add(outputTree());
+		Tools.endMethod(result);
 	  return result;
   }
 }

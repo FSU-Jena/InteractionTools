@@ -10,6 +10,7 @@ import javax.swing.tree.MutableTreeNode;
 import edu.fsuj.csb.reactionnetworks.interaction.CalculationClient;
 import edu.fsuj.csb.reactionnetworks.interaction.results.CalculationResult;
 import edu.fsuj.csb.tools.xml.NoTokenException;
+import edu.fsuj.csb.tools.xml.Tools;
 
 
 /**
@@ -27,7 +28,9 @@ public abstract class CalculationTask implements Serializable {
    * default constructor
    */
   public CalculationTask() {
+  	Tools.startMethod("new CalculationTask()");
   	number=++currentNumber;
+  	Tools.endMethod();
   }
   
   /**
@@ -39,6 +42,7 @@ public abstract class CalculationTask implements Serializable {
    * @throws SQLException 
    */
   public void start(CalculationClient calculationClient) throws IOException, NoTokenException, AlreadyBoundException, SQLException{
+  	Tools.startMethod("CalculationTask.start("+calculationClient+")");
   	run(calculationClient);
   	try {
 	    Thread.sleep(1000);
@@ -47,6 +51,7 @@ public abstract class CalculationTask implements Serializable {
     }
   	calculationClient.sendObject(new CalculationResult(this, "done"));
   	System.out.println("execution finished.");
+  	Tools.endMethod();
   }
   
   /**
@@ -66,7 +71,10 @@ public abstract class CalculationTask implements Serializable {
 	 * @throws SQLException 
 	 */
 	public MutableTreeNode treeRepresentation() throws IOException, NoTokenException, AlreadyBoundException, SQLException {
-	  return new DefaultMutableTreeNode(this.getClass().getSimpleName());
+		Tools.startMethod("CalculationTask.treeRepresentation()");
+		DefaultMutableTreeNode result = new DefaultMutableTreeNode(this.getClass().getSimpleName());
+		Tools.endMethod(result);
+		return result;
   }
 	
 	/**

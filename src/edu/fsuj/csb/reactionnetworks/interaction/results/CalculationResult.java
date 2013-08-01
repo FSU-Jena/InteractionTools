@@ -4,15 +4,10 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.rmi.AlreadyBoundException;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.TreeSet;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.CalculationTask;
-import edu.fsuj.csb.reactionnetworks.interaction.tasks.graph.ProductCalculationTask;
-import edu.fsuj.csb.reactionnetworks.organismtools.gui.DbComponentNode;
 import edu.fsuj.csb.tools.xml.NoTokenException;
 
 /**
@@ -20,7 +15,7 @@ import edu.fsuj.csb.tools.xml.NoTokenException;
  * @author Stephan Richter
  *
  */
-public class CalculationResult implements Serializable {
+public class CalculationResult implements Serializable  {
 
 	private static final long serialVersionUID = 4979475206871894164L;
 	private CalculationTask task;
@@ -71,27 +66,8 @@ public class CalculationResult implements Serializable {
 		return node;
 	}
 	
-	/**
-	 * @return a tree representation of the result
-	 * @throws SQLException 
-	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-  public DefaultMutableTreeNode treeRepresentation() throws SQLException{		
-		if (task instanceof ProductCalculationTask){ // then the result set is a set of integers representing substance ids
-			Collection<Integer> resultset = ((Collection<Integer>) result);
-			DefaultMutableTreeNode node=new DefaultMutableTreeNode("newly produced substances ("+(resultset.size()-((ProductCalculationTask)task).getSubstances().size())+" items)");
-			for (Iterator<Integer> it = resultset.iterator();it.hasNext();){
-				int sid=it.next();
-				if (!((ProductCalculationTask)task).getSubstances().contains(sid)) node.add(DbComponentNode.create(sid));
-			}
-			return node;
-		} 
-		if (this.result instanceof TreeSet){
-			TreeSet set=(TreeSet) this.result;
-			DefaultMutableTreeNode node=new DefaultMutableTreeNode("Result ("+set.size()+" Items)");
-			return node;
-		}
-		return null;
+  public DefaultMutableTreeNode treeRepresentation() throws SQLException{
+		return new DefaultMutableTreeNode("CalculationResult: No result.");
 	}
 	
 	/**

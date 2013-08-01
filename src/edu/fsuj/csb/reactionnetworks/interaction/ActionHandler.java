@@ -93,9 +93,9 @@ public class ActionHandler extends Master {
 	 */
 	public void handleObject(Object o) {
 		Date date=new Date();
-		
 		if (o instanceof CalculationResult) {
 			CalculationResult calculationResult = (CalculationResult) o;
+			if (calculationResult.result()==null) return;
 			if (!calculationResult.result().equals("done"))	System.out.println(formatter.format(date)+": recieved "+o.getClass().getSimpleName());
 			try {
 				handleResult(calculationResult);

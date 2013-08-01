@@ -48,7 +48,7 @@ public class OptimizationSolution implements Serializable{
 	
 	@Override
 	public String toString() {
-	  return "SoptimizationSolution("+inflows()+"⇒"+reactions()+"⇒"+outflows()+")";
+	  return "OptimizationSolution("+inflows()+"⇒"+reactions()+"⇒"+outflows()+")";
 	}
 
 	public static TreeSet<OptimizationSolution> set() {
