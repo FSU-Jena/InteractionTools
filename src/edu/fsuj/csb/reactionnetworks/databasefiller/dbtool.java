@@ -49,7 +49,7 @@ public class dbtool {
 	private long startTime = 0;
 	private static int keggProkaryotes;
 	private static int keggEukaryotes;
-	private static boolean skipClear, skipKegg, skipBiomodels, skipFiles, skipKeggPathways, skipKeggEnzymes, skipKeggCodes, skipKeggOrganisms, skipKeggCompounds, skipKeggSubstances, skipKeggReactions, skipAsk, clearDecisions, test, skipKeggLinks;
+	private static boolean skipClear, skipKegg, skipBiomodels, skipFiles, skipKeggPathways, skipKeggEnzymes, skipKeggCodes, skipKeggOrganisms, skipKeggCompounds, skipKeggDrugs, skipKeggSubstances, skipKeggReactions, skipAsk, clearDecisions, test, skipKeggLinks;
 	private static String sbmlDirectory=System.getProperty("user.home")+"/Documents/sbml";
 
 	/**
@@ -70,7 +70,7 @@ public class dbtool {
 	 */
 	public static void main(String[] args) throws IOException, NameNotFoundException, SQLException, NoSuchMethodException, NoTokenException, NoSuchAlgorithmException, DataFormatException, NoSuchAttributeException, AlreadyBoundException, ClassNotFoundException, InterruptedException {
 		parseArgs(args);
-		PageFetcher.setRetry(20);
+		PageFetcher.setRetry(15);
 		new dbtool();
 	}
 
@@ -95,6 +95,7 @@ public class dbtool {
 		skipKeggSubstances = false;
 		skipKeggCodes = false;
 		skipKeggCompounds = false;
+		skipKeggDrugs =false;
 		skipKeggReactions = false;
 		skipKeggEnzymes = false;
 		skipAsk = false;
@@ -152,6 +153,11 @@ public class dbtool {
 				Tools.note("Will skip compound list of Kegg database.");
 				skipKeggCompounds = true;
 			}
+			if (args[i].equals("--skip-kegg-drugs")) {
+				Tools.note("Will skip drug list of Kegg database.");
+				skipKeggDrugs = true;
+			}
+
 			if (args[i].equals("--skip-kegg-reactions")) {
 				Tools.note("Will skip reactions from Kegg database");
 				skipKeggReactions = true;
@@ -225,7 +231,7 @@ public class dbtool {
 	public dbtool() throws IOException, SQLException, NameNotFoundException, NoSuchMethodException, NoTokenException, NoSuchAlgorithmException, DataFormatException, NoSuchAttributeException, AlreadyBoundException, ClassNotFoundException {
 		Tools.startMethod("dbtool()");
 		displayTimeStamp();
-		String query = "drop table abbrevations, compartment_pathways, compartments, dates, enzymes, enzymes_compartments, hierarchy, id_names, ids, names, products, reaction_directions, reaction_enzymes, reactions, substances, substrates,urls,urn_urls, urns";
+		String query = "drop table abbrevations, compartment_pathways, compartments, dates, enzymes, enzymes_compartments, hierarchy, id_names, id_ranges, ids, names, products, reaction_directions, reaction_enzymes, reactions, substances, substrates,urls,urn_urls, urns";
 		try {
 			if (!skipClear) {
 				if (!skipAsk) {
@@ -235,14 +241,26 @@ public class dbtool {
 					if (!answer.toUpperCase().equals("YES")) System.exit(-1);
 				}
 				if (clearDecisions) query = query + ", decisions";
+				System.out.println(query);
 				InteractionDB.execute(query);
 			}
 		} catch (SQLException e) {
 			Tools.warn("was not able to erase all tables: " + e.getMessage() + "\n\nQuery was: " + query);
 		}
+
+		System.err.println("Cleared Database. Waiting for 20sec to check...");
+		try {
+	    Thread.sleep(20000);
+    } catch (InterruptedException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+    }
+		
 		InteractionDB.checkTables(); // assure, that required tables exist
 		displayTimeStamp();
 
+
+		
 		Integer firstKeggId = InteractionDB.getLastID();
 		if (!skipKegg) readKeggContent(); // read kegg data // disabled, so i can not accidentally overwrite
 		Integer lastKeggId = InteractionDB.getLastID();
@@ -633,7 +651,7 @@ public class dbtool {
 	private Stack<String> getKeggIds(String key) throws IOException {
 		String[] data = PageFetcher.fetchLines("http://rest.kegg.jp/list/"+key);
 		Stack<String> result = new Stack<String>();
-		for (String line:data) result.push(line.split("\t")[0].substring(3));
+		for (String line:data) result.push(line.split(":")[1].substring(0,5));
 		System.out.println("found " + result.size() + " "+key+"s.");
 		return result;
 	}
@@ -649,12 +667,19 @@ public class dbtool {
 		 * Glykane werden vor den Compounds eingelesen, so dass die Compounds OBEN auf dem Stack liegen. Das bewirkt wiederum, dass die Substanzen zuerst eingelesen werden, so dass auch deren Formeln genutzt werden
 		 */
 		Stack<String> result = getKeggIds("glycan");
-
-		if (skipKeggCompounds) return result;
 		
-		String[] lines = PageFetcher.fetchLines("http://rest.kegg.jp/list/compound");
-		for (String line:lines) result.push(line.substring(4,10));
-		Tools.indent("found " + lines.length + " substances.");
+		if (!skipKeggDrugs){
+			Stack<String> drugs=getKeggIds("drug");
+			Tools.indent("found "+drugs.size()+" drugs.");
+			result.addAll(drugs);
+		}
+		
+		if (!skipKeggCompounds) {
+				Stack<String> comps=getKeggIds("compound");
+				Tools.indent("found " + comps.size() + " compounds.");
+				result.addAll(comps);
+		}
+		Tools.indent("found "+result.size()+" substances at all.");
 		return result;
 	}
 
