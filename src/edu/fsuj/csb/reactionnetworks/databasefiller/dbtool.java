@@ -716,12 +716,18 @@ public class dbtool {
 	private void readKeggSubstances(TreeMap<String, Integer> mappingFromKeggSubstanceIdsToDbIds) throws IOException, NameNotFoundException, SQLException, NoSuchMethodException, DataFormatException, AlreadyBoundException, NoTokenException {
 		System.out.print("Reading substance lists...");
 		Stack<String> keggSubstanceIds = getKeggSubstanceIds();
+
 		System.out.println("done, found " + keggSubstanceIds.size() + " substances.");
+		
+		// TODO: remove the following line which was introduced for testing purposes
+		while (!keggSubstanceIds.peek().equals("D08757")) keggSubstanceIds.pop();
+
 		int count = 0;
 		System.out.print((100 * count / (keggSubstanceIds.size() + count)) + "% - ");
 		/*keggSubstanceIds.push("C17040");
 		Tools.resetIntendation();
 		Tools.enableLogging(); //*/
+
 		while (!keggSubstanceIds.isEmpty()) {			
 			count++;
 			if (InteractionDB.parseSubstanceInfo(keggSubstanceIds, mappingFromKeggSubstanceIdsToDbIds,skipKeggLinks)) System.out.print((100 * count / (keggSubstanceIds.size() + count)) + "% - ");
