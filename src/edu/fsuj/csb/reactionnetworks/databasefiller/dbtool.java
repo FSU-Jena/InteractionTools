@@ -102,82 +102,115 @@ public class dbtool {
 		clearDecisions = false;
 		test = false;
 		for (int i = 0; i < args.length; i++) {
-			if (args[i].startsWith("--cachedir=")) PageFetcher.setCache(args[i].substring(11));
+			boolean known=false;
+			if (args[i].startsWith("--cachedir=")) {
+				PageFetcher.setCache(args[i].substring(11));
+				known=true;
+			}
 			if (args[i].equals("--skip-question")) {
 				skipAsk = true;
+				known=true;
 			}
 			if (args[i].equals("--clear-all")) {
 				clearDecisions = true;
+				known=true;
 			}
 			if (args[i].equals("--skip-clear")) {
 				Tools.note("Disabling deletion of database content.");
 				skipClear = true;
+				known=true;
 			}
 			if (args[i].equals("--skip-kegg")) {
 				Tools.note("Will skip all Kegg entries.");
 				skipKegg = true;
+				known=true;
 			}
 			if (args[i].startsWith("--folder=")) {
 				sbmlDirectory = args[i].substring(9);
 				Tools.note("Reading sbml files from " + sbmlDirectory + ".");
+				known=true;
 			}
 			if (args[i].equals("--no-retry")) {
 				PageFetcher.setRetry(5);
 				Tools.note("Retrying unreachable webpages only 5 times.");
+				known=true;
 			}
 			if (args[i].equals("--skip-biomodels")) {
 				Tools.note("Will skip biomodels.");
 				skipBiomodels = true;
+				known=true;
 			}
 			if (args[i].equals("--skip-files")) {
 				Tools.note("Will skip SBML files.");
 				skipFiles = true;
+				known=true;
 			}
 			if (args[i].equals("--skip-kegg-orgs")) {
 				Tools.note("Will skip Organism part of Kegg database.");
 				skipKeggOrganisms = true;
+				known=true;
 			}
 			if (args[i].equals("--skip-kegg-paths")) {
 				Tools.note("Will skip pathway part of Kegg database.");
 				skipKeggPathways = true;
+				known=true;
 			}
 			if (args[i].equals("--skip-kegg-substances")) {
 				Tools.note("Will skip subtance list of Kegg database.");
 				skipKeggSubstances = true;
+				known=true;
 			}
 			if (args[i].equals("--skip-kegg-codes")) {
 				Tools.note("Will skip monosaccaride codes list of Kegg database.");
 				skipKeggCodes = true;
+				known=true;
 			}
 			if (args[i].equals("--skip-kegg-compounds")) {
 				Tools.note("Will skip compound list of Kegg database.");
 				skipKeggCompounds = true;
+				known=true;
 			}
 			if (args[i].equals("--skip-kegg-drugs")) {
 				Tools.note("Will skip drug list of Kegg database.");
 				skipKeggDrugs = true;
+				known=true;
 			}
 
 			if (args[i].equals("--skip-kegg-reactions")) {
 				Tools.note("Will skip reactions from Kegg database");
 				skipKeggReactions = true;
+				known=true;
 			}
 			if (args[i].equals("--skip-kegg-enzymes")) {
 				Tools.note("Will skip enzyme entries of Kegg database.");
 				skipKeggEnzymes = true;
+				known=true;
 			}
 			if (args[i].equals("--skip-kegg-links")){
 				Tools.note("Will ignore Links to DBs outside KEGG.");
 				skipKeggLinks=true;
+				known=true;
 			}
 			if (args[i].equals("--test")) {
 				Tools.note("Will not write anything to the database, use to test parser.");
 				InteractionDB.setTestMode(true);
 				test=true;
 				skipClear = true;
+				known=true;
 			}
-			if (args[i].equals("--help")) displayCLIoptions();
-			if (args[i].equals("--verbose")) Tools.enableLogging();
+			if (args[i].equals("--help")) {
+				displayCLIoptions();
+				known=true;
+			}
+			if (args[i].equals("--verbose")) {
+				Tools.enableLogging();
+				known=true;
+			}
+			if (!known){
+				System.out.println("unknown flag found: "+args[i]);
+				System.out.println();
+				displayCLIoptions();
+			}
 		}
 		if (clearDecisions)	Tools.warn("Will also clear decision table.");
 
@@ -700,6 +733,8 @@ public class dbtool {
 	 */
 	private void readKeggSubstances(TreeMap<String, Integer> mappingFromKeggSubstanceIdsToDbIds) throws IOException, NameNotFoundException, SQLException, NoSuchMethodException, DataFormatException, AlreadyBoundException, NoTokenException {
 		Stack<String> keggSubstanceIds = getKeggSubstanceIds();
+		System.out.println(keggSubstanceIds.toString().replace(",", "\n"));
+		System.exit(0);
 		System.out.print("Reading substance list...");
 		System.out.println("done, found " + keggSubstanceIds.size() + " substances.");
 		int count = 0;
