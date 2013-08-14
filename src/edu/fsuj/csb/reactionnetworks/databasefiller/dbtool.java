@@ -719,9 +719,6 @@ public class dbtool {
 
 		System.out.println("done, found " + keggSubstanceIds.size() + " substances.");
 		
-		// TODO: remove the following line which was introduced for testing purposes
-		while (!keggSubstanceIds.peek().equals("D08757")) keggSubstanceIds.pop();
-
 		int count = 0;
 		System.out.print((100 * count / (keggSubstanceIds.size() + count)) + "% - ");
 		/*keggSubstanceIds.push("C17040");
