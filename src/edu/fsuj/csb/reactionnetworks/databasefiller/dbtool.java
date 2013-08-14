@@ -280,14 +280,6 @@ public class dbtool {
 		} catch (SQLException e) {
 			Tools.warn("was not able to erase all tables: " + e.getMessage() + "\n\nQuery was: " + query);
 		}
-
-		System.err.println("Cleared Database. Waiting for 20sec to check...");
-		try {
-	    Thread.sleep(20000);
-    } catch (InterruptedException e) {
-	    // TODO Auto-generated catch block
-	    e.printStackTrace();
-    }
 		
 		InteractionDB.checkTables(); // assure, that required tables exist
 		displayTimeStamp();
@@ -684,7 +676,7 @@ public class dbtool {
 	private Stack<String> getKeggIds(String key) throws IOException {
 		String[] data = PageFetcher.fetchLines("http://rest.kegg.jp/list/"+key);
 		Stack<String> result = new Stack<String>();
-		for (String line:data) result.push(line.split(":")[1].substring(0,5));
+		for (String line:data) result.push(line.split(":")[1].substring(0,6));
 		System.out.println("found " + result.size() + " "+key+"s.");
 		return result;
 	}
@@ -701,18 +693,8 @@ public class dbtool {
 		 */
 		Stack<String> result = getKeggIds("glycan");
 		
-		if (!skipKeggDrugs){
-			Stack<String> drugs=getKeggIds("drug");
-			Tools.indent("found "+drugs.size()+" drugs.");
-			result.addAll(drugs);
-		}
-		
-		if (!skipKeggCompounds) {
-				Stack<String> comps=getKeggIds("compound");
-				Tools.indent("found " + comps.size() + " compounds.");
-				result.addAll(comps);
-		}
-		Tools.indent("found "+result.size()+" substances at all.");
+		if (!skipKeggDrugs)	result.addAll(getKeggIds("drug"));		
+		if (!skipKeggCompounds) result.addAll(getKeggIds("compound"));
 		return result;
 	}
 
@@ -732,10 +714,8 @@ public class dbtool {
 	 * @throws NoTokenException
 	 */
 	private void readKeggSubstances(TreeMap<String, Integer> mappingFromKeggSubstanceIdsToDbIds) throws IOException, NameNotFoundException, SQLException, NoSuchMethodException, DataFormatException, AlreadyBoundException, NoTokenException {
+		System.out.print("Reading substance lists...");
 		Stack<String> keggSubstanceIds = getKeggSubstanceIds();
-		System.out.println(keggSubstanceIds.toString().replace(",", "\n"));
-		System.exit(0);
-		System.out.print("Reading substance list...");
 		System.out.println("done, found " + keggSubstanceIds.size() + " substances.");
 		int count = 0;
 		System.out.print((100 * count / (keggSubstanceIds.size() + count)) + "% - ");
