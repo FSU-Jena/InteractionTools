@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.rmi.AlreadyBoundException;
 import java.sql.SQLException;
 import java.util.TreeSet;
@@ -107,7 +108,6 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		mainPanel.add(taskResultPane=taskResultPane());		
 		mainPanel.add(statusPanel=new StatusPanel());		
 		//statusPanel.setWidth(taskResultPane().getWidth());
-		//System.setOut(out);
 		mainPanel.scale();
 		add(mainPanel);
 		pack();
@@ -306,7 +306,8 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	 * @throws DataFormatException 
 	 */
 	public static void main(String[] args) throws IOException, NoTokenException, AlreadyBoundException, ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException, SQLException, DataFormatException  {
-		//out=System.out;
+		PrintStream out = System.out;
+
 		parseArgs(args);
 		Tools.disableLogging();
 		InteractionSplash splash = new InteractionSplash();
@@ -321,6 +322,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
       		System.err.println(e.getMessage()+" Is the mysql daemon running?");
       	} else throw e;
       }
+	    System.setOut(out);
 	}
 	
 	/**
