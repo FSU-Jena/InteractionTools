@@ -60,6 +60,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	private VerticalPanel taskButtonPanel;
 	private JButton findPath;
 	private Configuration configuration;
+	private MetabolicNetworkPanel networkPanel;
 	/**
 	 * create a new window instance
 	 * @param splash
@@ -123,6 +124,10 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		System.out.println("- creating panel for results...");
 		taskResultPane.add(resultPane=createResultPane(), "Results");
 		
+		//****** NETWORK VIEW *****//
+		System.out.println("- creating panel for network view...");
+		taskResultPane.add(networkPanel=createNetworkPanel(),"Network View");
+		
 		//***** DATABASE **********//
 		System.out.println("- creating panel for database actions...");
 		databasePane = new DatabasePane();
@@ -132,6 +137,10 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		//***** INFO *********//
 		taskResultPane.add(createInfoPanel(),"Information");
 		return taskResultPane;
+  }
+
+	private MetabolicNetworkPanel createNetworkPanel() {
+	  return new MetabolicNetworkPanel();
   }
 
 	/**
