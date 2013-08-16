@@ -15,7 +15,7 @@ import edu.fsuj.csb.tools.xml.Tools;
 public class SubstanceTreeNode extends TreeNode {
 
 	static TreeMap<Integer, SubstanceTreeNode> stns = new TreeMap<Integer, SubstanceTreeNode>();
-
+TreeSet<ReactionTreeNode> reactions=ReactionTreeNode.set();
 	private int dist = 5;
 
 	public SubstanceTreeNode(int id) {
@@ -37,27 +37,21 @@ public class SubstanceTreeNode extends TreeNode {
 		return result;
 	}
 
-	public Dimension paint(Graphics g, ImageObserver obs, boolean draw) {
-		System.err.println("SubstanceTreeNode.paint(g,obs)");
-		Dimension ownDim = super.paint(g, obs, draw);
-		if (draw) {
-			Vector<ReactionTreeNode> reactions = new Vector<ReactionTreeNode>();
+	public Dimension paint(Graphics g, ImageObserver obs, int levels) {
+		System.out.println("SubstanceTreeNode.paint(g,obs,"+levels+")");
+		Dimension ownDim = super.paint(g, obs, levels>0);
+		if (levels>0) {
 			int height = 0;
-			TreeNode child = this.firstChild();
-			while (child != null) {
-				if (child instanceof ReactionTreeNode) {
-					reactions.add((ReactionTreeNode) child);
-					Dimension dim = child.nodeDimension(g, obs);
-					height += dim.height + dist;
-				}
-				child = child.next();
+			for (ReactionTreeNode reaction:reactions){
+				Dimension dim = reaction.nodeDimension(g, obs);
+				height += dim.height + dist;
 			}
 			if (height>0){
 				int y = getOrigin().y + ((ownDim.height - height) / 2);
 				int x = getOrigin().x + ownDim.width + 100;
 				for (ReactionTreeNode reaction : reactions) {
 					reaction.moveTowards(x, y);
-					Dimension dim = reaction.paint(g, obs, true);
+					Dimension dim = reaction.paint(g, obs, levels-1);
 					y += dim.height + dist;
 				}
 			}
@@ -73,5 +67,10 @@ public class SubstanceTreeNode extends TreeNode {
 
 	public static TreeSet<SubstanceTreeNode> set() {
 	  return new TreeSet<SubstanceTreeNode>(ObjectComparator.get());
+  }
+
+	public void addReaction(ReactionTreeNode r) {
+	  reactions.add(r);
+	  
   }
 }

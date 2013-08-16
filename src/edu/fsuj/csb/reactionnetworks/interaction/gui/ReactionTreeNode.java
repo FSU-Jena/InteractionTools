@@ -43,12 +43,11 @@ public class ReactionTreeNode extends TreeNode {
 	  return result;
   }
 	
-	@Override
-	public Dimension paint(Graphics g, ImageObserver obs) {
-		System.err.println("ReactionTreeNode.paint(g,obs)");
-	  return super.paint(g, obs,true);
+	public Dimension paint(Graphics g, ImageObserver obs,int levels) {
+		System.err.println("ReactionTreeNode.paint(g,obs,"+levels+")");
+	  return super.paint(g, obs,levels>0);
 	}
-
+	
 	public void addSubstrate(SubstanceTreeNode s) {
 	  substrates.add(s);
   }

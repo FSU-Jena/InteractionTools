@@ -46,14 +46,14 @@ public class MetabolicNetworkPanel extends TreePanel {
 	  r3.addSubstrate(s4);
 	  r3.addProduct(s5);
 	  
-	  s1.addChild(r1);
-	  s2.addChild(r1);
-	  s2.addChild(r2);
-	  s3.addChild(r2);
-	  s4.addChild(r1);
-	  s4.addChild(r3);
-	  s5.addChild(r2);
-	  s5.addChild(r3);
+	  s1.addReaction(r1);
+	  s2.addReaction(r1);
+	  s2.addReaction(r2);
+	  s3.addReaction(r2);
+	  s4.addReaction(r1);
+	  s4.addReaction(r3);
+	  s5.addReaction(r2);
+	  s5.addReaction(r3);
 	  
 	  return s2;
   }
