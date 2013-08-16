@@ -7,6 +7,7 @@ import java.util.TreeSet;
 
 import de.srsoftware.gui.treepanel.TreeNode;
 import de.srsoftware.gui.treepanel.TreePanel;
+import edu.fsuj.csb.tools.xml.ObjectComparator;
 import edu.fsuj.csb.tools.xml.Tools;
 
 public class MetabolicNetworkPanel extends TreePanel {
@@ -31,8 +32,9 @@ public class MetabolicNetworkPanel extends TreePanel {
 		TreeSet<String> rNames = Tools.StringSet();
 		rNames.add("Reaction 1");
 		rNames.add("first reaction");
-		SubstanceTreeNode node = new SubstanceTreeNode(123,sNames,"H2O");
+		SubstanceTreeNode node = SubstanceTreeNode.get(123);
 		node.addChild(new ReactionTreeNode(345,rNames));
+		node.addChild(new ReactionTreeNode(346,rNames));
 	  return node;
   }
 	
@@ -40,6 +42,7 @@ public class MetabolicNetworkPanel extends TreePanel {
 	public void paint(Graphics g) {
 		super.paint(g);
 		Dimension dim=this.getSize();
+		TreeSet<ReactionTreeNode> rNodes=ReactionTreeNode.set();
 		moveNodeTowards(tree, new Point(dim.width/2,dim.height/2));
 		tree.paint(g, this);
 	}
