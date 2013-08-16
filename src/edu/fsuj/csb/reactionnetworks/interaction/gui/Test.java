@@ -9,7 +9,7 @@ import edu.fsuj.csb.tools.xml.Tools;
 public class Test extends JFrame {
 	
 	public Test() {
-		setPreferredSize(new Dimension(800,600));
+		setPreferredSize(new Dimension(1024,768));
 		setSize(getPreferredSize());
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		add(new MetabolicNetworkPanel());

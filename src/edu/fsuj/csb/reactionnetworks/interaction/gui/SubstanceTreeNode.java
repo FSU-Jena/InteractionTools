@@ -1,6 +1,7 @@
 package edu.fsuj.csb.reactionnetworks.interaction.gui;
 
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.image.ImageObserver;
@@ -37,27 +38,37 @@ TreeSet<ReactionTreeNode> reactions=ReactionTreeNode.set();
 	}
 
 	public Dimension paint(Graphics g, ImageObserver obs, int levels) {
+		Tools.startMethod("SubstanceTreeNode.paint(g,obs,"+levels+")");
 		super.paint(g, obs,levels);
-		System.out.println("SubstanceTreeNode.paint(g,obs,"+levels+")");
-		Dimension ownDim = super.paint(g, obs, levels>0);
+		
+		Dimension ownDim = super.paint(g, obs, false);
+		
 		if (levels>0) {
+			Font oldFont = g.getFont();
+			float oldSize = oldFont.getSize();
+  		g.setFont(oldFont.deriveFont(oldSize * 5 / 6));
 			int height = 0;
 			for (ReactionTreeNode reaction:reactions){
 				if (LeveledTreeNode.hasBeenPainted(reaction)) continue;
+				reaction.setParent(this);
 				Dimension dim = reaction.nodeDimension(g, obs);
 				height += dim.height + dist;
-			}
-			if (height>0){
+			}			
+			if (height>0){				
 				int y = getOrigin().y + ((ownDim.height - height) / 2);
-				int x = getOrigin().x + ownDim.width + 100;
+				int x = getOrigin().x + ownDim.width + 50*levels;
 				for (ReactionTreeNode reaction : reactions) {
 					if (LeveledTreeNode.hasBeenPainted(reaction)) continue;
 					reaction.moveTowards(x, y);
+					if (levels>1)	g.drawLine(getOrigin().x, getOrigin().y, reaction.getOrigin().x, reaction.getOrigin().y);
 					Dimension dim = reaction.paint(g, obs, levels-1);
 					y += dim.height + dist;
 				}
 			}
+			g.setFont(oldFont);
+			super.paint(g, obs,true);
 		}
+		Tools.endMethod();
 		return ownDim;
 	}
 
