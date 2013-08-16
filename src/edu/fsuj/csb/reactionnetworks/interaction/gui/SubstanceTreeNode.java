@@ -12,11 +12,10 @@ import de.srsoftware.gui.treepanel.TreeNode;
 import edu.fsuj.csb.tools.xml.ObjectComparator;
 import edu.fsuj.csb.tools.xml.Tools;
 
-public class SubstanceTreeNode extends TreeNode {
+public class SubstanceTreeNode extends LeveledTreeNode {
 
 	static TreeMap<Integer, SubstanceTreeNode> stns = new TreeMap<Integer, SubstanceTreeNode>();
 TreeSet<ReactionTreeNode> reactions=ReactionTreeNode.set();
-	private int dist = 5;
 
 	public SubstanceTreeNode(int id) {
 		super("\\small{" + id + "}\\n " + names(id).first() + "\\n " + formula(id));
@@ -38,11 +37,13 @@ TreeSet<ReactionTreeNode> reactions=ReactionTreeNode.set();
 	}
 
 	public Dimension paint(Graphics g, ImageObserver obs, int levels) {
+		super.paint(g, obs,levels);
 		System.out.println("SubstanceTreeNode.paint(g,obs,"+levels+")");
 		Dimension ownDim = super.paint(g, obs, levels>0);
 		if (levels>0) {
 			int height = 0;
 			for (ReactionTreeNode reaction:reactions){
+				if (LeveledTreeNode.hasBeenPainted(reaction)) continue;
 				Dimension dim = reaction.nodeDimension(g, obs);
 				height += dim.height + dist;
 			}
@@ -50,6 +51,7 @@ TreeSet<ReactionTreeNode> reactions=ReactionTreeNode.set();
 				int y = getOrigin().y + ((ownDim.height - height) / 2);
 				int x = getOrigin().x + ownDim.width + 100;
 				for (ReactionTreeNode reaction : reactions) {
+					if (LeveledTreeNode.hasBeenPainted(reaction)) continue;
 					reaction.moveTowards(x, y);
 					Dimension dim = reaction.paint(g, obs, levels-1);
 					y += dim.height + dist;

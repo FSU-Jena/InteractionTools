@@ -57,6 +57,22 @@ public class MetabolicNetworkPanel extends TreePanel {
 	  
 	  return s2;
   }
+	
+	@Override
+	protected TreeNode getNodeAt(Point point) {
+		Tools.startMethod("MetabolicNetworkPanel.getNodeAt");
+		TreeNode closest=null;
+		double minDist=Double.MAX_VALUE;
+		for (LeveledTreeNode node:LeveledTreeNode.visibleNodes()){
+			double d = point.distance(node.getOrigin());
+			if (d<minDist){
+				closest=node;
+				minDist=d;				
+			}
+		}
+		Tools.endMethod(closest.getText());		
+		return closest;
+	}
 
 	@Override
 	public void paint(Graphics g) {
@@ -64,7 +80,8 @@ public class MetabolicNetworkPanel extends TreePanel {
 		super.paint(g);
 		Dimension dim=this.getSize();
 		tree.moveTowards(dim.width/2,dim.height/2);
-		tree.paint(g, this,true);
+		LeveledTreeNode.clearPainted();
+		((LeveledTreeNode)tree).paint(g, this,3);
 		System.out.println("...MetabolicNetworkPanel.paint");
 	}
 }

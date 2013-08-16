@@ -10,7 +10,7 @@ import de.srsoftware.gui.treepanel.TreeNode;
 import edu.fsuj.csb.tools.xml.ObjectComparator;
 import edu.fsuj.csb.tools.xml.Tools;
 
-public class ReactionTreeNode extends TreeNode {
+public class ReactionTreeNode extends LeveledTreeNode {
 	static TreeMap<Integer,ReactionTreeNode> rtns=new TreeMap<Integer, ReactionTreeNode>();
 	private TreeSet<SubstanceTreeNode> substrates=SubstanceTreeNode.set();
 	private TreeSet<SubstanceTreeNode> products=SubstanceTreeNode.set();
@@ -44,8 +44,30 @@ public class ReactionTreeNode extends TreeNode {
   }
 	
 	public Dimension paint(Graphics g, ImageObserver obs,int levels) {
-		System.err.println("ReactionTreeNode.paint(g,obs,"+levels+")");
-	  return super.paint(g, obs,levels>0);
+		Tools.startMethod("SubstanceTreeNode.paint(g,obs,"+levels+")");
+		super.paint(g, obs,levels);
+		Dimension ownDim = super.paint(g, obs, levels>0);
+		if (levels>0) {
+			int height = 0;
+			for (SubstanceTreeNode product:products){
+				if (LeveledTreeNode.hasBeenPainted(product)) continue;
+
+				Dimension dim = product.nodeDimension(g, obs);
+				height += dim.height + dist;
+			}
+			if (height>0){
+				int y = getOrigin().y + ((ownDim.height - height) / 2);
+				int x = getOrigin().x + ownDim.width + 100;
+				for (SubstanceTreeNode product:products) {
+					if (LeveledTreeNode.hasBeenPainted(product)) continue;
+					product.moveTowards(x, y);
+					Dimension dim = product.paint(g, obs, levels-1);
+					y += dim.height + dist;
+				}
+			}
+		}
+		Tools.endMethod(ownDim);
+		return ownDim;
 	}
 	
 	public void addSubstrate(SubstanceTreeNode s) {

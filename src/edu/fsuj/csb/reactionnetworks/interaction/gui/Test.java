@@ -4,6 +4,8 @@ import java.awt.Dimension;
 
 import javax.swing.JFrame;
 
+import edu.fsuj.csb.tools.xml.Tools;
+
 public class Test extends JFrame {
 	
 	public Test() {
@@ -14,6 +16,7 @@ public class Test extends JFrame {
 		setVisible(true);
   }
 	public static void main(String[] args) {
+		Tools.enableLogging();
 	  new Test();
   }
 }
