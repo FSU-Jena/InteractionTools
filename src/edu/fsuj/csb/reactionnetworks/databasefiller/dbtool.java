@@ -676,7 +676,7 @@ public class dbtool {
 	private Stack<String> getKeggIds(String key) throws IOException {
 		String[] data = PageFetcher.fetchLines("http://rest.kegg.jp/list/"+key);
 		Stack<String> result = new Stack<String>();
-		for (String line:data) result.push(line.split(":")[1].substring(0,6));
+		for (String line:data) result.push(line.split(":")[1].split("\t")[0]);
 		System.out.println("found " + result.size() + " "+key+"s.");
 		return result;
 	}
