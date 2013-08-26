@@ -63,6 +63,5 @@ public abstract class LeveledTreeNode extends TreeNode {
 		x=x2-(int) Math.round(l*Math.cos(alpha+d));
 		y=y2+(int) Math.round(l*Math.sin(alpha+d));
 		g.drawLine(x,y,x2,y2);
-		g.drawOval(x2-6, y2-3, 6, 6);
   }
 }

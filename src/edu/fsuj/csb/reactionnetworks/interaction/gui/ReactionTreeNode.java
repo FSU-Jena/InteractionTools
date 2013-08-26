@@ -141,14 +141,10 @@ public class ReactionTreeNode extends LeveledTreeNode {
 
 	public void loadSubstances() throws SQLException {
 		for (Entry<Integer, Integer> substrateMap:dbr.substrates().entrySet()){
-			int sid=substrateMap.getKey();
-			int stoich=substrateMap.getValue();
-			addSubstrate(SubstanceTreeNode.get(sid));
+			addSubstrate(SubstanceTreeNode.get(substrateMap.getKey()));
 		}
 		for (Entry<Integer, Integer> productMap:dbr.products().entrySet()){
-			int sid=productMap.getKey();
-			int stoich=productMap.getValue();
-			addProduct(SubstanceTreeNode.get(sid));
+			addProduct(SubstanceTreeNode.get(productMap.getKey()));
 		}
   }
 

@@ -21,8 +21,10 @@ public class SubstanceTreeNode extends LeveledTreeNode {
 
 	static TreeMap<Integer, SubstanceTreeNode> stns = new TreeMap<Integer, SubstanceTreeNode>();
 	private DbSubstance dbs;	
-	TreeSet<ReactionTreeNode> reactions=ReactionTreeNode.set();
+	TreeSet<ReactionTreeNode> producingReactions=ReactionTreeNode.set();
+	TreeSet<ReactionTreeNode> consuminggReactions=ReactionTreeNode.set();
 	private int id;
+	private static Stroke arrowStroke=new BasicStroke(2);
 
 	public SubstanceTreeNode(int id) throws SQLException {
 		super(""+id);
@@ -53,38 +55,62 @@ public class SubstanceTreeNode extends LeveledTreeNode {
 		Dimension ownDim = super.paint(g, obs, false);
 		
 		if (level>0) {
+			Graphics2D g2 = (Graphics2D)g;
+			Stroke oldStroke=g2.getStroke();
 			Font oldFont = g.getFont();
 			float oldSize = oldFont.getSize();
   		g.setFont(oldFont.deriveFont(oldSize * 5 / 6));
-			int height = 0;
-			for (ReactionTreeNode reaction:reactions){
+  		
+  		int height = 0;
+			
+			for (ReactionTreeNode reaction:producingReactions){
 				if (LeveledTreeNode.hasBeenPainted(reaction)) continue;
 				reaction.setParent(this);
 				Dimension dim = reaction.nodeDimension(g, obs);
 				height += dim.height + vdist;
 			}			
 			if (height>0){				
-				int x = getOrigin().x + ownDim.width/2 + hdist*level*level;
+	  		int x = getOrigin().x - ownDim.width/2 - hdist*level*level;
 				int y = getOrigin().y + ((ownDim.height - height) / 2);
-				Graphics2D g2 = (Graphics2D)g;
-				Stroke oldStroke=g2.getStroke();
-				g2.setStroke(new BasicStroke(2));
-				for (ReactionTreeNode reaction : reactions) {
+				g2.setStroke(arrowStroke);
+				for (ReactionTreeNode reaction : producingReactions) {
 					if (LeveledTreeNode.hasBeenPainted(reaction)) continue;
 					Dimension dim=reaction.nodeDimension(g, obs);
-					reaction.moveTowards(x+dim.width/2, y);
-					if (level>1) {
-						if (reaction.hasSubstrate(id())){
-							drawArrow(g, getOrigin().x+ownDim.width/2, getOrigin().y, reaction.getOrigin().x-dim.width/2, reaction.getOrigin().y);
-						} else {
-							drawArrow(g, reaction.getOrigin().x-dim.width/2, reaction.getOrigin().y, getOrigin().x+ownDim.width/2, getOrigin().y);
-						}
-					}
+					reaction.moveTowards(x-dim.width/2, y);
+					if (level>1) drawArrow(g, reaction.getOrigin().x+dim.width/2, reaction.getOrigin().y, getOrigin().x-ownDim.width/2, getOrigin().y);
 					y += dim.height + vdist;
 				}
 				g2.setStroke(oldStroke);
 				y = getOrigin().y + ((ownDim.height - height) / 2);
-				for (ReactionTreeNode reaction : reactions) {
+				for (ReactionTreeNode reaction : producingReactions) {
+					if (LeveledTreeNode.hasBeenPainted(reaction)) continue;
+					Dimension dim=reaction.paint(g, obs, level-1);
+					y += dim.height + vdist;
+				}
+			}
+			
+  		height = 0;
+			
+			for (ReactionTreeNode reaction:consuminggReactions){
+				if (LeveledTreeNode.hasBeenPainted(reaction)) continue;
+				reaction.setParent(this);
+				Dimension dim = reaction.nodeDimension(g, obs);
+				height += dim.height + vdist;
+			}			
+			if (height>0){				
+	  		int x = getOrigin().x + ownDim.width/2 + hdist*level*level;
+				int y = getOrigin().y + ((ownDim.height - height) / 2);
+				g2.setStroke(arrowStroke);
+				for (ReactionTreeNode reaction : consuminggReactions) {
+					if (LeveledTreeNode.hasBeenPainted(reaction)) continue;
+					Dimension dim=reaction.nodeDimension(g, obs);
+					reaction.moveTowards(x+dim.width/2, y);
+					if (level>1) drawArrow(g, getOrigin().x+ownDim.width/2, getOrigin().y, reaction.getOrigin().x-dim.width/2, reaction.getOrigin().y);
+					y += dim.height + vdist;
+				}
+				g2.setStroke(oldStroke);
+				y = getOrigin().y + ((ownDim.height - height) / 2);
+				for (ReactionTreeNode reaction : consuminggReactions) {
 					if (LeveledTreeNode.hasBeenPainted(reaction)) continue;
 					Dimension dim=reaction.paint(g, obs, level-1);
 					y += dim.height + vdist;
@@ -107,12 +133,16 @@ public class SubstanceTreeNode extends LeveledTreeNode {
 	  return new TreeSet<SubstanceTreeNode>(ObjectComparator.get());
   }
 
-	public void addReaction(ReactionTreeNode r) {
-	  reactions.add(r);
+	public void addProducingReaction(ReactionTreeNode r) {
+	  producingReactions.add(r);
 	  
   }
 
 	public int id() {
 	  return id;
+  }
+
+	public void addConsumingReaction(ReactionTreeNode r) {
+		consuminggReactions.add(r);
   }
 }

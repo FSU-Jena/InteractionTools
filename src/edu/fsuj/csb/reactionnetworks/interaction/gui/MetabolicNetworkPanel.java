@@ -34,9 +34,13 @@ public class MetabolicNetworkPanel extends TreePanel {
 	private void loadReactions(SubstanceTreeNode stn) throws SQLException {
 		for (int rid : reactions.get()) {
 			DbReaction reaction = DbReaction.load(rid);
-			if (reaction.hasReactant(stn.id()) || reaction.hasProduct(stn.id())) {
+			if (reaction.hasProduct(stn.id())) {
 				ReactionTreeNode rtn = ReactionTreeNode.get(rid);
-				stn.addReaction(rtn);
+				stn.addProducingReaction(rtn);
+			}
+			if (reaction.hasReactant(stn.id())) {
+				ReactionTreeNode rtn = ReactionTreeNode.get(rid);
+				stn.addConsumingReaction(rtn);
 			}
 		}
 	}
