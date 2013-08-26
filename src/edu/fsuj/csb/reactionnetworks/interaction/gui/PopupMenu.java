@@ -109,7 +109,11 @@ public class PopupMenu extends JPopupMenu implements ActionListener {
 		if (option==search) searchFor(objectText);
 		if (option==clip) copyToClipboard(objectText);
 		if (option==netViewItem) {
-			compartmentList.networkViewer().jumpTo(((SubstanceNode)targetObject).substance().id());
+			try {
+	      compartmentList.networkViewer().jumpToSubatance(((SubstanceNode)targetObject).substance().id());
+      } catch (SQLException e) {
+	      e.printStackTrace();
+      }
 		}
 		if (option==cListItem) try {
 			DbCompartmentNode dbComp = (DbCompartmentNode)targetObject;

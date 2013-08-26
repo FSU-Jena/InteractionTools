@@ -5,26 +5,33 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.image.ImageObserver;
+import java.sql.SQLException;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Vector;
 
 import de.srsoftware.gui.treepanel.TreeNode;
 import edu.fsuj.csb.reactionnetworks.organismtools.DbSubstance;
+import edu.fsuj.csb.tools.organisms.Formula;
+import edu.fsuj.csb.tools.organisms.ReactionSet;
 import edu.fsuj.csb.tools.xml.ObjectComparator;
 import edu.fsuj.csb.tools.xml.Tools;
 
 public class SubstanceTreeNode extends LeveledTreeNode {
 
 	static TreeMap<Integer, SubstanceTreeNode> stns = new TreeMap<Integer, SubstanceTreeNode>();
-TreeSet<ReactionTreeNode> reactions=ReactionTreeNode.set();
+	private DbSubstance dbs;	
+	TreeSet<ReactionTreeNode> reactions=ReactionTreeNode.set();
 
-	public SubstanceTreeNode(int id) {
-		super("\\small{" + id + "}\\n " + names(id).first() + "\\n " + formula(id));				
+	public SubstanceTreeNode(int id) throws SQLException {
+		super(""+id);
+		dbs=DbSubstance.load(id);
+		super.setText("\\small{" + id + "}\\n " + names().first() + "\\n " + formula());
 	}
 
-	private static String formula(int id) {
-		return "H2O";
+	private String formula() {
+		Formula formula = dbs.formula();
+		return (formula!=null)?formula.toString():"no formula";
 	}
 
 	@Override
@@ -32,10 +39,8 @@ TreeSet<ReactionTreeNode> reactions=ReactionTreeNode.set();
 	  return this;
 	}
 	
-	private static TreeSet<String> names(int id) {
-		TreeSet<String> result = Tools.StringSet();
-		result.add("Sustance "+id);
-		return result;
+	private TreeSet<String> names() throws SQLException {
+		return dbs.names();
 	}
 
 	public Dimension paint(Graphics g, ImageObserver obs, int levels) {
@@ -73,7 +78,7 @@ TreeSet<ReactionTreeNode> reactions=ReactionTreeNode.set();
 		return ownDim;
 	}
 
-	public static SubstanceTreeNode get(int id) {
+	public static SubstanceTreeNode get(int id) throws SQLException {
 		SubstanceTreeNode result = stns.get(id);
 		if (result == null) result = new SubstanceTreeNode(id);
 		return result;

@@ -3,11 +3,13 @@ package edu.fsuj.csb.reactionnetworks.interaction.gui;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
+import java.sql.SQLException;
 import java.util.TreeSet;
 
 import de.srsoftware.gui.treepanel.TreeNode;
 import de.srsoftware.gui.treepanel.TreePanel;
 import de.srsoftware.gui.treepanel.TreeThread;
+import edu.fsuj.csb.reactionnetworks.organismtools.DbReaction;
 import edu.fsuj.csb.tools.organisms.ReactionSet;
 import edu.fsuj.csb.tools.xml.ObjectComparator;
 import edu.fsuj.csb.tools.xml.Tools;
@@ -24,8 +26,17 @@ public class MetabolicNetworkPanel extends TreePanel {
 		//organizerThread.setTreeMapper(this);	
   }
   
-  public void jumpTo(Integer substanceId){
-  	setTree(SubstanceTreeNode.get(substanceId));  	
+  public void jumpToSubatance(Integer substanceId) throws SQLException{
+  	ReactionSet relatedReaction = new ReactionSet();
+  	SubstanceTreeNode stn = SubstanceTreeNode.get(substanceId);
+  	for (int rid:reactions.get()){
+  		DbReaction reaction=DbReaction.load(rid);
+  		if (reaction.hasReactant(substanceId) || reaction.hasProduct(substanceId)) {
+  			ReactionTreeNode rtn = ReactionTreeNode.get(rid);
+  			stn.addReaction(rtn);
+  		}
+  	}  	
+  	setTree(stn);  	
   }
 
 	@Override
