@@ -1,8 +1,11 @@
 package edu.fsuj.csb.reactionnetworks.interaction.gui;
 
+import java.awt.BasicStroke;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Stroke;
 import java.awt.image.ImageObserver;
 import java.sql.SQLException;
 import java.util.Map.Entry;
@@ -19,6 +22,7 @@ public class ReactionTreeNode extends LeveledTreeNode {
 	private TreeSet<SubstanceTreeNode> substrates=SubstanceTreeNode.set();
 	private TreeSet<SubstanceTreeNode> products=SubstanceTreeNode.set();
 	private int id;
+	private BasicStroke arrowStroke=new BasicStroke(2); 
 	private DbReaction dbr;
 
 	public ReactionTreeNode(int id) throws SQLException {
@@ -56,6 +60,9 @@ public class ReactionTreeNode extends LeveledTreeNode {
 		super.paint(g, obs,level);
 		Dimension ownDim = super.paint(g, obs, false);
 		if (level>0) {
+			Graphics2D g2=(Graphics2D) g;
+			Stroke stroke = g2.getStroke();
+			
 			Font oldFont = g.getFont();
 			float oldSize = oldFont.getSize();
   		g.setFont(oldFont.deriveFont(oldSize * 5 / 6));
@@ -70,6 +77,7 @@ public class ReactionTreeNode extends LeveledTreeNode {
 			if (height>0){
 				int y = getOrigin().y+vdist + ((ownDim.height - height) / 2);
 				int x = getOrigin().x - hdist*level*level - ownDim.width/2;
+				g2.setStroke(arrowStroke);
 				for (SubstanceTreeNode substrate:substrates) {
 					if (LeveledTreeNode.hasBeenPainted(substrate)) continue;
 					Dimension dim=substrate.nodeDimension(g, obs);
@@ -78,6 +86,7 @@ public class ReactionTreeNode extends LeveledTreeNode {
 					substrate.paint(g, obs, 1);
 					y += dim.height + vdist;
 				}
+				g2.setStroke(stroke);
 			}
 			
 			
@@ -91,6 +100,7 @@ public class ReactionTreeNode extends LeveledTreeNode {
 			if (height>0){
 				int y = getOrigin().y + ((ownDim.height - height) / 2);
 				int x = getOrigin().x + ownDim.width/2 + hdist*level*level;
+				g2.setStroke(arrowStroke);
 				for (SubstanceTreeNode product:products) {
 					if (LeveledTreeNode.hasBeenPainted(product)) continue;
 					Dimension dim=product.nodeDimension(g, obs);
@@ -99,6 +109,7 @@ public class ReactionTreeNode extends LeveledTreeNode {
 					product.paint(g, obs, level-1);
 					y += dim.height + vdist;
 				}
+				g2.setStroke(stroke);
 			}
 
 			g.setFont(oldFont);
@@ -108,24 +119,7 @@ public class ReactionTreeNode extends LeveledTreeNode {
 		return ownDim;
 	}
 	
-	private void drawArrow(Graphics g, int x, int y, int x2, int y2) {
-		int l=30;
-		double d=30*Math.PI/360;
 
-		g.drawLine(x,y,x2,y2);
-		double h=y2-y;
-		double b=x2-x;
-		double alpha=-Math.atan(h/b);
-		
-		x=x2-(int) Math.round(l*Math.cos(alpha-d));
-		y=y2+(int) Math.round(l*Math.sin(alpha-d));
-		g.drawLine(x,y,x2,y2);
-		
-		x=x2-(int) Math.round(l*Math.cos(alpha+d));
-		y=y2+(int) Math.round(l*Math.sin(alpha+d));
-		g.drawLine(x,y,x2,y2);
-		g.drawOval(x2-6, y2-3, 6, 6);
-  }
 	
 	
 
@@ -156,6 +150,10 @@ public class ReactionTreeNode extends LeveledTreeNode {
 			int stoich=productMap.getValue();
 			addProduct(SubstanceTreeNode.get(sid));
 		}
+  }
+
+	public boolean hasSubstrate(int id) {
+	  return dbr.substrateIds().contains(id);
   }
 
 }

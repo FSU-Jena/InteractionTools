@@ -1,8 +1,11 @@
 package edu.fsuj.csb.reactionnetworks.interaction.gui;
 
+import java.awt.BasicStroke;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Stroke;
 import java.awt.image.ImageObserver;
 import java.sql.SQLException;
 import java.util.TreeMap;
@@ -63,13 +66,23 @@ public class SubstanceTreeNode extends LeveledTreeNode {
 			if (height>0){				
 				int x = getOrigin().x + ownDim.width/2 + hdist*level*level;
 				int y = getOrigin().y + ((ownDim.height - height) / 2);
+				Graphics2D g2 = (Graphics2D)g;
+				Stroke oldStroke=g2.getStroke();
+				g2.setStroke(new BasicStroke(2));
 				for (ReactionTreeNode reaction : reactions) {
 					if (LeveledTreeNode.hasBeenPainted(reaction)) continue;
 					Dimension dim=reaction.nodeDimension(g, obs);
 					reaction.moveTowards(x+dim.width/2, y);
-					if (level>1)	g.drawLine(getOrigin().x, getOrigin().y, reaction.getOrigin().x, reaction.getOrigin().y);
+					if (level>1) {
+						if (reaction.hasSubstrate(id())){
+							drawArrow(g, getOrigin().x+ownDim.width/2, getOrigin().y, reaction.getOrigin().x-dim.width/2, reaction.getOrigin().y);
+						} else {
+							drawArrow(g, reaction.getOrigin().x-dim.width/2, reaction.getOrigin().y, getOrigin().x+ownDim.width/2, getOrigin().y);
+						}
+					}
 					y += dim.height + vdist;
 				}
+				g2.setStroke(oldStroke);
 				y = getOrigin().y + ((ownDim.height - height) / 2);
 				for (ReactionTreeNode reaction : reactions) {
 					if (LeveledTreeNode.hasBeenPainted(reaction)) continue;

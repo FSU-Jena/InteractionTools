@@ -46,5 +46,23 @@ public abstract class LeveledTreeNode extends TreeNode {
 	public static boolean hasBeenPainted(LeveledTreeNode node) {
 	  return painted.contains(node);
   }
+	
+	protected static void drawArrow(Graphics g, int x, int y, int x2, int y2) {
+		int l=30;
+		double d=30*Math.PI/360;
 
+		g.drawLine(x,y,x2,y2);
+		double h=y2-y;
+		double b=x2-x;
+		double alpha=-Math.atan(h/b);
+		
+		x=x2-(int) Math.round(l*Math.cos(alpha-d));
+		y=y2+(int) Math.round(l*Math.sin(alpha-d));
+		g.drawLine(x,y,x2,y2);
+		
+		x=x2-(int) Math.round(l*Math.cos(alpha+d));
+		y=y2+(int) Math.round(l*Math.sin(alpha+d));
+		g.drawLine(x,y,x2,y2);
+		g.drawOval(x2-6, y2-3, 6, 6);
+  }
 }
