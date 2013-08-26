@@ -62,7 +62,6 @@ public class MetabolicNetworkPanel extends TreePanel {
 	public void paint(Graphics g) {
 		// System.out.println("MetabolicNetworkPanel.paint...");
 		super.paint(g);
-		g.setFont(g.getFont().deriveFont(20f));
 		Dimension dim = this.getSize();
 		tree.moveTowards(dim.width / 2, dim.height / 2);
 		LeveledTreeNode.clearPainted();

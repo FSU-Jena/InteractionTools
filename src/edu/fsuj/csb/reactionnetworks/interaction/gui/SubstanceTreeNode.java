@@ -24,7 +24,7 @@ public class SubstanceTreeNode extends LeveledTreeNode {
 	public SubstanceTreeNode(int id) throws SQLException {
 		super(""+id);
 		dbs=DbSubstance.load(id);
-		setText("\\small{S" + id + "}\\n " + names().first() + "\\n " + formula());
+		setText("\\small{Substance " + id + "}\\n " + names().first() + "\\n " + formula());
 		this.id=id;
 		stns.put(id,this);
 	}
@@ -58,7 +58,7 @@ public class SubstanceTreeNode extends LeveledTreeNode {
 				if (LeveledTreeNode.hasBeenPainted(reaction)) continue;
 				reaction.setParent(this);
 				Dimension dim = reaction.nodeDimension(g, obs);
-				height += dim.height + dist;
+				height += dim.height + vdist;
 			}			
 			if (height>0){				
 				int y = getOrigin().y + ((ownDim.height - height) / 2);
@@ -68,7 +68,7 @@ public class SubstanceTreeNode extends LeveledTreeNode {
 					reaction.moveTowards(x, y);
 					if (levels>1)	g.drawLine(getOrigin().x, getOrigin().y, reaction.getOrigin().x, reaction.getOrigin().y);
 					Dimension dim = reaction.paint(g, obs, levels-1);
-					y += dim.height + dist;
+					y += dim.height + vdist;
 				}
 			}
 			g.setFont(oldFont);

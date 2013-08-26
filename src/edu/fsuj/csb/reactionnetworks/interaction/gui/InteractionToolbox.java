@@ -141,7 +141,9 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
   }
 
 	private MetabolicNetworkPanel createNetworkPanel() {
-	  return new MetabolicNetworkPanel();
+		MetabolicNetworkPanel result = new MetabolicNetworkPanel();
+		result.setTextSize(15f);
+	  return result;
   }
 
 	/**

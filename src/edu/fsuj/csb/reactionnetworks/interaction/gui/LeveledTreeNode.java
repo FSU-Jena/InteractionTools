@@ -10,7 +10,8 @@ import edu.fsuj.csb.tools.xml.ObjectComparator;
 import edu.fsuj.csb.tools.xml.Tools;
 
 public abstract class LeveledTreeNode extends TreeNode {
-	protected int dist = 40;
+	protected int hdist = 20;
+	protected int vdist = 5;
 
 	private static TreeSet<LeveledTreeNode> visible=set();
 	private static TreeSet<LeveledTreeNode> painted=set();
