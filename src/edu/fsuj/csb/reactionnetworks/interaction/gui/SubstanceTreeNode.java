@@ -10,6 +10,7 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import de.srsoftware.gui.treepanel.TreeNode;
+import edu.fsuj.csb.reactionnetworks.organismtools.DbSubstance;
 import edu.fsuj.csb.tools.xml.ObjectComparator;
 import edu.fsuj.csb.tools.xml.Tools;
 
@@ -19,7 +20,7 @@ public class SubstanceTreeNode extends LeveledTreeNode {
 TreeSet<ReactionTreeNode> reactions=ReactionTreeNode.set();
 
 	public SubstanceTreeNode(int id) {
-		super("\\small{" + id + "}\\n " + names(id).first() + "\\n " + formula(id));
+		super("\\small{" + id + "}\\n " + names(id).first() + "\\n " + formula(id));				
 	}
 
 	private static String formula(int id) {

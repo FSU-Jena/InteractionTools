@@ -39,6 +39,7 @@ public class CompartmentsTab extends HorizontalPanel implements ActionListener {
 	private JButton reaButton;
 	private CompartmentListener cListener;
 	private ListModificationPanel lmp;
+	//private MetabolicNetworkPanel netViewer;
 
 	/**
 	 * creates a new compartments tab with the desired height and width
@@ -58,6 +59,12 @@ public class CompartmentsTab extends HorizontalPanel implements ActionListener {
 		scale();
 	}
 
+	public void setNetworkViewer(MetabolicNetworkPanel networkViewer) {
+//		netViewer=networkViewer;
+		userSelection.setNetworkViewer(networkViewer);
+  }
+
+	
 	/**
 	 * creates a JTree based list of all compartments available through the interaction database
 	 * @param width the desired width of the panel

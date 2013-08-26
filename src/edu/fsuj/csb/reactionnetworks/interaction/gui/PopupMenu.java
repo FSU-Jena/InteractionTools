@@ -18,6 +18,8 @@ import javax.swing.BorderFactory;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
+import org.omg.CORBA.NVList;
+
 import edu.fsuj.csb.gui.GenericFileFilter;
 import edu.fsuj.csb.gui.PanelTools;
 import edu.fsuj.csb.reactionnetworks.interaction.SubstanceList;
@@ -36,7 +38,7 @@ public class PopupMenu extends JPopupMenu implements ActionListener {
 	private String objectText;
 	private JMenuItem search;
 	private JMenuItem clip;
-	private JMenuItem cListItem,nListItem;	
+	private JMenuItem cListItem,netViewItem;	
 	private static CompartmentList compartmentList=null;
 	private static TreeSet<SubstanceList> substanceLists=new TreeSet<SubstanceList>(ObjectComparator.get());
 
@@ -72,9 +74,6 @@ public class PopupMenu extends JPopupMenu implements ActionListener {
 			cListItem.addActionListener(this);
 			add(cListItem);
 			
-			nListItem=new JMenuItem("show in Network View");
-			nListItem.addActionListener(this);
-			add(nListItem);
 		}
 		if (targetObject instanceof SubstanceNode){
 			objectText=((SubstanceNode)targetObject).substance().mainName();
@@ -84,6 +83,10 @@ public class PopupMenu extends JPopupMenu implements ActionListener {
 				item.addActionListener(this);
 				add(item);
 			}
+			
+			netViewItem=new JMenuItem("show in network view");
+			netViewItem.addActionListener(this);
+			add(netViewItem);
 		}
 		
 		if (targetObject instanceof XmlObject){
@@ -105,6 +108,9 @@ public class PopupMenu extends JPopupMenu implements ActionListener {
 		Object option = arg0.getSource();
 		if (option==search) searchFor(objectText);
 		if (option==clip) copyToClipboard(objectText);
+		if (option==netViewItem) {
+			compartmentList.networkViewer().jumpTo(((SubstanceNode)targetObject).substance().id());
+		}
 		if (option==cListItem) try {
 			DbCompartmentNode dbComp = (DbCompartmentNode)targetObject;
 	    compartmentList.addCompartment(dbComp.compartment());

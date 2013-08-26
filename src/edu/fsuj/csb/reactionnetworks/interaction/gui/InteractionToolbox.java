@@ -127,6 +127,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		//****** NETWORK VIEW *****//
 		System.out.println("- creating panel for network view...");
 		taskResultPane.add(networkPanel=createNetworkPanel(),"Network View");
+		compartmentTab.setNetworkViewer(networkPanel);
 		
 		//***** DATABASE **********//
 		System.out.println("- creating panel for database actions...");
@@ -322,7 +323,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
       		System.err.println(e.getMessage()+" Is the mysql daemon running?");
       	} else throw e;
       }
-	    System.setOut(out);
+	    //System.setOut(out);
 	}
 	
 	/**
