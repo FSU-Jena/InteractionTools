@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Stroke;
 import java.awt.image.ImageObserver;
 import java.sql.SQLException;
@@ -124,11 +125,17 @@ public class ReactionTreeNode extends LeveledTreeNode {
 	
 
 	public void addSubstrate(SubstanceTreeNode s) {
-	  substrates.add(s);
+		if (!substrates.contains(s)) {
+			//s.setOrigin(getOrigin());
+		  substrates.add(s);
+		}
   }
 
 	public void addProduct(SubstanceTreeNode s) {
-		products.add(s);
+		if (!products.contains(s)) {
+			//s.setOrigin(getOrigin());
+			products.add(s);
+		}
   }
 
 	public void setParent(SubstanceTreeNode node) {
@@ -141,15 +148,16 @@ public class ReactionTreeNode extends LeveledTreeNode {
 
 	public void loadSubstances() throws SQLException {
 		for (Entry<Integer, Integer> substrateMap:dbr.substrates().entrySet()){
-			addSubstrate(SubstanceTreeNode.get(substrateMap.getKey()));
+			SubstanceTreeNode s = SubstanceTreeNode.get(substrateMap.getKey());
+			addSubstrate(s);
 		}
 		for (Entry<Integer, Integer> productMap:dbr.products().entrySet()){
-			addProduct(SubstanceTreeNode.get(productMap.getKey()));
+			SubstanceTreeNode p = SubstanceTreeNode.get(productMap.getKey());
+			addProduct(p);
 		}
   }
 
 	public boolean hasSubstrate(int id) {
 	  return dbr.substrateIds().contains(id);
   }
-
 }

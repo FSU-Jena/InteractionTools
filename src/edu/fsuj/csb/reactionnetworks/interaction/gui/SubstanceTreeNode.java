@@ -133,16 +133,17 @@ public class SubstanceTreeNode extends LeveledTreeNode {
 	  return new TreeSet<SubstanceTreeNode>(ObjectComparator.get());
   }
 
-	public void addProducingReaction(ReactionTreeNode r) {
-	  producingReactions.add(r);
-	  
-  }
-
 	public int id() {
 	  return id;
   }
 
+	public void addProducingReaction(ReactionTreeNode r) {
+		if (!producingReactions.contains(r)) r.setOrigin(getOrigin());
+	  producingReactions.add(r);	  
+  }
+
 	public void addConsumingReaction(ReactionTreeNode r) {
+		if (!consuminggReactions.contains(r)) r.setOrigin(getOrigin());
 		consuminggReactions.add(r);
   }
 }

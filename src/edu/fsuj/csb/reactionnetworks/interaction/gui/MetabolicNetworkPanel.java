@@ -16,7 +16,8 @@ public class MetabolicNetworkPanel extends TreePanel {
 
 	private static final long serialVersionUID = -6376374837687130039L;
 	private ReactionSet reactions;
-
+	private Point center;
+	
 	public MetabolicNetworkPanel() {
 		super();
 		LeveledTreeNode.setCentered(true);
@@ -35,12 +36,10 @@ public class MetabolicNetworkPanel extends TreePanel {
 		for (int rid : reactions.get()) {
 			DbReaction reaction = DbReaction.load(rid);
 			if (reaction.hasProduct(stn.id())) {
-				ReactionTreeNode rtn = ReactionTreeNode.get(rid);
-				stn.addProducingReaction(rtn);
+				stn.addProducingReaction(ReactionTreeNode.get(rid));
 			}
 			if (reaction.hasReactant(stn.id())) {
-				ReactionTreeNode rtn = ReactionTreeNode.get(rid);
-				stn.addConsumingReaction(rtn);
+				stn.addConsumingReaction(ReactionTreeNode.get(rid));
 			}
 		}
 	}
@@ -67,7 +66,9 @@ public class MetabolicNetworkPanel extends TreePanel {
 		// System.out.println("MetabolicNetworkPanel.paint...");
 		super.paint(g);
 		Dimension dim = this.getSize();
-		tree.moveTowards(dim.width / 2, dim.height / 2);
+		center=new Point(dim.width / 2, dim.height / 2);
+		if (tree==null) return;
+		tree.moveTowards(center);
 		LeveledTreeNode.clearPainted();
 		((LeveledTreeNode) tree).paint(g, this, 3);
 		// System.out.println("...MetabolicNetworkPanel.paint");
