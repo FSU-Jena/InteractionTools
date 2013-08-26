@@ -36,7 +36,7 @@ public class PopupMenu extends JPopupMenu implements ActionListener {
 	private String objectText;
 	private JMenuItem search;
 	private JMenuItem clip;
-	private JMenuItem cListItem;	
+	private JMenuItem cListItem,nListItem;	
 	private static CompartmentList compartmentList=null;
 	private static TreeSet<SubstanceList> substanceLists=new TreeSet<SubstanceList>(ObjectComparator.get());
 
@@ -71,6 +71,10 @@ public class PopupMenu extends JPopupMenu implements ActionListener {
 			cListItem=new JMenuItem("add to \""+compartmentList.caption()+"\"");
 			cListItem.addActionListener(this);
 			add(cListItem);
+			
+			nListItem=new JMenuItem("show in Network View");
+			nListItem.addActionListener(this);
+			add(nListItem);
 		}
 		if (targetObject instanceof SubstanceNode){
 			objectText=((SubstanceNode)targetObject).substance().mainName();
