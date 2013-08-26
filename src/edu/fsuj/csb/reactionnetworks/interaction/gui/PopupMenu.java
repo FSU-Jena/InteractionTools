@@ -110,7 +110,7 @@ public class PopupMenu extends JPopupMenu implements ActionListener {
 		if (option==clip) copyToClipboard(objectText);
 		if (option==netViewItem) {
 			try {
-	      compartmentList.networkViewer().jumpToSubatance(((SubstanceNode)targetObject).substance().id());
+	      compartmentList.networkViewer().jumpToSubatance(((SubstanceNode)targetObject).substance().id());	      
       } catch (SQLException e) {
 	      e.printStackTrace();
       }

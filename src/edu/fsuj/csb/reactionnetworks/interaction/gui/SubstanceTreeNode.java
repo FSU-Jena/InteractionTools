@@ -3,17 +3,14 @@ package edu.fsuj.csb.reactionnetworks.interaction.gui;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Point;
 import java.awt.image.ImageObserver;
 import java.sql.SQLException;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.Vector;
 
 import de.srsoftware.gui.treepanel.TreeNode;
 import edu.fsuj.csb.reactionnetworks.organismtools.DbSubstance;
 import edu.fsuj.csb.tools.organisms.Formula;
-import edu.fsuj.csb.tools.organisms.ReactionSet;
 import edu.fsuj.csb.tools.xml.ObjectComparator;
 import edu.fsuj.csb.tools.xml.Tools;
 
@@ -22,11 +19,14 @@ public class SubstanceTreeNode extends LeveledTreeNode {
 	static TreeMap<Integer, SubstanceTreeNode> stns = new TreeMap<Integer, SubstanceTreeNode>();
 	private DbSubstance dbs;	
 	TreeSet<ReactionTreeNode> reactions=ReactionTreeNode.set();
+	private int id;
 
 	public SubstanceTreeNode(int id) throws SQLException {
 		super(""+id);
 		dbs=DbSubstance.load(id);
-		super.setText("\\small{" + id + "}\\n " + names().first() + "\\n " + formula());
+		setText("\\small{S" + id + "}\\n " + names().first() + "\\n " + formula());
+		this.id=id;
+		stns.put(id,this);
 	}
 
 	private String formula() {
@@ -91,5 +91,9 @@ public class SubstanceTreeNode extends LeveledTreeNode {
 	public void addReaction(ReactionTreeNode r) {
 	  reactions.add(r);
 	  
+  }
+
+	public int id() {
+	  return id;
   }
 }

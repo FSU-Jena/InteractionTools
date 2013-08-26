@@ -6,7 +6,6 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.rmi.AlreadyBoundException;
 import java.sql.SQLException;
 import java.util.TreeSet;
@@ -127,6 +126,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		//****** NETWORK VIEW *****//
 		System.out.println("- creating panel for network view...");
 		taskResultPane.add(networkPanel=createNetworkPanel(),"Network View");
+		networkPanel.addActionListener(this);
 		compartmentTab.setNetworkViewer(networkPanel);
 		
 		//***** DATABASE **********//
@@ -307,8 +307,6 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	 * @throws DataFormatException 
 	 */
 	public static void main(String[] args) throws IOException, NoTokenException, AlreadyBoundException, ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException, SQLException, DataFormatException  {
-		PrintStream out = System.out;
-
 		parseArgs(args);
 		Tools.disableLogging();
 		InteractionSplash splash = new InteractionSplash();
@@ -437,6 +435,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 			if (source == optimizeSeeds) optimizeSeeds(1);
 			if (source == evolveSeeds) optimizeSeeds(2);
 			if (source == findPath) findPath();
+			if (source == networkPanel) taskResultPane.setSelectedComponent(networkPanel);
 			
 		} catch (IOException e1) {
 			e1.printStackTrace();

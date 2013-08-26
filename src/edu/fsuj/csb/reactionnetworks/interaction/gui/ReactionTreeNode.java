@@ -4,10 +4,13 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.image.ImageObserver;
+import java.sql.SQLException;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
 import de.srsoftware.gui.treepanel.TreeNode;
+import edu.fsuj.csb.reactionnetworks.organismtools.DbReaction;
 import edu.fsuj.csb.tools.xml.ObjectComparator;
 import edu.fsuj.csb.tools.xml.Tools;
 
@@ -16,9 +19,15 @@ public class ReactionTreeNode extends LeveledTreeNode {
 	private TreeSet<SubstanceTreeNode> substrates=SubstanceTreeNode.set();
 	private TreeSet<SubstanceTreeNode> products=SubstanceTreeNode.set();
 	private int factor=1;
+	private int id;
+	private DbReaction dbr;
 
-	public ReactionTreeNode(int id) {
-		super("\\small{"+id+"}\\n "+names(id).first());
+	public ReactionTreeNode(int id) throws SQLException {
+		super("\\small{"+id+"}");
+		dbr = DbReaction.load(id);
+		setText("\\small{R"+id+"}\\n "+names().first().replace(" <=>", " \\<=> "));
+		this.id=id;
+		rtns.put(id, this);
   }
 	
 	int counter1=0;
@@ -29,17 +38,15 @@ public class ReactionTreeNode extends LeveledTreeNode {
 	  return this;
 	}
 	
-	private static TreeSet<String> names(int id) {
-		TreeSet<String> result = Tools.StringSet();
-		result.add("reaction_"+id);
-		return result;
+	private TreeSet<String> names() {
+		return dbr.names();
   }
 
 	public static TreeSet<ReactionTreeNode> set() {
 	  return new TreeSet<ReactionTreeNode>(ObjectComparator.get());
   }
 
-	public static ReactionTreeNode get(int id) {
+	public static ReactionTreeNode get(int id) throws SQLException {
 		ReactionTreeNode result = rtns.get(id);
 		if (result==null) result=new ReactionTreeNode(id);
 	  return result;
@@ -115,6 +122,23 @@ public class ReactionTreeNode extends LeveledTreeNode {
 
 	public void setParent(SubstanceTreeNode node) {
 		factor=(products.contains(node))?-1:1;
+  }
+
+	public int id() {
+	  return id;
+  }
+
+	public void loadSubstances() throws SQLException {
+		for (Entry<Integer, Integer> substrateMap:dbr.substrates().entrySet()){
+			int sid=substrateMap.getKey();
+			int stoich=substrateMap.getValue();
+			addSubstrate(SubstanceTreeNode.get(sid));
+		}
+		for (Entry<Integer, Integer> productMap:dbr.products().entrySet()){
+			int sid=productMap.getKey();
+			int stoich=productMap.getValue();
+			addProduct(SubstanceTreeNode.get(sid));
+		}
   }
 
 }
