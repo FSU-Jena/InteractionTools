@@ -72,9 +72,10 @@ public class ReactionTreeNode extends LeveledTreeNode {
 				int x = getOrigin().x - hdist*level*level - ownDim.width/2;
 				for (SubstanceTreeNode substrate:substrates) {
 					if (LeveledTreeNode.hasBeenPainted(substrate)) continue;
-					substrate.moveTowards(x-substrate.nodeDimension(g, obs).width/2, y);
-					if (level>1) drawArrow(g, substrate.getOrigin().x, substrate.getOrigin().y,getOrigin().x, getOrigin().y);
-					Dimension dim = substrate.paint(g, obs, 1);
+					Dimension dim=substrate.nodeDimension(g, obs);
+					substrate.moveTowards(x-dim.width/2, y);
+					if (level>1) drawArrow(g, substrate.getOrigin().x+dim.width/2, substrate.getOrigin().y,getOrigin().x-ownDim.width/2, getOrigin().y);
+					substrate.paint(g, obs, 1);
 					y += dim.height + vdist;
 				}
 			}
@@ -92,9 +93,10 @@ public class ReactionTreeNode extends LeveledTreeNode {
 				int x = getOrigin().x + ownDim.width/2 + hdist*level*level;
 				for (SubstanceTreeNode product:products) {
 					if (LeveledTreeNode.hasBeenPainted(product)) continue;
-					product.moveTowards(x+product.nodeDimension(g, obs).width/2, y);
-					if (level>1) drawArrow(g,getOrigin().x, getOrigin().y, product.getOrigin().x, product.getOrigin().y);
-					Dimension dim = product.paint(g, obs, level-1);
+					Dimension dim=product.nodeDimension(g, obs);
+					product.moveTowards(x+dim.width/2, y);
+					if (level>1) drawArrow(g,getOrigin().x+ownDim.width/2, getOrigin().y, product.getOrigin().x-dim.width/2, product.getOrigin().y);
+					product.paint(g, obs, level-1);
 					y += dim.height + vdist;
 				}
 			}
@@ -107,9 +109,25 @@ public class ReactionTreeNode extends LeveledTreeNode {
 	}
 	
 	private void drawArrow(Graphics g, int x, int y, int x2, int y2) {
+		int l=30;
+		double d=30*Math.PI/360;
+
+		g.drawLine(x,y,x2,y2);
+		double h=y2-y;
+		double b=x2-x;
+		double alpha=-Math.atan(h/b);
+		
+		x=x2-(int) Math.round(l*Math.cos(alpha-d));
+		y=y2+(int) Math.round(l*Math.sin(alpha-d));
+		g.drawLine(x,y,x2,y2);
+		
+		x=x2-(int) Math.round(l*Math.cos(alpha+d));
+		y=y2+(int) Math.round(l*Math.sin(alpha+d));
 		g.drawLine(x,y,x2,y2);
 		g.drawOval(x2-6, y2-3, 6, 6);
   }
+	
+	
 
 	public void addSubstrate(SubstanceTreeNode s) {
 	  substrates.add(s);
