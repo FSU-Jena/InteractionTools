@@ -43,13 +43,13 @@ public class SubstanceTreeNode extends LeveledTreeNode {
 		return dbs.names();
 	}
 
-	public Dimension paint(Graphics g, ImageObserver obs, int levels) {
-		Tools.startMethod("SubstanceTreeNode.paint(g,obs,"+levels+")");
-		super.paint(g, obs,levels);
+	public Dimension paint(Graphics g, ImageObserver obs, int level) {
+		Tools.startMethod("SubstanceTreeNode.paint(g,obs,"+level+")");
+		super.paint(g, obs,level);
 		
 		Dimension ownDim = super.paint(g, obs, false);
 		
-		if (levels>0) {
+		if (level>0) {
 			Font oldFont = g.getFont();
 			float oldSize = oldFont.getSize();
   		g.setFont(oldFont.deriveFont(oldSize * 5 / 6));
@@ -61,13 +61,19 @@ public class SubstanceTreeNode extends LeveledTreeNode {
 				height += dim.height + vdist;
 			}			
 			if (height>0){				
+				int x = getOrigin().x + ownDim.width/2 + hdist*level*level;
 				int y = getOrigin().y + ((ownDim.height - height) / 2);
-				int x = getOrigin().x + ownDim.width + 50*levels;
 				for (ReactionTreeNode reaction : reactions) {
 					if (LeveledTreeNode.hasBeenPainted(reaction)) continue;
-					reaction.moveTowards(x, y);
-					if (levels>1)	g.drawLine(getOrigin().x, getOrigin().y, reaction.getOrigin().x, reaction.getOrigin().y);
-					Dimension dim = reaction.paint(g, obs, levels-1);
+					Dimension dim=reaction.nodeDimension(g, obs);
+					reaction.moveTowards(x+dim.width/2, y);
+					if (level>1)	g.drawLine(getOrigin().x, getOrigin().y, reaction.getOrigin().x, reaction.getOrigin().y);
+					y += dim.height + vdist;
+				}
+				y = getOrigin().y + ((ownDim.height - height) / 2);
+				for (ReactionTreeNode reaction : reactions) {
+					if (LeveledTreeNode.hasBeenPainted(reaction)) continue;
+					Dimension dim=reaction.paint(g, obs, level-1);
 					y += dim.height + vdist;
 				}
 			}

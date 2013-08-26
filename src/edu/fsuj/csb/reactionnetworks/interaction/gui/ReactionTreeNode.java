@@ -51,11 +51,11 @@ public class ReactionTreeNode extends LeveledTreeNode {
 	  return result;
   }
 	
-	public Dimension paint(Graphics g, ImageObserver obs,int levels) {
-		Tools.startMethod("SubstanceTreeNode.paint(g,obs,"+levels+")");
-		super.paint(g, obs,levels);
+	public Dimension paint(Graphics g, ImageObserver obs,int level) {
+		Tools.startMethod("SubstanceTreeNode.paint(g,obs,"+level+")");
+		super.paint(g, obs,level);
 		Dimension ownDim = super.paint(g, obs, false);
-		if (levels>0) {
+		if (level>0) {
 			Font oldFont = g.getFont();
 			float oldSize = oldFont.getSize();
   		g.setFont(oldFont.deriveFont(oldSize * 5 / 6));
@@ -69,11 +69,11 @@ public class ReactionTreeNode extends LeveledTreeNode {
 			}			
 			if (height>0){
 				int y = getOrigin().y+vdist + ((ownDim.height - height) / 2);
-				int x = getOrigin().x - hdist - ownDim.width/2;
+				int x = getOrigin().x - hdist*level*level - ownDim.width/2;
 				for (SubstanceTreeNode substrate:substrates) {
 					if (LeveledTreeNode.hasBeenPainted(substrate)) continue;
 					substrate.moveTowards(x-substrate.nodeDimension(g, obs).width/2, y);
-					if (levels>1) drawArrow(g, substrate.getOrigin().x, substrate.getOrigin().y,getOrigin().x, getOrigin().y);
+					if (level>1) drawArrow(g, substrate.getOrigin().x, substrate.getOrigin().y,getOrigin().x, getOrigin().y);
 					Dimension dim = substrate.paint(g, obs, 1);
 					y += dim.height + vdist;
 				}
@@ -89,12 +89,12 @@ public class ReactionTreeNode extends LeveledTreeNode {
 			}			
 			if (height>0){
 				int y = getOrigin().y + ((ownDim.height - height) / 2);
-				int x = getOrigin().x + ownDim.width/2 + hdist;
+				int x = getOrigin().x + ownDim.width/2 + hdist*level*level;
 				for (SubstanceTreeNode product:products) {
 					if (LeveledTreeNode.hasBeenPainted(product)) continue;
 					product.moveTowards(x+product.nodeDimension(g, obs).width/2, y);
-					if (levels>1) drawArrow(g,getOrigin().x, getOrigin().y, product.getOrigin().x, product.getOrigin().y);
-					Dimension dim = product.paint(g, obs, levels-1);
+					if (level>1) drawArrow(g,getOrigin().x, getOrigin().y, product.getOrigin().x, product.getOrigin().y);
+					Dimension dim = product.paint(g, obs, level-1);
 					y += dim.height + vdist;
 				}
 			}
