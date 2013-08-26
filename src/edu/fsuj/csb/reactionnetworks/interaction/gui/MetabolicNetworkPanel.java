@@ -79,7 +79,7 @@ public class MetabolicNetworkPanel extends TreePanel {
 	}
 
 	protected void setTreeTo(TreeNode node) {
-		System.out.println(node.getClass());
+		//System.out.println(node.getClass());
 		try {
 			if (node instanceof ReactionTreeNode) {
 				((ReactionTreeNode) node).loadSubstances();

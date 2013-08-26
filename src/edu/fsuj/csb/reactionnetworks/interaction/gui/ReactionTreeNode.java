@@ -5,11 +5,11 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.Stroke;
 import java.awt.image.ImageObserver;
 import java.sql.SQLException;
 import java.util.Map.Entry;
+import java.util.Iterator;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -29,7 +29,10 @@ public class ReactionTreeNode extends LeveledTreeNode {
 	public ReactionTreeNode(int id) throws SQLException {
 		super("\\small{"+id+"}");
 		dbr = DbReaction.load(id);
-		setText("\\small{Reaction "+id+"}\\n "+names().first().replace(" <=>", " \\<=> "));
+		
+		Iterator<String> nit=names().iterator();
+		setText("\\small{Reaction "+id+"}\\n "+nit.next().replace(" <=>", " \\<=> "));
+		while (nit.hasNext()) nameNodes.add(new TreeNode(nit.next()));
 		this.id=id;
 		rtns.put(id, this);
   }
@@ -60,13 +63,15 @@ public class ReactionTreeNode extends LeveledTreeNode {
 		Tools.startMethod("SubstanceTreeNode.paint(g,obs,"+level+")");
 		super.paint(g, obs,level);
 		Dimension ownDim = super.paint(g, obs, false);
+		
+		
 		if (level>0) {
 			Graphics2D g2=(Graphics2D) g;
 			Stroke stroke = g2.getStroke();
 			
 			Font oldFont = g.getFont();
 			float oldSize = oldFont.getSize();
-  		g.setFont(oldFont.deriveFont(oldSize * 5 / 6));
+  		g.setFont(oldFont.deriveFont(oldSize * 5 / 7));
 
 			int height = 0;	
 			for (SubstanceTreeNode substrate:substrates){
@@ -116,6 +121,9 @@ public class ReactionTreeNode extends LeveledTreeNode {
 			g.setFont(oldFont);
 			super.paint(g, obs, true);
 		}
+		
+		drawNameNodes(g, obs,ownDim,level);
+
 		Tools.endMethod(ownDim);
 		return ownDim;
 	}

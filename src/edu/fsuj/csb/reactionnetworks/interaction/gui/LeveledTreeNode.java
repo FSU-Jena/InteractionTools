@@ -2,8 +2,8 @@ package edu.fsuj.csb.reactionnetworks.interaction.gui;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Point;
 import java.awt.image.ImageObserver;
+import java.util.Iterator;
 import java.util.TreeSet;
 
 import de.srsoftware.gui.treepanel.TreeNode;
@@ -17,9 +17,38 @@ public abstract class LeveledTreeNode extends TreeNode {
 	private static TreeSet<LeveledTreeNode> visible=set();
 	private static TreeSet<LeveledTreeNode> painted=set();
 
+	protected TreeSet<TreeNode> nameNodes=new TreeSet<TreeNode>(ObjectComparator.get());
+
 	public LeveledTreeNode(String f) {
 		super(f);
   }
+	
+	protected void drawNameNodes(Graphics g, ImageObserver obs,Dimension ownDim, int level) {
+		if (level == 3 && !nameNodes.isEmpty()) {
+			int x = getOrigin().x;
+			int y = getOrigin().y + ownDim.height/2;
+			
+			int h=hdist;
+			Iterator<TreeNode> it=nameNodes.iterator();
+			it.next();
+			TreeNode nameNode=null;
+			while (it.hasNext()){
+				nameNode = it.next();
+				Dimension d=nameNode.nodeDimension(g, obs);
+				h+=vdist+d.height/2;
+				nameNode.moveTowards(x, y+h);
+				h+=d.height/2;
+			}
+			if (nameNode!=null)	g.drawLine(x, y, nameNode.getOrigin().x,nameNode.getOrigin().y);
+			y+=hdist;
+			
+			it=nameNodes.iterator();
+			it.next();
+			while (it.hasNext()){
+				it.next().paint(g, obs);
+			}			
+		}
+	}
 
 	public Dimension paint(Graphics g, ImageObserver obs, int level){
 		Tools.startMethod("LeveledTreeNode.paint(g,obs,"+level+")");
