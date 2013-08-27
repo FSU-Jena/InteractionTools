@@ -18,5 +18,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/DBComponents"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Configuration"/>
 	<classpathentry kind="lib" path="/batik-1.7/batik.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/TreePanel"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

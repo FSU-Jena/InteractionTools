@@ -563,7 +563,11 @@ public class SBMLLoader {
 		path=path+"/"+token.tokenClass();
 		for (XmlToken subtoken:token.subtokens()) {			if (subtoken.instanceOf("rdf:li")){
 				String u=subtoken.getValue("rdf:resource");
-				if (u!=null && u.startsWith("urn") && u.contains("ec-code")){
+				if (u!=null && u.startsWith("urn") && u.contains("ec-code")){					
+					if (u.equals("urn:miriam:obo.chebi:CHEBI%3Ano")) continue;
+					if (u.equals("urn:miriam:obo.chebi:CHEBI%3AChEBI_ID")) continue;
+					if (u.equals("urn:miriam:obo.chebi:CHEBI%3Afound")) continue;
+					if (u.startsWith("urn:miriam:kegg.compound:C")) u=u.substring(0,31);
 					urns.add(new MiriamUrn(u));					
 				} 
 			} else throw new DataFormatException("found "+subtoken.tokenClass()+" token in "+path+"...");
