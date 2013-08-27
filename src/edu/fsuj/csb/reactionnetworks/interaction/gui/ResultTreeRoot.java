@@ -7,6 +7,7 @@ import javax.swing.tree.MutableTreeNode;
 public class ResultTreeRoot extends DefaultMutableTreeNode {
   private static final long serialVersionUID = -7735797332731779635L;
   private ResultPanel ownerPanel;
+  
 	public ResultTreeRoot(ResultPanel resultPanel) {
 		super("Results");
 		ownerPanel=resultPanel;
@@ -23,13 +24,11 @@ public class ResultTreeRoot extends DefaultMutableTreeNode {
 	}
 	
 	public void removeAllChildren() {
-		System.out.println("ResultTreeRoot.removeAllChildren()");
 	  super.removeAllChildren();
 	  update();
 	}
 
 	public void add(MutableTreeNode newChild) {
-		System.out.println("ResultTreeRoot.add(...)");
 	  super.add(newChild);
 	  update();
 	}
