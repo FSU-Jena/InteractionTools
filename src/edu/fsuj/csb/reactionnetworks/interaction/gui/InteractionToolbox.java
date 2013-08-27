@@ -58,6 +58,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	private HorizontalPanel taskPane;
 	private VerticalPanel taskButtonPanel;
 	private Configuration configuration;
+	private MetabolicNetworkPanel networkPanel;
 	/**
 	 * create a new window instance
 	 * @param splash
@@ -105,7 +106,6 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		mainPanel.add(taskResultPane=taskResultPane());		
 		mainPanel.add(statusPanel=new StatusPanel());		
 		//statusPanel.setWidth(taskResultPane().getWidth());
-		//System.setOut(out);
 		mainPanel.scale();
 		add(mainPanel);
 		pack();
@@ -122,6 +122,12 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		System.out.println("- creating panel for results...");
 		taskResultPane.add(resultPane=createResultPane(), "Results");
 		
+		//****** NETWORK VIEW *****//
+		System.out.println("- creating panel for network view...");
+		taskResultPane.add(networkPanel=createNetworkPanel(),"Network View");
+		networkPanel.addActionListener(this);
+		compartmentTab.setNetworkViewer(networkPanel);
+		
 		//***** DATABASE **********//
 		System.out.println("- creating panel for database actions...");
 		databasePane = new DatabasePane();
@@ -131,6 +137,12 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		//***** INFO *********//
 		taskResultPane.add(createInfoPanel(),"Information");
 		return taskResultPane;
+  }
+
+	private MetabolicNetworkPanel createNetworkPanel() {
+		MetabolicNetworkPanel result = new MetabolicNetworkPanel();
+		result.setTextSize(16f);
+	  return result;
   }
 
 	/**
@@ -284,7 +296,6 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	 * @throws DataFormatException 
 	 */
 	public static void main(String[] args) throws IOException, NoTokenException, AlreadyBoundException, ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException, SQLException, DataFormatException  {
-		//out=System.out;
 		parseArgs(args);
 		Tools.disableLogging();
 		InteractionSplash splash = new InteractionSplash();
@@ -299,6 +310,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
       		System.err.println(e.getMessage()+" Is the mysql daemon running?");
       	} else throw e;
       }
+	    //System.setOut(out);
 	}
 	
 	/**

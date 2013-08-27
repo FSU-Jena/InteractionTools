@@ -21,7 +21,7 @@ import javax.swing.JPopupMenu;
 import edu.fsuj.csb.gui.GenericFileFilter;
 import edu.fsuj.csb.gui.PanelTools;
 import edu.fsuj.csb.reactionnetworks.interaction.SubstanceList;
-import edu.fsuj.csb.reactionnetworks.organismtools.DbCompartment;
+import edu.fsuj.csb.reactionnetworks.organismtools.gui.DbCompartmentNode;
 import edu.fsuj.csb.tools.organisms.gui.CompartmentNode;
 import edu.fsuj.csb.tools.organisms.gui.SubstanceNode;
 import edu.fsuj.csb.tools.organisms.gui.URLNode;
@@ -36,7 +36,7 @@ public class PopupMenu extends JPopupMenu implements ActionListener {
 	private String objectText;
 	private JMenuItem search;
 	private JMenuItem clip;
-	private JMenuItem compartmentListItem;	
+	private JMenuItem cListItem,netViewItem;	
 	private static CompartmentList compartmentList=null;
 	private static TreeSet<SubstanceList> substanceLists=new TreeSet<SubstanceList>(ObjectComparator.get());
 
@@ -68,9 +68,9 @@ public class PopupMenu extends JPopupMenu implements ActionListener {
 
 		if (targetObject instanceof CompartmentNode){
 			objectText=((CompartmentNode)targetObject).compartment().mainName();
-			compartmentListItem=new JMenuItem("add to \""+compartmentList.caption()+"\"");
-			compartmentListItem.addActionListener(this);
-			add(compartmentListItem);
+			cListItem=new JMenuItem("add to \""+compartmentList.caption()+"\"");
+			cListItem.addActionListener(this);
+			add(cListItem);
 		}
 		if (targetObject instanceof SubstanceNode){
 			objectText=((SubstanceNode)targetObject).substance().mainName();
@@ -80,6 +80,10 @@ public class PopupMenu extends JPopupMenu implements ActionListener {
 				item.addActionListener(this);
 				add(item);
 			}
+			
+			netViewItem=new JMenuItem("show in network view");
+			netViewItem.addActionListener(this);
+			add(netViewItem);
 		}
 		
 		if (targetObject instanceof XmlObject){
@@ -101,9 +105,16 @@ public class PopupMenu extends JPopupMenu implements ActionListener {
 		Object option = arg0.getSource();
 		if (option==search) searchFor(objectText);
 		if (option==clip) copyToClipboard(objectText);
-		if (option==compartmentListItem) try {
-			DbCompartment databaseCompartment = (DbCompartment) ((CompartmentNode)targetObject).compartment();
-	    compartmentList.addCompartment(databaseCompartment);
+		if (option==netViewItem) {
+			try {
+	      compartmentList.networkViewer().jumpToSubatance(((SubstanceNode)targetObject).substance().id());	      
+      } catch (SQLException e) {
+	      e.printStackTrace();
+      }
+		}
+		if (option==cListItem) try {
+			DbCompartmentNode dbComp = (DbCompartmentNode)targetObject;
+	    compartmentList.addCompartment(dbComp.compartment());
     } catch (SQLException e) {
 	    e.printStackTrace();
     }

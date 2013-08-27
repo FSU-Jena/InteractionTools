@@ -49,6 +49,7 @@ public class CompartmentList extends VerticalPanel implements ChangeListener, Mo
   private String rootText;
 	private TreeSet<ActionListener> actionListeners;
 	private JScrollPane scp;
+	private MetabolicNetworkPanel netViewer;
 	private static final Dimension initialSize=new Dimension(150,300);
   
 	/**
@@ -114,9 +115,12 @@ public class CompartmentList extends VerticalPanel implements ChangeListener, Mo
 	public void addCompartments(TreeSet<CompartmentNode> treeSet) {
 		JFrame frame = (JFrame) SwingUtilities.getRoot(this);
 		frame.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-		root.addAll(treeSet);
+		root.addAll(treeSet); 
 		alert(new ChangeEvent(this));
-		frame.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));		
+		frame.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+		for (CompartmentNode cn:treeSet){
+			if (netViewer !=null && cn!=null && cn.compartment()!=null)	netViewer.addReactions(cn.compartment().reactions());
+		}
   }
 	
 	/**
@@ -278,4 +282,12 @@ public class CompartmentList extends VerticalPanel implements ChangeListener, Mo
 	public void setScrollPaneSize(Dimension d){
 		scp.setPreferredSize(d);
 	}
+
+	public void setNetworkViewer(MetabolicNetworkPanel networkViewer) {
+		netViewer=networkViewer;
+  }
+
+	public MetabolicNetworkPanel networkViewer() {
+		return netViewer;
+  }
 }
