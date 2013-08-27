@@ -12,11 +12,11 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.swing.JTree;
-import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import edu.fsuj.csb.distributedcomputing.tools.ClientHandle;
 import edu.fsuj.csb.distributedcomputing.tools.Master;
+import edu.fsuj.csb.reactionnetworks.interaction.gui.ResultTreeRoot;
 import edu.fsuj.csb.reactionnetworks.interaction.results.CalculationResult;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.CalculationTask;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.ParameterSet;
@@ -99,7 +99,6 @@ public class ActionHandler extends Master {
 			if (!calculationResult.result().equals("done"))	System.out.println(formatter.format(date)+": recieved "+o.getClass().getSimpleName());
 			try {
 				handleResult(calculationResult);
-				SwingUtilities.updateComponentTreeUI(resultTree);
 			} catch (IOException e) {
 				e.printStackTrace();
 			} catch (NullPointerException e) {
@@ -117,8 +116,8 @@ public class ActionHandler extends Master {
 	/**
 	 * @return the root node of the tree in the result panel
 	 */
-	private DefaultMutableTreeNode resultTreeRoot(){
-		return (DefaultMutableTreeNode)resultTree.getModel().getRoot();
+	private ResultTreeRoot resultTreeRoot(){
+		return (ResultTreeRoot)resultTree.getModel().getRoot();
 	}
 
 	/**
@@ -131,7 +130,7 @@ public class ActionHandler extends Master {
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private synchronized void handleResult(CalculationResult result) throws IOException, NoTokenException, AlreadyBoundException, SQLException {
-			DefaultMutableTreeNode rootOfWholeResultTree = resultTreeRoot();			
+		ResultTreeRoot rootOfWholeResultTree = resultTreeRoot();			
 			int taskNumber=result.getTask().getNumber();
 
 			DefaultMutableTreeNode node = mappingFromTaskNumbersToResultCollectors.get(taskNumber);

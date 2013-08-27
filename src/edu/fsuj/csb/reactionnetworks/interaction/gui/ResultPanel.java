@@ -42,20 +42,20 @@ import edu.fsuj.csb.tools.organisms.gui.URLNode;
 
 public class ResultPanel extends VerticalPanel implements ActionListener, TreeSelectionListener, MouseListener {
 
-	private DefaultMutableTreeNode treeRoot;
+	private ResultTreeRoot resultTreeRoot;
 	private JScrollPane scrollpane;
 	private JButton clearButton, exportButton;
-	private JTree tree;
+	private JTree resultTree;
 	private HorizontalPanel buttonPanel;
 	private static final Dimension initialSize=new Dimension(600, 600);
 
 
 	public ResultPanel() {
-		treeRoot = new DefaultMutableTreeNode("Results");
-		tree = new JTree(treeRoot);
-		tree.addTreeSelectionListener(this);
-		tree.addMouseListener(this);
-		scrollpane = new JScrollPane(tree);
+		resultTreeRoot = new ResultTreeRoot(this);
+		resultTree = new JTree(resultTreeRoot);
+		resultTree.addTreeSelectionListener(this);
+		resultTree.addMouseListener(this);
+		scrollpane = new JScrollPane(resultTree);
 		scrollpane.setPreferredSize(initialSize);
 		add(scrollpane);
 		buttonPanel = new HorizontalPanel();
@@ -75,46 +75,25 @@ public class ResultPanel extends VerticalPanel implements ActionListener, TreeSe
 	private static final long serialVersionUID = 7742166075954843594L;
 
 	public JTree getTree() {
-		return tree;
+		return resultTree;
 	}
 
 	public void actionPerformed(ActionEvent arg0) {
 		Object source = arg0.getSource();
 		if (source == clearButton) {
-			treeRoot.removeAllChildren();
-			startUpdate();
-			SwingUtilities.updateComponentTreeUI(tree);
+			resultTreeRoot.removeAllChildren();
 		}
 		if (source == exportButton) {
 			export();
 		}
 	}
 	
-	private class UpdateThread extends Thread{
-		public UpdateThread() {
-    }
-		
-		@Override
-		public void run() {
-			try {
-	      sleep(50);
-				SwingUtilities.updateComponentTreeUI(tree);
-      } catch (InterruptedException e) {
-	      e.printStackTrace();
-      }
-		}
-	}
-
-	private void startUpdate() {
-		(new UpdateThread()).start();	  
-  }
-
 	private void export()  {
 		URL filename = PanelTools.showSelectFileDialog("SELECT PREFIX", null, null, this);
 		Component root = SwingUtilities.getRoot(this);
 		root.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 		try {
-			export(filename.toString().replace("file:", ""), treeRoot, null);
+			export(filename.toString().replace("file:", ""), resultTreeRoot, null);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (URISyntaxException e) {
@@ -315,7 +294,7 @@ public class ResultPanel extends VerticalPanel implements ActionListener, TreeSe
 	}
 
 	public void valueChanged(TreeSelectionEvent event) {
-		Object lastSelected = tree.getLastSelectedPathComponent();
+		Object lastSelected = resultTree.getLastSelectedPathComponent();
 		try {
 			if (lastSelected instanceof SubstanceNode) {
 				SubstanceNode sn = ((SubstanceNode) lastSelected);
@@ -338,8 +317,6 @@ public class ResultPanel extends VerticalPanel implements ActionListener, TreeSe
     } catch (IOException e) {
 	    e.printStackTrace();
     }
-		startUpdate();
-
 	}
 
 	@Override
@@ -354,7 +331,7 @@ public class ResultPanel extends VerticalPanel implements ActionListener, TreeSe
   }
 	
 	private void showPopupForComponentAt(Point pos1,Point pos2) {
-    TreePath path = tree.getPathForLocation(pos1.x,pos1.y);
+    TreePath path = resultTree.getPathForLocation(pos1.x,pos1.y);
 		if (path == null) return;
 		try {
 	    PopupMenu.showPopupFor(path.getLastPathComponent(),pos2,this);
