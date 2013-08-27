@@ -302,6 +302,7 @@ public class dbtool {
 		InteractionDB.storeIDrange(Commons.SBML_IDS, firstSbmlId, lastSbmlId);
 		InteractionDB.printMissingAbbrevations();
 		System.out.println();
+		InteractionDB.cleanNames();
 		Tools.endMethod();
 	}
 
