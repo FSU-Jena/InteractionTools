@@ -323,6 +323,7 @@ public class ResultPanel extends VerticalPanel implements ActionListener, TreeSe
 				CompartmentNode cn = ((CompartmentNode) lastSelected);
 				cn.loadDetails();
 			}
+			resultTreeRoot.update();
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		} catch (SQLException e) {
