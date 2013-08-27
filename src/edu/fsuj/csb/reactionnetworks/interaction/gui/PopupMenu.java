@@ -103,6 +103,32 @@ public class PopupMenu extends JPopupMenu implements ActionListener {
 		setBorder(BorderFactory.createLineBorder(Color.black));
 	}
 
+	private void searchFor(Object targetObject) {
+		try {
+	    Runtime.getRuntime().exec("gnome-open http://www.google.com/search?q="+targetObject.toString().replace(" ", "+"));
+    } catch (IOException e) {
+	    e.printStackTrace();
+    }
+  }
+
+	private void copyToClipboard(Object targetObject) {
+		java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(targetObject.toString()), null);
+  }
+
+	public static void showPopupFor(Object source, Point pos,Component parent) throws SQLException, DataFormatException, IOException{
+		//System.err.println("showPopupFor("+source.getClass().getSimpleName()+")");
+		PopupMenu popup = new PopupMenu(source,pos,parent);
+		popup.show(parent,pos.x,pos.y);
+	}
+	
+	public static void setCompartmentList(CompartmentList cl){
+		compartmentList=cl;
+	}
+
+	public static void addSubstanceList(SubstanceList sl){
+		substanceLists.add(sl);
+	}
+	
 	public void actionPerformed(ActionEvent arg0) {
 		setVisible(false);
 		Object option = arg0.getSource();
@@ -143,31 +169,4 @@ public class PopupMenu extends JPopupMenu implements ActionListener {
       }
     }
   }
-	
-	
-	private void searchFor(Object targetObject) {
-		try {
-	    Runtime.getRuntime().exec("gnome-open http://www.google.com/search?q="+targetObject.toString().replace(" ", "+"));
-    } catch (IOException e) {
-	    e.printStackTrace();
-    }
-  }
-
-	private void copyToClipboard(Object targetObject) {
-		java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(targetObject.toString()), null);
-  }
-
-	public static void showPopupFor(Object source, Point pos,Component parent) throws SQLException, DataFormatException, IOException{
-		//System.err.println("showPopupFor("+source.getClass().getSimpleName()+")");
-		PopupMenu popup = new PopupMenu(source,pos,parent);
-		popup.show(parent,pos.x,pos.y);
-	}
-	
-	public static void setCompartmentList(CompartmentList cl){
-		compartmentList=cl;
-	}
-
-	public static void addSubstanceList(SubstanceList sl){
-		substanceLists.add(sl);
-	}
 }
