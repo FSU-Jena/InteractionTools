@@ -17,11 +17,11 @@ import java.net.URL;
 import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.TreeSet;
 import java.util.zip.DataFormatException;
 
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
-import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -39,22 +39,24 @@ import edu.fsuj.csb.tools.organisms.gui.CompartmentNode;
 import edu.fsuj.csb.tools.organisms.gui.ReactionNode;
 import edu.fsuj.csb.tools.organisms.gui.SubstanceNode;
 import edu.fsuj.csb.tools.organisms.gui.URLNode;
+import edu.fsuj.csb.tools.xml.ObjectComparator;
 
 public class ResultPanel extends VerticalPanel implements ActionListener, TreeSelectionListener, MouseListener {
 
 	private ResultTreeRoot resultTreeRoot;
 	private JScrollPane scrollpane;
 	private JButton clearButton, exportButton;
-	private JTree resultTree;
+	private ResultTree resultTree;
 	private HorizontalPanel buttonPanel;
 	private static final Dimension initialSize=new Dimension(600, 600);
-
+	private TreeSet<ActionListener> listeners;
 
 	public ResultPanel() {
 		resultTreeRoot = new ResultTreeRoot(this);
-		resultTree = new JTree(resultTreeRoot);
+		resultTree = new ResultTree(resultTreeRoot);
 		resultTree.addTreeSelectionListener(this);
 		resultTree.addMouseListener(this);
+		resultTree.addActionListener(this);
 		scrollpane = new JScrollPane(resultTree);
 		scrollpane.setPreferredSize(initialSize);
 		add(scrollpane);
@@ -74,20 +76,33 @@ public class ResultPanel extends VerticalPanel implements ActionListener, TreeSe
 
 	private static final long serialVersionUID = 7742166075954843594L;
 
-	public JTree getTree() {
+	public ResultTree getTree() {
 		return resultTree;
 	}
 
 	public void actionPerformed(ActionEvent arg0) {
 		Object source = arg0.getSource();
-		if (source == clearButton) {
-			resultTreeRoot.removeAllChildren();
-		}
-		if (source == exportButton) {
-			export();
-		}
+		if (source == clearButton) resultTreeRoot.removeAllChildren();
+		if (source == exportButton) export();
+		if (source == resultTree) activate();
 	}
 	
+	public void activate() {
+		fireEvent(new ActionEvent(this, 0, "activate"));
+  }
+	
+	public void addActionListener(ActionListener l){
+		if (listeners==null) listeners=new TreeSet<ActionListener>(ObjectComparator.get());
+		listeners.add(l);
+	}
+
+	private void fireEvent(ActionEvent actionEvent) {
+		if (listeners==null) return;
+		for (ActionListener listener:listeners){
+			listener.actionPerformed(actionEvent);
+		}
+  }
+
 	private void export()  {
 		URL filename = PanelTools.showSelectFileDialog("SELECT PREFIX", null, null, this);
 		Component root = SwingUtilities.getRoot(this);

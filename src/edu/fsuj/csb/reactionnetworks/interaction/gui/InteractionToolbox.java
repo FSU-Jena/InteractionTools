@@ -166,6 +166,8 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	 */
 	private ResultPanel createResultPane() throws IOException {
 		ResultPanel resultPane=new ResultPanel();
+		resultPane.addActionListener(this);
+		
 		System.out.print("- trying to start server: ");
 		int port=Integer.parseInt(configuration.get("port",""+Ports.registrationPort()));
 		actionHandler = new ActionHandler(resultPane.getTree(),port);
@@ -401,10 +403,8 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 			
 			if (e.getActionCommand().equals("activate")){
 				if (source == networkPanel) taskResultPane.setSelectedComponent(networkPanel);
-				if (source == substancesTab) {
-					taskTabs.setSelectedComponent(substancesTab);
-					taskResultPane.setSelectedComponent(taskPane);
-				}
+				if (source == substancesTab) taskTabs.setSelectedComponent(substancesTab);
+				if (source == resultPane) taskResultPane.setSelectedComponent(resultPane);
 			}
 			
 		} catch (IOException e1) {

@@ -11,11 +11,11 @@ import java.util.Iterator;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import edu.fsuj.csb.distributedcomputing.tools.ClientHandle;
 import edu.fsuj.csb.distributedcomputing.tools.Master;
+import edu.fsuj.csb.reactionnetworks.interaction.gui.ResultTree;
 import edu.fsuj.csb.reactionnetworks.interaction.gui.ResultTreeRoot;
 import edu.fsuj.csb.reactionnetworks.interaction.results.CalculationResult;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.CalculationTask;
@@ -40,7 +40,7 @@ import edu.fsuj.csb.tools.xml.ObjectComparator;
  */
 public class ActionHandler extends Master {
 
-	private JTree resultTree;
+	private ResultTree resultTree;
 	//private NetworkLoader networkLoader;
 	private TreeMap<Integer, DefaultMutableTreeNode> mappingFromTaskNumbersToResultCollectors = new TreeMap<Integer, DefaultMutableTreeNode>(ObjectComparator.get());
 	private SimpleDateFormat formatter = new SimpleDateFormat("yy-MM-dd HH:mm:ss");
@@ -50,7 +50,7 @@ public class ActionHandler extends Master {
 	 * @param resultTree the JTree, to which result trees shall be added in order to display them
 	 * @throws IOException 
 	 */
-	public ActionHandler(JTree resultTree,int port) throws IOException {
+	public ActionHandler(ResultTree resultTree,int port) throws IOException {
 		super(port);
 		this.resultTree = resultTree;
 	}
@@ -157,7 +157,8 @@ public class ActionHandler extends Master {
 			Collections.sort(taskNodes, ObjectComparator.get());
 			rootOfWholeResultTree.removeAllChildren();
 			for (Iterator childrenIterator = taskNodes.iterator(); childrenIterator.hasNext();)
-				rootOfWholeResultTree.add((DefaultMutableTreeNode) childrenIterator.next());		
+				rootOfWholeResultTree.add((DefaultMutableTreeNode) childrenIterator.next());
+			resultTree.activate();
 	}
 
 	/**
