@@ -118,30 +118,6 @@ public class SubstancesTab extends HorizontalPanel implements ActionListener, Co
 	  return result;
   }
 
-	public void actionPerformed(ActionEvent arg0) {
-		Object source = arg0.getSource();
-		try {
-		if (source==choosableSubstances){
-			addSubstancesToUserList();			
-		} else if (source.toString().startsWith("Substances List")){
-			removeSubstancesFromUserList();
-		} else if (source==clearButton) {
-		  choosableSubstances.clear();
-		} else {
-			switch (arg0.getID()) {
-			case ListModificationPanel.RIGHT:
-				addSubstancesToUserList();
-				break;
-			case ListModificationPanel.LEFT:
-				removeSubstancesFromUserList();
-				break;
-			}
-		}
-		} catch (SQLException e){
-			e.printStackTrace();
-		}
-  }
-
 	private void removeSubstancesFromUserList() {
 		getSelectedList().removeSelected();
   }
@@ -258,6 +234,30 @@ public class SubstancesTab extends HorizontalPanel implements ActionListener, Co
 		SubstanceList dummy =  SubstanceList.getNoOutflowList();
 		if (dummy==null) return null;
 	  return dummy.getListed();
+  }
+
+	public void actionPerformed(ActionEvent arg0) {
+		Object source = arg0.getSource();
+		try {
+		if (source==choosableSubstances){
+			addSubstancesToUserList();			
+		} else if (source.toString().startsWith("Substances List")){
+			removeSubstancesFromUserList();
+		} else if (source==clearButton) {
+		  choosableSubstances.clear();
+		} else {
+			switch (arg0.getID()) {
+			case ListModificationPanel.RIGHT:
+				addSubstancesToUserList();
+				break;
+			case ListModificationPanel.LEFT:
+				removeSubstancesFromUserList();
+				break;
+			}
+		}
+		} catch (SQLException e){
+			e.printStackTrace();
+		}
   }
 
 }
