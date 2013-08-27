@@ -41,7 +41,7 @@ public class SubstanceTreeNode extends LeveledTreeNode {
 
 	private String formula() {
 		Formula formula = dbs.formula();
-		return (formula != null) ? formula.toString() : "no formula";
+		return (formula != null) ? formula.code() : "no formula";
 	}
 
 	@Override
