@@ -49,7 +49,7 @@ public class dbtool {
 	private long startTime = 0;
 	private static int keggProkaryotes;
 	private static int keggEukaryotes;
-	private static boolean skipClear, skipKegg, skipBiomodels, skipFiles, skipKeggPathways, skipKeggEnzymes, skipKeggCodes, skipKeggOrganisms, skipKeggCompounds, skipKeggSubstances, skipKeggReactions, skipAsk, clearDecisions, test, skipKeggLinks;
+	private static boolean skipClear, skipKegg, skipBiomodels, skipFiles, skipKeggPathways, skipKeggEnzymes, skipKeggCodes, skipKeggOrganisms, skipKeggCompounds, skipKeggDrugs, skipKeggSubstances, skipKeggReactions, skipAsk, clearDecisions, test, skipKeggLinks;
 	private static String sbmlDirectory=System.getProperty("user.home")+"/Documents/sbml";
 
 	/**
@@ -70,7 +70,7 @@ public class dbtool {
 	 */
 	public static void main(String[] args) throws IOException, NameNotFoundException, SQLException, NoSuchMethodException, NoTokenException, NoSuchAlgorithmException, DataFormatException, NoSuchAttributeException, AlreadyBoundException, ClassNotFoundException, InterruptedException {
 		parseArgs(args);
-		PageFetcher.setRetry(20);
+		PageFetcher.setRetry(15);
 		new dbtool();
 	}
 
@@ -95,83 +95,122 @@ public class dbtool {
 		skipKeggSubstances = false;
 		skipKeggCodes = false;
 		skipKeggCompounds = false;
+		skipKeggDrugs =false;
 		skipKeggReactions = false;
 		skipKeggEnzymes = false;
 		skipAsk = false;
 		clearDecisions = false;
 		test = false;
 		for (int i = 0; i < args.length; i++) {
-			if (args[i].startsWith("--cachedir=")) PageFetcher.setCache(args[i].substring(11));
+			boolean known=false;
+			if (args[i].startsWith("--cachedir=")) {
+				PageFetcher.setCache(args[i].substring(11));
+				known=true;
+			}
 			if (args[i].equals("--skip-question")) {
 				skipAsk = true;
+				known=true;
 			}
 			if (args[i].equals("--clear-all")) {
 				clearDecisions = true;
+				known=true;
 			}
 			if (args[i].equals("--skip-clear")) {
 				Tools.note("Disabling deletion of database content.");
 				skipClear = true;
+				known=true;
 			}
 			if (args[i].equals("--skip-kegg")) {
 				Tools.note("Will skip all Kegg entries.");
 				skipKegg = true;
+				known=true;
 			}
 			if (args[i].startsWith("--folder=")) {
 				sbmlDirectory = args[i].substring(9);
 				Tools.note("Reading sbml files from " + sbmlDirectory + ".");
+				known=true;
 			}
 			if (args[i].equals("--no-retry")) {
 				PageFetcher.setRetry(5);
 				Tools.note("Retrying unreachable webpages only 5 times.");
+				known=true;
 			}
 			if (args[i].equals("--skip-biomodels")) {
 				Tools.note("Will skip biomodels.");
 				skipBiomodels = true;
+				known=true;
 			}
 			if (args[i].equals("--skip-files")) {
 				Tools.note("Will skip SBML files.");
 				skipFiles = true;
+				known=true;
 			}
 			if (args[i].equals("--skip-kegg-orgs")) {
 				Tools.note("Will skip Organism part of Kegg database.");
 				skipKeggOrganisms = true;
+				known=true;
 			}
 			if (args[i].equals("--skip-kegg-paths")) {
 				Tools.note("Will skip pathway part of Kegg database.");
 				skipKeggPathways = true;
+				known=true;
 			}
 			if (args[i].equals("--skip-kegg-substances")) {
 				Tools.note("Will skip subtance list of Kegg database.");
 				skipKeggSubstances = true;
+				known=true;
 			}
 			if (args[i].equals("--skip-kegg-codes")) {
 				Tools.note("Will skip monosaccaride codes list of Kegg database.");
 				skipKeggCodes = true;
+				known=true;
 			}
 			if (args[i].equals("--skip-kegg-compounds")) {
 				Tools.note("Will skip compound list of Kegg database.");
 				skipKeggCompounds = true;
+				known=true;
 			}
+			if (args[i].equals("--skip-kegg-drugs")) {
+				Tools.note("Will skip drug list of Kegg database.");
+				skipKeggDrugs = true;
+				known=true;
+			}
+
 			if (args[i].equals("--skip-kegg-reactions")) {
 				Tools.note("Will skip reactions from Kegg database");
 				skipKeggReactions = true;
+				known=true;
 			}
 			if (args[i].equals("--skip-kegg-enzymes")) {
 				Tools.note("Will skip enzyme entries of Kegg database.");
 				skipKeggEnzymes = true;
+				known=true;
 			}
 			if (args[i].equals("--skip-kegg-links")){
 				Tools.note("Will ignore Links to DBs outside KEGG.");
 				skipKeggLinks=true;
+				known=true;
 			}
 			if (args[i].equals("--test")) {
 				Tools.note("Will not write anything to the database, use to test parser.");
 				InteractionDB.setTestMode(true);
 				test=true;
 				skipClear = true;
+				known=true;
 			}
-			if (args[i].equals("--help")) displayCLIoptions();
-			if (args[i].equals("--verbose")) Tools.enableLogging();
+			if (args[i].equals("--help")) {
+				displayCLIoptions();
+				known=true;
+			}
+			if (args[i].equals("--verbose")) {
+				Tools.enableLogging();
+				known=true;
+			}
+			if (!known){
+				System.out.println("unknown flag found: "+args[i]);
+				System.out.println();
+				displayCLIoptions();
+			}
 		}
 		if (clearDecisions)	Tools.warn("Will also clear decision table.");
 
@@ -225,7 +264,7 @@ public class dbtool {
 	public dbtool() throws IOException, SQLException, NameNotFoundException, NoSuchMethodException, NoTokenException, NoSuchAlgorithmException, DataFormatException, NoSuchAttributeException, AlreadyBoundException, ClassNotFoundException {
 		Tools.startMethod("dbtool()");
 		displayTimeStamp();
-		String query = "drop table abbrevations, compartment_pathways, compartments, dates, enzymes, enzymes_compartments, hierarchy, id_names, ids, names, products, reaction_directions, reaction_enzymes, reactions, substances, substrates,urls,urn_urls, urns";
+		String query = "drop table abbrevations, compartment_pathways, compartments, dates, enzymes, enzymes_compartments, hierarchy, id_names, id_ranges, ids, names, products, reaction_directions, reaction_enzymes, reactions, substances, substrates,urls,urn_urls, urns";
 		try {
 			if (!skipClear) {
 				if (!skipAsk) {
@@ -235,14 +274,18 @@ public class dbtool {
 					if (!answer.toUpperCase().equals("YES")) System.exit(-1);
 				}
 				if (clearDecisions) query = query + ", decisions";
+				System.out.println(query);
 				InteractionDB.execute(query);
 			}
 		} catch (SQLException e) {
 			Tools.warn("was not able to erase all tables: " + e.getMessage() + "\n\nQuery was: " + query);
 		}
+		
 		InteractionDB.checkTables(); // assure, that required tables exist
 		displayTimeStamp();
 
+
+		
 		Integer firstKeggId = InteractionDB.getLastID();
 		if (!skipKegg) readKeggContent(); // read kegg data // disabled, so i can not accidentally overwrite
 		Integer lastKeggId = InteractionDB.getLastID();
@@ -633,7 +676,7 @@ public class dbtool {
 	private Stack<String> getKeggIds(String key) throws IOException {
 		String[] data = PageFetcher.fetchLines("http://rest.kegg.jp/list/"+key);
 		Stack<String> result = new Stack<String>();
-		for (String line:data) result.push(line.split("\t")[0].substring(3));
+		for (String line:data) result.push(line.split(":")[1].split("\t")[0]);
 		System.out.println("found " + result.size() + " "+key+"s.");
 		return result;
 	}
@@ -649,12 +692,9 @@ public class dbtool {
 		 * Glykane werden vor den Compounds eingelesen, so dass die Compounds OBEN auf dem Stack liegen. Das bewirkt wiederum, dass die Substanzen zuerst eingelesen werden, so dass auch deren Formeln genutzt werden
 		 */
 		Stack<String> result = getKeggIds("glycan");
-
-		if (skipKeggCompounds) return result;
 		
-		String[] lines = PageFetcher.fetchLines("http://rest.kegg.jp/list/compound");
-		for (String line:lines) result.push(line.substring(4,10));
-		Tools.indent("found " + lines.length + " substances.");
+		if (!skipKeggDrugs)	result.addAll(getKeggIds("drug"));		
+		if (!skipKeggCompounds) result.addAll(getKeggIds("compound"));
 		return result;
 	}
 
@@ -674,14 +714,17 @@ public class dbtool {
 	 * @throws NoTokenException
 	 */
 	private void readKeggSubstances(TreeMap<String, Integer> mappingFromKeggSubstanceIdsToDbIds) throws IOException, NameNotFoundException, SQLException, NoSuchMethodException, DataFormatException, AlreadyBoundException, NoTokenException {
+		System.out.print("Reading substance lists...");
 		Stack<String> keggSubstanceIds = getKeggSubstanceIds();
-		System.out.print("Reading substance list...");
+
 		System.out.println("done, found " + keggSubstanceIds.size() + " substances.");
+		
 		int count = 0;
 		System.out.print((100 * count / (keggSubstanceIds.size() + count)) + "% - ");
 		/*keggSubstanceIds.push("C17040");
 		Tools.resetIntendation();
 		Tools.enableLogging(); //*/
+
 		while (!keggSubstanceIds.isEmpty()) {			
 			count++;
 			if (InteractionDB.parseSubstanceInfo(keggSubstanceIds, mappingFromKeggSubstanceIdsToDbIds,skipKeggLinks)) System.out.print((100 * count / (keggSubstanceIds.size() + count)) + "% - ");
