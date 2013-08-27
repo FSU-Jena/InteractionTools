@@ -99,9 +99,12 @@ public class SubstanceList extends VerticalPanel implements ChangeListener,TreeS
 		
 	}
 
-
-
 	public void addSubstance(Substance s) throws SQLException {
+		addSubstanceSilently(s);
+		fireEvent(new ActionEvent(this, 0, "activate"));
+	}
+	
+	public void addSubstanceSilently(Substance s) throws SQLException {
 		//System.err.println("SubstanceList.addSubstance("+s+")");
 		int sid=s.id();
 		for (String name:s.names()) {
@@ -125,8 +128,9 @@ public class SubstanceList extends VerticalPanel implements ChangeListener,TreeS
 	
 	public void addSubstances(TreeSet<Substance> substances) throws SQLException {
 		for (Iterator<Substance> it = substances.iterator(); it.hasNext();) {
-			addSubstance(it.next());
+			addSubstanceSilently(it.next());
 		}
+		fireEvent(new ActionEvent(this, 0, "activate"));
 	}
 
 	public TreeSet<Substance> getSelected() {
@@ -249,7 +253,7 @@ public class SubstanceList extends VerticalPanel implements ChangeListener,TreeS
   }
 
 	public void mouseClicked(MouseEvent e) {
-	  if (e.getClickCount()>=2) 	fireEvent(new ActionEvent(this, 2, "Click"));
+	  if (e.getClickCount()>=2)	fireEvent(new ActionEvent(this, 2, "Click"));
 		if (e.getButton()==MouseEvent.BUTTON3) showPopupForComponentAt(e.getPoint());
   }
 	

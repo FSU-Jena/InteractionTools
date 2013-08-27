@@ -272,6 +272,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		compartmentTab = new CompartmentsTab();
 		System.out.println("    |`- creating substances panel");
 		substancesTab = new SubstancesTab();
+		substancesTab.addActionListener(this);
 		System.out.println("    `-- creating parameters panel");		
 		parametersTab = new OptimizationParametersTab();
 		compartmentTab.getUserList().addChangeListener(substancesTab);
@@ -397,7 +398,15 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 			if (source == calcPotentialAdditionals) actionHandler.calcPotentialAdditionals(compartmentTab.getUserList().getListed(),substancesTab.degradeList(),substancesTab.ignoreList());
 			if (source == searchProcessors) actionHandler.searchProcessors(substancesTab.degradeList());
 			if (source == fluxBalanceAnalysis) actionHandler.startFBA(compartmentTab.getUserSpecies(),getSubstanceSet(),parametersTab.optimizationParameterSet());
-			if (source == networkPanel) taskResultPane.setSelectedComponent(networkPanel);
+			
+			if (e.getActionCommand().equals("activate")){
+				if (source == networkPanel) taskResultPane.setSelectedComponent(networkPanel);
+				if (source == substancesTab) {
+					taskTabs.setSelectedComponent(substancesTab);
+					taskResultPane.setSelectedComponent(taskPane);
+				}
+			}
+			
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}

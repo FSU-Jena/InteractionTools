@@ -85,7 +85,7 @@ public class SubstanceSearchBox extends JComboBox implements KeyListener {
 		Statement st;
 		st = InteractionDB.createStatement();
 		ResultSet rs=st.executeQuery(query);		
-		while (rs.next())	list.addSubstance(DbSubstance.load(rs.getInt(1)));		
+		while (rs.next())	list.addSubstanceSilently(DbSubstance.load(rs.getInt(1)));
 		rs.close();
 		st.close();
   }
