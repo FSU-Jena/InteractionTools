@@ -134,7 +134,8 @@ public class PopupMenu extends JPopupMenu implements ActionListener {
 		}
     if (option instanceof ListMenuItem){
     	try {
-	      ((ListMenuItem) option).getList().addSubstance(((SubstanceNode)targetObject).substance());
+    		SubstanceList list = ((ListMenuItem) option).getList();
+	      list.addSubstance(((SubstanceNode)targetObject).substance());
       } catch (SQLException e) {
 	      e.printStackTrace();
       }
