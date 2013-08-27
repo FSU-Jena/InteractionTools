@@ -20,6 +20,7 @@ public class MetabolicNetworkPanel extends TreePanel {
 	
 	public MetabolicNetworkPanel() {
 		super();
+		setBackgroundImage(null);
 		LeveledTreeNode.setCentered(true);
 		reactions = new ReactionSet();
 		// organizerThread.setTreeMapper(this);
