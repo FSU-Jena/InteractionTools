@@ -1,11 +1,15 @@
 package edu.fsuj.csb.reactionnetworks.interaction.gui;
 
+import java.awt.BasicStroke;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Stroke;
 import java.awt.image.ImageObserver;
 import java.sql.SQLException;
 import java.util.Map.Entry;
+import java.util.Iterator;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -19,12 +23,16 @@ public class ReactionTreeNode extends LeveledTreeNode {
 	private TreeSet<SubstanceTreeNode> substrates=SubstanceTreeNode.set();
 	private TreeSet<SubstanceTreeNode> products=SubstanceTreeNode.set();
 	private int id;
+	private BasicStroke arrowStroke=new BasicStroke(2); 
 	private DbReaction dbr;
 
 	public ReactionTreeNode(int id) throws SQLException {
 		super("\\small{"+id+"}");
 		dbr = DbReaction.load(id);
-		setText("\\small{Reaction "+id+"}\\n "+names().first().replace(" <=>", " \\<=> "));
+		
+		Iterator<String> nit=names().iterator();
+		setText("\\small{Reaction "+id+"}\\n "+nit.next().replace(" <=>", " \\<=> "));
+		while (nit.hasNext()) nameNodes.add(new TreeNode(nit.next()));
 		this.id=id;
 		rtns.put(id, this);
   }
@@ -51,14 +59,19 @@ public class ReactionTreeNode extends LeveledTreeNode {
 	  return result;
   }
 	
-	public Dimension paint(Graphics g, ImageObserver obs,int levels) {
-		Tools.startMethod("SubstanceTreeNode.paint(g,obs,"+levels+")");
-		super.paint(g, obs,levels);
+	public Dimension paint(Graphics g, ImageObserver obs,int level) {
+		Tools.startMethod("SubstanceTreeNode.paint(g,obs,"+level+")");
+		super.paint(g, obs,level);
 		Dimension ownDim = super.paint(g, obs, false);
-		if (levels>0) {
+		
+		
+		if (level>0) {
+			Graphics2D g2=(Graphics2D) g;
+			Stroke stroke = g2.getStroke();
+			
 			Font oldFont = g.getFont();
 			float oldSize = oldFont.getSize();
-  		g.setFont(oldFont.deriveFont(oldSize * 5 / 6));
+  		g.setFont(oldFont.deriveFont(oldSize * 5 / 7));
 
 			int height = 0;	
 			for (SubstanceTreeNode substrate:substrates){
@@ -69,14 +82,17 @@ public class ReactionTreeNode extends LeveledTreeNode {
 			}			
 			if (height>0){
 				int y = getOrigin().y+vdist + ((ownDim.height - height) / 2);
-				int x = getOrigin().x - hdist - ownDim.width/2;
+				int x = getOrigin().x - hdist*level*level - ownDim.width/2;
+				g2.setStroke(arrowStroke);
 				for (SubstanceTreeNode substrate:substrates) {
 					if (LeveledTreeNode.hasBeenPainted(substrate)) continue;
-					substrate.moveTowards(x-substrate.nodeDimension(g, obs).width/2, y);
-					if (levels>1) drawArrow(g, substrate.getOrigin().x, substrate.getOrigin().y,getOrigin().x, getOrigin().y);
-					Dimension dim = substrate.paint(g, obs, 1);
+					Dimension dim=substrate.nodeDimension(g, obs);
+					substrate.moveTowards(x-dim.width/2, y);
+					if (level>1) drawArrow(g, substrate.getOrigin().x+dim.width/2, substrate.getOrigin().y,getOrigin().x-ownDim.width/2, getOrigin().y);
+					substrate.paint(g, obs, 1);
 					y += dim.height + vdist;
 				}
+				g2.setStroke(stroke);
 			}
 			
 			
@@ -89,34 +105,45 @@ public class ReactionTreeNode extends LeveledTreeNode {
 			}			
 			if (height>0){
 				int y = getOrigin().y + ((ownDim.height - height) / 2);
-				int x = getOrigin().x + ownDim.width/2 + hdist;
+				int x = getOrigin().x + ownDim.width/2 + hdist*level*level;
+				g2.setStroke(arrowStroke);
 				for (SubstanceTreeNode product:products) {
 					if (LeveledTreeNode.hasBeenPainted(product)) continue;
-					product.moveTowards(x+product.nodeDimension(g, obs).width/2, y);
-					if (levels>1) drawArrow(g,getOrigin().x, getOrigin().y, product.getOrigin().x, product.getOrigin().y);
-					Dimension dim = product.paint(g, obs, levels-1);
+					Dimension dim=product.nodeDimension(g, obs);
+					product.moveTowards(x+dim.width/2, y);
+					if (level>1) drawArrow(g,getOrigin().x+ownDim.width/2, getOrigin().y, product.getOrigin().x-dim.width/2, product.getOrigin().y);
+					product.paint(g, obs, level-1);
 					y += dim.height + vdist;
 				}
+				g2.setStroke(stroke);
 			}
 
 			g.setFont(oldFont);
 			super.paint(g, obs, true);
 		}
+		
+		drawNameNodes(g, obs,ownDim,level);
+
 		Tools.endMethod(ownDim);
 		return ownDim;
 	}
 	
-	private void drawArrow(Graphics g, int x, int y, int x2, int y2) {
-		g.drawLine(x,y,x2,y2);
-		g.drawOval(x2-6, y2-3, 6, 6);
-  }
+
+	
+	
 
 	public void addSubstrate(SubstanceTreeNode s) {
-	  substrates.add(s);
+		if (!substrates.contains(s)) {
+			//s.setOrigin(getOrigin());
+		  substrates.add(s);
+		}
   }
 
 	public void addProduct(SubstanceTreeNode s) {
-		products.add(s);
+		if (!products.contains(s)) {
+			//s.setOrigin(getOrigin());
+			products.add(s);
+		}
   }
 
 	public void setParent(SubstanceTreeNode node) {
@@ -129,15 +156,16 @@ public class ReactionTreeNode extends LeveledTreeNode {
 
 	public void loadSubstances() throws SQLException {
 		for (Entry<Integer, Integer> substrateMap:dbr.substrates().entrySet()){
-			int sid=substrateMap.getKey();
-			int stoich=substrateMap.getValue();
-			addSubstrate(SubstanceTreeNode.get(sid));
+			SubstanceTreeNode s = SubstanceTreeNode.get(substrateMap.getKey());
+			addSubstrate(s);
 		}
 		for (Entry<Integer, Integer> productMap:dbr.products().entrySet()){
-			int sid=productMap.getKey();
-			int stoich=productMap.getValue();
-			addProduct(SubstanceTreeNode.get(sid));
+			SubstanceTreeNode p = SubstanceTreeNode.get(productMap.getKey());
+			addProduct(p);
 		}
   }
 
+	public boolean hasSubstrate(int id) {
+	  return dbr.substrateIds().contains(id);
+  }
 }
