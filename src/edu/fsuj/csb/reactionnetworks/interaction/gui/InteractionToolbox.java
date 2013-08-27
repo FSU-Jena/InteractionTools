@@ -421,6 +421,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
 	 */
 	public void actionPerformed(ActionEvent e) {
+		System.out.println("InteractionToolbox.actionPerformed("+e+")");
 		Object source = e.getSource();
 		Component frame=SwingUtilities.getRoot(this);
 		frame.setCursor(new Cursor(Cursor.WAIT_CURSOR));
