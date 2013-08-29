@@ -31,8 +31,11 @@ public class mappingPopupListener implements ActionListener {
     }
 	}
 
-	private URL askForFileName() {
-	  return PanelTools.showSelectFileDialog("File prefix", null, null, null);
+	public static URL askForFileName(String title) {
+	  return PanelTools.showSelectFileDialog(title, null, null, null);
+	}
+	public static URL askForFileName() {
+		return askForFileName("File prefix");
   }
 
 	private void exportMapping(URL url) throws IOException, URISyntaxException, SQLException {

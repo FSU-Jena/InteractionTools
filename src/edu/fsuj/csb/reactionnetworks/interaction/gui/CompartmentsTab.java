@@ -246,8 +246,10 @@ public class CompartmentsTab extends HorizontalPanel implements ActionListener,X
 	}
 	
 	public StringBuffer getCode() {
+		TreeSet<Integer> userSpec = getUserSpecies();
+		if (userSpec==null || userSpec.isEmpty()) return new StringBuffer();
 		XmlToken result=new XmlToken("Compartments");
-		result.setContent(getUserSpecies().toString());
+		result.setContent(userSpec);
 	  return result.getCode();
   }
 

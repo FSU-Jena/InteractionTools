@@ -6,6 +6,8 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.rmi.AlreadyBoundException;
 import java.sql.SQLException;
 import java.util.TreeSet;
@@ -22,11 +24,14 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.apache.batik.util.gui.xmleditor.XMLToken;
+
 import edu.fsuj.csb.distributedcomputing.tools.Ports;
 import edu.fsuj.csb.gui.HorizontalPanel;
 import edu.fsuj.csb.gui.StatusPanel;
 import edu.fsuj.csb.gui.VerticalPanel;
 import edu.fsuj.csb.reactionnetworks.interaction.ActionHandler;
+import edu.fsuj.csb.reactionnetworks.interaction.mappingPopupListener;
 import edu.fsuj.csb.tools.configuration.Configuration;
 import edu.fsuj.csb.tools.newtork.pagefetcher.PageFetcher;
 import edu.fsuj.csb.tools.xml.NoTokenException;
@@ -427,8 +432,11 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	  mainPanel.scale();
 	}
 	
-	private void storeTaskSettings() throws SecurityException, IOException {		
-		XMLWriter writer=new XMLWriter(configuration.path()+"taskSettings.xml");
+	private void storeTaskSettings() throws SecurityException, IOException, URISyntaxException {
+		URL url=mappingPopupListener.askForFileName("File name");
+		if (url==null) return;
+		if (!url.toString().toUpperCase().endsWith(".XML")) url=new URL(url.toString()+".xml");
+		XMLWriter writer=new XMLWriter(url);
 		writer.write(compartmentTab);
 		writer.write(substancesTab);
 		writer.close();
@@ -446,8 +454,8 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	/* (non-Javadoc)
 	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
 	 */
-	public void actionPerformed(ActionEvent e) {
-		Object source = e.getSource();
+	public void actionPerformed(ActionEvent event) {
+		Object source = event.getSource();
 		Component frame=SwingUtilities.getRoot(this);
 		frame.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 		try {
@@ -466,7 +474,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 			
 			if (source==storeButton) storeTaskSettings();
 			
-			if (e.getActionCommand().equals("activate")){
+			if (event.getActionCommand().equals("activate")){
 				if (source == networkPanel) taskResultPane.setSelectedComponent(networkPanel);
 				if (source == substancesTab) {
 					taskTabs.setSelectedComponent(substancesTab);
@@ -474,9 +482,13 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 				}
 			}
 			
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (SecurityException e) {
+	    e.printStackTrace();
+    } catch (URISyntaxException e) {
+	    e.printStackTrace();
+    }
 		frame.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 	}
 
