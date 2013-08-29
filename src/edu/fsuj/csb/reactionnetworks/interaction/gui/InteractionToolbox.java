@@ -452,6 +452,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 				XmlToken token = reader.readToken();
 				if (token.tokenClass().startsWith("SubstancesList")) substancesTab.loadState(token);
 				if (token.tokenClass().equals("Compartments")) compartmentTab.loadState(token);
+				if (token.tokenClass().equals("OptimizationParameters")) parametersTab.loadState(token);
 			}		
 		} catch (NoTokenException nte){}
 		reader.close();
@@ -461,9 +462,10 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		URL url=MappingPopupListener.askForFileName("File name");
 		if (url==null) return;
 		if (!url.toString().toUpperCase().endsWith(".XML")) url=new URL(url.toString()+".xml");
-		XMLWriter writer=new XMLWriter(url);
+		XMLWriter writer=new XMLWriter(url);		
 		writer.write(compartmentTab);
 		writer.write(substancesTab);
+		writer.write(parametersTab);
 		writer.close();
   }
 
