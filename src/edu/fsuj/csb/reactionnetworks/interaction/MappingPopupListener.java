@@ -10,12 +10,12 @@ import java.sql.SQLException;
 import edu.fsuj.csb.gui.PanelTools;
 import edu.fsuj.csb.tools.xml.XMLWriter;
 
-public class mappingPopupListener implements ActionListener {
+public class MappingPopupListener implements ActionListener {
 
 	
 	private SeedOptimizationMappingNode mapping;
 
-	public mappingPopupListener(SeedOptimizationMappingNode mapping) {
+	public MappingPopupListener(SeedOptimizationMappingNode mapping) {
 	  this.mapping=mapping;
   }
 

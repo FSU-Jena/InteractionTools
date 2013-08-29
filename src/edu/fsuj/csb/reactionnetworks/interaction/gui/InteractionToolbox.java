@@ -31,7 +31,7 @@ import edu.fsuj.csb.gui.HorizontalPanel;
 import edu.fsuj.csb.gui.StatusPanel;
 import edu.fsuj.csb.gui.VerticalPanel;
 import edu.fsuj.csb.reactionnetworks.interaction.ActionHandler;
-import edu.fsuj.csb.reactionnetworks.interaction.mappingPopupListener;
+import edu.fsuj.csb.reactionnetworks.interaction.MappingPopupListener;
 import edu.fsuj.csb.tools.configuration.Configuration;
 import edu.fsuj.csb.tools.newtork.pagefetcher.PageFetcher;
 import edu.fsuj.csb.tools.xml.NoTokenException;
@@ -433,7 +433,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	}
 	
 	private void storeTaskSettings() throws SecurityException, IOException, URISyntaxException {
-		URL url=mappingPopupListener.askForFileName("File name");
+		URL url=MappingPopupListener.askForFileName("File name");
 		if (url==null) return;
 		if (!url.toString().toUpperCase().endsWith(".XML")) url=new URL(url.toString()+".xml");
 		XMLWriter writer=new XMLWriter(url);
