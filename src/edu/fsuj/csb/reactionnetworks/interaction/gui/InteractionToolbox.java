@@ -442,15 +442,6 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		writer.close();
   }
 
-	private void writeSubstancesLists(XMLWriter writer) {
-			  
-  }
-
-	private void writeCaompartmentList(XMLWriter writer) {
-	  // TODO Auto-generated method stub
-	  
-  }
-
 	/* (non-Javadoc)
 	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
 	 */
