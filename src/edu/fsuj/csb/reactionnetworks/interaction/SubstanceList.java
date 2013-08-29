@@ -379,6 +379,12 @@ public class SubstanceList extends VerticalPanel implements ChangeListener,TreeS
 		TreeSet<Integer> listed = getListed();
 		if (listed==null||listed.isEmpty()) return new StringBuffer();
 		XmlToken result=new XmlToken(name);
+
+		if (this==degradeList) result.setValue("role","degrade");
+		if (this==produceList) result.setValue("role","produce");
+		if (this==ignoreList) result.setValue("role","ignore");
+		if (this==noOutflowList) result.setValue("role","noOutflow");
+		// TODO: activate if (this==noInflowList) result.setValue("role","noInflow");
 		result.setContent(listed);
 		return result.getCode();
   }
