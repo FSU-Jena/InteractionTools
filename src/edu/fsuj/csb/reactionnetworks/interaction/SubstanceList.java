@@ -33,8 +33,10 @@ import edu.fsuj.csb.tools.organisms.Substance;
 import edu.fsuj.csb.tools.organisms.gui.SortedTreeNode;
 import edu.fsuj.csb.tools.organisms.gui.SubstanceNode;
 import edu.fsuj.csb.tools.xml.ObjectComparator;
+import edu.fsuj.csb.tools.xml.XmlObject;
+import edu.fsuj.csb.tools.xml.XmlToken;
 
-public class SubstanceList extends VerticalPanel implements ChangeListener,TreeSelectionListener, MouseListener, ActionListener {
+public class SubstanceList extends VerticalPanel implements ChangeListener,TreeSelectionListener, MouseListener, ActionListener,XmlObject {
 
 	private static final long serialVersionUID = 10;
 	private SortedTreeNode root;
@@ -371,6 +373,12 @@ public class SubstanceList extends VerticalPanel implements ChangeListener,TreeS
 	public void scaleScrollPane(Dimension d){
 		scp.setPreferredSize(d);
 	}
+	
+	public StringBuffer getCode() {
+		XmlToken result=new XmlToken(name);
+		result.setContent(getListed().toString());
+		return result.getCode();
+  }
 
 	public static SubstanceList getNoOutflowList() {
 	  return noOutflowList;

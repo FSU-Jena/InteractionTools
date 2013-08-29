@@ -31,6 +31,7 @@ import edu.fsuj.csb.tools.configuration.Configuration;
 import edu.fsuj.csb.tools.newtork.pagefetcher.PageFetcher;
 import edu.fsuj.csb.tools.xml.NoTokenException;
 import edu.fsuj.csb.tools.xml.Tools;
+import edu.fsuj.csb.tools.xml.XMLWriter;
 
 /**
  * InteractionToolbox is a java program that provides several Tools for metabolic network analyzation
@@ -61,6 +62,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	private JButton findPath;
 	private Configuration configuration;
 	private MetabolicNetworkPanel networkPanel;
+	private JButton storeButton;
 	/**
 	 * create a new window instance
 	 * @param splash
@@ -267,6 +269,11 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		clientManager.scale();
 		buttonPane.add(clientManager);
 		
+		VerticalPanel storeGroup=new VerticalPanel("Settings storage");
+		storeButton = new JButton("Store task settings");
+		storeButton.addActionListener(this);
+		storeGroup.add(storeButton);
+		buttonPane.add(storeGroup);
 		buttonPane.scale();
 		return buttonPane;
 	}
@@ -420,6 +427,22 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	  mainPanel.scale();
 	}
 	
+	private void storeTaskSettings() throws SecurityException, IOException {		
+		XMLWriter writer=new XMLWriter(configuration.path()+"taskSettings.xml");
+		writer.write(compartmentTab);
+		writer.write(substancesTab);
+		writer.close();
+  }
+
+	private void writeSubstancesLists(XMLWriter writer) {
+			  
+  }
+
+	private void writeCaompartmentList(XMLWriter writer) {
+	  // TODO Auto-generated method stub
+	  
+  }
+
 	/* (non-Javadoc)
 	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
 	 */
@@ -440,6 +463,8 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 			if (source == optimizeSeeds) optimizeSeeds(1);
 			if (source == evolveSeeds) optimizeSeeds(2);
 			if (source == findPath) findPath();
+			
+			if (source==storeButton) storeTaskSettings();
 			
 			if (e.getActionCommand().equals("activate")){
 				if (source == networkPanel) taskResultPane.setSelectedComponent(networkPanel);
