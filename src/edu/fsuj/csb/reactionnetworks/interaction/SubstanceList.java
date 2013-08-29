@@ -56,6 +56,10 @@ public class SubstanceList extends VerticalPanel implements ChangeListener,TreeS
 	private static SubstanceList ignoreList;
 	private static SubstanceList noOutflowList;
 	private static final Dimension initialSize=new Dimension(150, 300);
+	private static final int DEGRADE = -1;
+	private static final int PRODUCE = 1;
+	private static final int IGNORE = 0;
+	private static final int NOOUTFLOW = -2;
 
 	public SubstanceList(String name,boolean showBoxes) {
 		this.name=name;
@@ -380,11 +384,11 @@ public class SubstanceList extends VerticalPanel implements ChangeListener,TreeS
 		if (listed==null||listed.isEmpty()) return new StringBuffer();
 		XmlToken result=new XmlToken(name);
 
-		if (this==degradeList) result.setValue("role","degrade");
-		if (this==produceList) result.setValue("role","produce");
-		if (this==ignoreList) result.setValue("role","ignore");
-		if (this==noOutflowList) result.setValue("role","noOutflow");
-		// TODO: activate if (this==noInflowList) result.setValue("role","noInflow");
+		if (this==degradeList) result.setValue("role",DEGRADE);
+		if (this==produceList) result.setValue("role",PRODUCE);
+		if (this==ignoreList) result.setValue("role",IGNORE);
+		if (this==noOutflowList) result.setValue("role",NOOUTFLOW);
+		// TODO: activate if (this==noInflowList) result.setValue("role",NOINFLOW);
 		result.setContent(listed);
 		return result.getCode();
   }
@@ -396,6 +400,14 @@ public class SubstanceList extends VerticalPanel implements ChangeListener,TreeS
 	public void loadState(XmlToken token) throws SQLException {
 		if (!token.tokenClass().equals(name.replace(" ", ""))) return;
 		String content = token.content();
+		
+		int role = token.getIntValue("role");
+		switch (role){
+		case DEGRADE: setDegradeList(true); break;
+		case PRODUCE: setProduceList(true); break;
+		case IGNORE: setIgnoreList(true); break;
+		case NOOUTFLOW: setNoOutflowList(true); break;
+		}
 		if (content==null || content.length()==0) return;
 		String[] idStrings = content.replace(" ", "").split(",");
 		for (String idString:idStrings){
