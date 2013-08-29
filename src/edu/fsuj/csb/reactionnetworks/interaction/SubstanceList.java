@@ -29,6 +29,7 @@ import javax.swing.tree.TreePath;
 import edu.fsuj.csb.gui.HorizontalPanel;
 import edu.fsuj.csb.gui.VerticalPanel;
 import edu.fsuj.csb.reactionnetworks.interaction.gui.PopupMenu;
+import edu.fsuj.csb.reactionnetworks.organismtools.DbSubstance;
 import edu.fsuj.csb.tools.organisms.Substance;
 import edu.fsuj.csb.tools.organisms.gui.SortedTreeNode;
 import edu.fsuj.csb.tools.organisms.gui.SubstanceNode;
@@ -384,5 +385,17 @@ public class SubstanceList extends VerticalPanel implements ChangeListener,TreeS
 
 	public static SubstanceList getNoOutflowList() {
 	  return noOutflowList;
+  }
+
+	public void loadState(XmlToken token) throws SQLException {
+		if (!token.tokenClass().equals(name.replace(" ", ""))) return;
+		String content = token.content();
+		if (content==null || content.length()==0) return;
+		String[] idStrings = content.replace(" ", "").split(",");
+		for (String idString:idStrings){
+			int id=Integer.parseInt(idString);
+			Substance s=DbSubstance.load(id);
+			addSubstanceSilently(s);
+		}
   }
 }

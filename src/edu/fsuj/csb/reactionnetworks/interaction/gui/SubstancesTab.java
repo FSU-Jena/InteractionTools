@@ -28,6 +28,7 @@ import edu.fsuj.csb.tools.organisms.gui.CompartmentNode;
 import edu.fsuj.csb.tools.xml.NoTokenException;
 import edu.fsuj.csb.tools.xml.ObjectComparator;
 import edu.fsuj.csb.tools.xml.XmlObject;
+import edu.fsuj.csb.tools.xml.XmlToken;
 
 public class SubstancesTab extends HorizontalPanel implements ActionListener, CompartmentListener, ChangeListener, XmlObject {
 
@@ -268,5 +269,13 @@ public class SubstancesTab extends HorizontalPanel implements ActionListener, Co
 			e.printStackTrace();
 		}
 	}
+
+	public void loadState(XmlToken token) throws SQLException {
+		list1.loadState(token);
+		list2.loadState(token);
+		list3.loadState(token);
+		list4.loadState(token);
+		//TODO: enable list5.loadState(token);
+  }
 
 }
