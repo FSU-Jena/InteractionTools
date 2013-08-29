@@ -23,13 +23,15 @@ import edu.fsuj.csb.reactionnetworks.interaction.CompartmentListener;
 import edu.fsuj.csb.reactionnetworks.organismtools.DbCompartment;
 import edu.fsuj.csb.tools.organisms.gui.CompartmentNode;
 import edu.fsuj.csb.tools.organisms.gui.SortedTreeNode;
+import edu.fsuj.csb.tools.xml.XmlObject;
+import edu.fsuj.csb.tools.xml.XmlToken;
 
 /**
  * a GUI component, which shows lists of compartments the user may select for building tasks
  * @author Stephan Richter
  *
  */
-public class CompartmentsTab extends HorizontalPanel implements ActionListener {
+public class CompartmentsTab extends HorizontalPanel implements ActionListener,XmlObject {
 	private static final long serialVersionUID = 8904107088279674639L;
 	private CompartmentList listOfAllCompartments;
 	private JTabbedPane speciesTabs;
@@ -243,6 +245,14 @@ public class CompartmentsTab extends HorizontalPanel implements ActionListener {
 	  userSelection.scale();
 	}
 	
+	public StringBuffer getCode() {
+		TreeSet<Integer> userSpec = getUserSpecies();
+		if (userSpec==null || userSpec.isEmpty()) return new StringBuffer();
+		XmlToken result=new XmlToken("Compartments");
+		result.setContent(userSpec);
+	  return result.getCode();
+  }
+
 	/* (non-Javadoc)
 	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
 	 */
@@ -267,4 +277,9 @@ public class CompartmentsTab extends HorizontalPanel implements ActionListener {
       e.printStackTrace();
     }
 	}
+
+	public void loadState(XmlToken token) throws SQLException {
+		userSelection.loadStae(token);
+  }
+
 }

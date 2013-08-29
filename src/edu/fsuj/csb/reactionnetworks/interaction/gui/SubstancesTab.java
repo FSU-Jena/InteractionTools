@@ -27,8 +27,10 @@ import edu.fsuj.csb.tools.organisms.Substance;
 import edu.fsuj.csb.tools.organisms.gui.CompartmentNode;
 import edu.fsuj.csb.tools.xml.NoTokenException;
 import edu.fsuj.csb.tools.xml.ObjectComparator;
+import edu.fsuj.csb.tools.xml.XmlObject;
+import edu.fsuj.csb.tools.xml.XmlToken;
 
-public class SubstancesTab extends HorizontalPanel implements ActionListener, CompartmentListener, ChangeListener {
+public class SubstancesTab extends HorizontalPanel implements ActionListener, CompartmentListener, ChangeListener, XmlObject {
 
 	private static final long serialVersionUID = -7263495456892770721L;
 	private SubstanceList choosableSubstances;
@@ -244,6 +246,15 @@ public class SubstancesTab extends HorizontalPanel implements ActionListener, Co
 		}
   }
 
+	public StringBuffer getCode() {
+		StringBuffer result = list1.getCode();
+		result.append(list2.getCode());
+		result.append(list3.getCode());
+		result.append(list4.getCode());
+		//TODO: enable result.append(list5.getCode());
+	  return result;
+  }
+
 	public void actionPerformed(ActionEvent arg0) {
 		Object source = arg0.getSource();
 		try {
@@ -271,6 +282,12 @@ public class SubstancesTab extends HorizontalPanel implements ActionListener, Co
 		}
 	}
 
-
+	public void loadState(XmlToken token) throws SQLException {
+		list1.loadState(token);
+		list2.loadState(token);
+		list3.loadState(token);
+		list4.loadState(token);
+		//TODO: enable list5.loadState(token);
+  }
 
 }

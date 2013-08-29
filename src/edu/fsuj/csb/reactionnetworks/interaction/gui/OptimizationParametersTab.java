@@ -5,8 +5,10 @@ import javax.swing.JCheckBox;
 import edu.fsuj.csb.gui.IntegerInputField;
 import edu.fsuj.csb.gui.VerticalPanel;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.ParameterSet;
+import edu.fsuj.csb.tools.xml.XmlObject;
+import edu.fsuj.csb.tools.xml.XmlToken;
 
-public class OptimizationParametersTab extends VerticalPanel {
+public class OptimizationParametersTab extends VerticalPanel implements XmlObject {
 	
   private static final long serialVersionUID = -5681082612373593097L;
   
@@ -48,6 +50,24 @@ public class OptimizationParametersTab extends VerticalPanel {
 
 	public boolean skipUnbalancedReactions() {
 	  return skipUnbalancedReactions.isSelected();
+  }
+
+
+//	private int numberOfAllReactions,numberOfInflows,rateOfInflows,numberOfOutflows,rateOfOutflows;
+//	private boolean skipUnbalancedReactions;
+
+	public StringBuffer getCode() {
+		return optimizationParameterSet().getCode();
+	}
+
+	public void loadState(XmlToken token) {
+		
+	  numberOfAllReactions.setzewert(token.getIntValue("min_all"));
+	  numberOfInflows.setzewert(token.getIntValue("min_in"));
+	  rateOfInflows.setzewert(token.getIntValue("rate_in"));
+	  numberOfOutflows.setzewert(token.getIntValue("min_out"));
+	  rateOfOutflows.setzewert(token.getIntValue("rate_out"));
+		skipUnbalancedReactions.setSelected(token.getValue("skip_unbalanced").equals("true"));
   }
 	
 }

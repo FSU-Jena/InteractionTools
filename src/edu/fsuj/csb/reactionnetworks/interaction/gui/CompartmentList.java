@@ -34,6 +34,7 @@ import edu.fsuj.csb.reactionnetworks.organismtools.gui.DbComponentNode;
 import edu.fsuj.csb.tools.organisms.gui.CompartmentNode;
 import edu.fsuj.csb.tools.organisms.gui.SortedTreeNode;
 import edu.fsuj.csb.tools.xml.ObjectComparator;
+import edu.fsuj.csb.tools.xml.XmlToken;
 
 /**
  * a gui element to display compartments
@@ -289,5 +290,18 @@ public class CompartmentList extends VerticalPanel implements ChangeListener, Mo
 
 	public MetabolicNetworkPanel networkViewer() {
 		return netViewer;
+  }
+
+	public void loadStae(XmlToken token) throws SQLException {
+		if (!token.tokenClass().equals("Compartments")) return;
+		String content = token.content();
+		if (content==null || content.length()==0) return;
+		String[] idStrings = content.replace(" ", "").split(",");
+		
+		for (String idString:idStrings){
+			int id=Integer.parseInt(idString);
+			DbCompartment compartment = DbCompartment.load(id);
+			addCompartment(compartment);
+		}
   }
 }

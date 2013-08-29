@@ -29,12 +29,15 @@ import javax.swing.tree.TreePath;
 import edu.fsuj.csb.gui.HorizontalPanel;
 import edu.fsuj.csb.gui.VerticalPanel;
 import edu.fsuj.csb.reactionnetworks.interaction.gui.PopupMenu;
+import edu.fsuj.csb.reactionnetworks.organismtools.DbSubstance;
 import edu.fsuj.csb.tools.organisms.Substance;
 import edu.fsuj.csb.tools.organisms.gui.SortedTreeNode;
 import edu.fsuj.csb.tools.organisms.gui.SubstanceNode;
 import edu.fsuj.csb.tools.xml.ObjectComparator;
+import edu.fsuj.csb.tools.xml.XmlObject;
+import edu.fsuj.csb.tools.xml.XmlToken;
 
-public class SubstanceList extends VerticalPanel implements ChangeListener,TreeSelectionListener, MouseListener, ActionListener {
+public class SubstanceList extends VerticalPanel implements ChangeListener,TreeSelectionListener, MouseListener, ActionListener,XmlObject {
 
 	private static final long serialVersionUID = 10;
 	private SortedTreeNode root;
@@ -52,6 +55,10 @@ public class SubstanceList extends VerticalPanel implements ChangeListener,TreeS
 	private static SubstanceList noInflowList;	
 	private static SubstanceList noOutflowList;	
 	private static final Dimension initialSize=new Dimension(150, 300);
+	private static final int DEGRADE = -1;
+	private static final int PRODUCE = 1;
+	private static final int IGNORE = 0;
+	private static final int NOOUTFLOW = -2;
 
 	public SubstanceList(String name,boolean showBoxes) {
 		this.name=name;
@@ -398,11 +405,44 @@ public class SubstanceList extends VerticalPanel implements ChangeListener,TreeS
 	public void scaleScrollPane(Dimension d){
 		scp.setPreferredSize(d);
 	}
+	
+	public StringBuffer getCode() {
+		TreeSet<Integer> listed = getListed();
+		if (listed==null||listed.isEmpty()) return new StringBuffer();
+		XmlToken result=new XmlToken(name);
+
+		if (this==degradeList) result.setValue("role",DEGRADE);
+		if (this==produceList) result.setValue("role",PRODUCE);
+		if (this==ignoreList) result.setValue("role",IGNORE);
+		if (this==noOutflowList) result.setValue("role",NOOUTFLOW);
+		// TODO: activate if (this==noInflowList) result.setValue("role",NOINFLOW);
+		result.setContent(listed);
+		return result.getCode();
+  }
 
 	public static SubstanceList getNoOutflowList() {
 	  return noOutflowList;
   }
 	public static SubstanceList getNoInflowList() {
 	  return noInflowList;
+	}
+	public void loadState(XmlToken token) throws SQLException {
+		if (!token.tokenClass().equals(name.replace(" ", ""))) return;
+		String content = token.content();
+		
+		int role = token.getIntValue("role");
+		switch (role){
+		case DEGRADE: setDegradeList(true); break;
+		case PRODUCE: setProduceList(true); break;
+		case IGNORE: setIgnoreList(true); break;
+		case NOOUTFLOW: setNoOutflowList(true); break;
+		}
+		if (content==null || content.length()==0) return;
+		String[] idStrings = content.replace(" ", "").split(",");
+		for (String idString:idStrings){
+			int id=Integer.parseInt(idString);
+			Substance s=DbSubstance.load(id);
+			addSubstanceSilently(s);
+		}
   }
 }

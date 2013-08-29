@@ -6,6 +6,8 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.rmi.AlreadyBoundException;
 import java.sql.SQLException;
@@ -25,6 +27,7 @@ import javax.swing.event.ChangeListener;
 
 import edu.fsuj.csb.distributedcomputing.tools.Ports;
 import edu.fsuj.csb.gui.HorizontalPanel;
+import edu.fsuj.csb.gui.PanelTools;
 import edu.fsuj.csb.gui.StatusPanel;
 import edu.fsuj.csb.gui.VerticalPanel;
 import edu.fsuj.csb.reactionnetworks.interaction.ActionHandler;
@@ -34,6 +37,9 @@ import edu.fsuj.csb.tools.configuration.Configuration;
 import edu.fsuj.csb.tools.newtork.pagefetcher.PageFetcher;
 import edu.fsuj.csb.tools.xml.NoTokenException;
 import edu.fsuj.csb.tools.xml.Tools;
+import edu.fsuj.csb.tools.xml.XMLReader;
+import edu.fsuj.csb.tools.xml.XMLWriter;
+import edu.fsuj.csb.tools.xml.XmlToken;
 
 /**
  * InteractionToolbox is a java program that provides several Tools for metabolic network analyzation
@@ -62,7 +68,8 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	private VerticalPanel taskButtonPanel;
 	private Configuration configuration;
 	private MetabolicNetworkPanel networkPanel;
-
+	private JButton storeButton;
+	private JButton loadButton;
 	/**
 	 * create a new window instance
 	 * 
@@ -256,7 +263,17 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 
 		clientManager.scale();
 		buttonPane.add(clientManager);
+		
+		VerticalPanel storeGroup=new VerticalPanel("Settings storage");
+		storeButton = new JButton("Store task settings");
+		storeButton.addActionListener(this);
+		storeGroup.add(storeButton);
 
+		loadButton = new JButton("Load task settings");
+		loadButton.addActionListener(this);
+		storeGroup.add(loadButton);
+
+		buttonPane.add(storeGroup);
 		buttonPane.scale();
 		return buttonPane;
 	}
@@ -414,15 +431,45 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 
 		mainPanel.scale();
 	}
+	
+	public static URL askForFileName(String title) {
+	  return PanelTools.showSelectFileDialog(title, null, null, null);
+	}
+	public static URL askForFileName() {
+		return askForFileName("File prefix");
+  }
+	
+	private void loadTaskSettings() throws SecurityException, IOException, URISyntaxException, NoTokenException, SQLException {
+		URL url=askForFileName("File name");
+		if (url==null) return;
+		if (!url.toString().toUpperCase().endsWith(".XML")) url=new URL(url.toString()+".xml");
+		System.out.println(url);
+		XMLReader reader=new XMLReader(url);
+		try {
+			while (true){
+				XmlToken token = reader.readToken();
+				if (token.tokenClass().startsWith("SubstancesList")) substancesTab.loadState(token);
+				if (token.tokenClass().equals("Compartments")) compartmentTab.loadState(token);
+				if (token.tokenClass().equals("OptimizationParameters")) parametersTab.loadState(token);
+			}		
+		} catch (NoTokenException nte){}
+		reader.close();
+  }
+	
+	private void storeTaskSettings() throws SecurityException, IOException, URISyntaxException {
+		URL url=askForFileName("File name");
+		if (url==null) return;
+		if (!url.toString().toUpperCase().endsWith(".XML")) url=new URL(url.toString()+".xml");
+		XMLWriter writer=new XMLWriter(url);		
+		writer.write(compartmentTab);
+		writer.write(substancesTab);
+		writer.write(parametersTab);
+		writer.close();
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-	 */
-	public void actionPerformed(ActionEvent e) {
-		Object source = e.getSource();
-		Component frame = SwingUtilities.getRoot(this);
+	public void actionPerformed(ActionEvent event) {
+		Object source = event.getSource();
+		Component frame=SwingUtilities.getRoot(this);
 		frame.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 		try {
 			if (source == calculateProductsButton) {
@@ -435,15 +482,25 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 			if (source == searchProcessors) actionHandler.searchProcessors(substancesTab.degradeList());
 			if (source == fluxBalanceAnalysis) actionHandler.startFBA(compartmentTab.getUserSpecies(), getSubstanceSet(), parametersTab.optimizationParameterSet());
 
-			if (e.getActionCommand().equals("activate")) {
+			if (source==storeButton) storeTaskSettings();
+			if (source==loadButton) loadTaskSettings();
+			
+			if (event.getActionCommand().equals("activate")){
 				if (source == networkPanel) taskResultPane.setSelectedComponent(networkPanel);
 				if (source == substancesTab) taskTabs.setSelectedComponent(substancesTab);
 				if (source == resultPane) taskResultPane.setSelectedComponent(resultPane);
 			}
-
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (SecurityException e) {
+	    e.printStackTrace();
+    } catch (URISyntaxException e) {
+	    e.printStackTrace();
+    } catch (NoTokenException e) {
+	    e.printStackTrace();
+    } catch (SQLException e) {
+	    e.printStackTrace();
+    }
 		frame.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 	}
 
