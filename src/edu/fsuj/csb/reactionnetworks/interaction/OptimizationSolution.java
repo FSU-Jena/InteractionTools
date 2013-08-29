@@ -90,8 +90,9 @@ public class OptimizationSolution implements Serializable{
   }
 
 	private DefaultMutableTreeNode reactionTree() throws SQLException {
-		DefaultMutableTreeNode reactionTree=new DefaultMutableTreeNode("Reactions");
-	  for (Entry<Integer, Double> reaction:reactions().entrySet()){
+		TreeMap<Integer, Double> reactions = reactions();
+		DefaultMutableTreeNode reactionTree=new DefaultMutableTreeNode("Reactions ("+reactions.size()+")");
+	  for (Entry<Integer, Double> reaction:reactions.entrySet()){
 	  	ReactionNode rn=new ReactionNode(DbReaction.load(reaction.getKey()));
 	  	rn.add(new DefaultMutableTreeNode("Rate: "+reaction.getValue()));
 	  	reactionTree.add(rn);	  	
@@ -99,7 +100,7 @@ public class OptimizationSolution implements Serializable{
 	  return reactionTree;
   }
 	private DefaultMutableTreeNode outflowTree() throws SQLException {
-		DefaultMutableTreeNode outflowTree=new DefaultMutableTreeNode("Outflows");
+		DefaultMutableTreeNode outflowTree=new DefaultMutableTreeNode("Outflows ("+outflows.size()+")");
 		for (Entry<Integer, Double> outflow:outflows.entrySet()){
 			SubstanceNode sn=new SubstanceNode(DbSubstance.load(outflow.getKey()));
 			sn.add(new DefaultMutableTreeNode("Rate: "+outflow.getValue()));
@@ -108,7 +109,7 @@ public class OptimizationSolution implements Serializable{
 		return outflowTree;
   }
 	private DefaultMutableTreeNode inflowTree() throws SQLException {
-		DefaultMutableTreeNode inflowTree=new DefaultMutableTreeNode("Inflows");
+		DefaultMutableTreeNode inflowTree=new DefaultMutableTreeNode("Inflows ("+inflows.size()+")");
 		for (Entry<Integer, Double> inflow:inflows.entrySet()){
 			SubstanceNode sn=new SubstanceNode(DbSubstance.load(inflow.getKey()));
 			sn.add(new DefaultMutableTreeNode("Rate: "+inflow.getValue()));
