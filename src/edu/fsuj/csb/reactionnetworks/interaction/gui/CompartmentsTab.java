@@ -278,4 +278,8 @@ public class CompartmentsTab extends HorizontalPanel implements ActionListener,X
     }
 	}
 
+	public void loadState(XmlToken token) throws SQLException {
+		userSelection.loadStae(token);
+  }
+
 }

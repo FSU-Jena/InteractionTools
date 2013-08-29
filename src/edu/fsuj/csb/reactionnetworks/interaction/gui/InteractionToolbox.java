@@ -451,6 +451,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 			while (true){
 				XmlToken token = reader.readToken();
 				if (token.tokenClass().startsWith("SubstancesList")) substancesTab.loadState(token);
+				if (token.tokenClass().equals("Compartments")) compartmentTab.loadState(token);
 			}		
 		} catch (NoTokenException nte){}
 		reader.close();
