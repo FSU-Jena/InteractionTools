@@ -450,6 +450,7 @@ public class SubstanceList extends VerticalPanel implements ChangeListener,TreeS
 		if (source==ignoreButton) setIgnoreList(ignoreButton.isSelected());
 		if (source==noInflowButton) setNoInflowList(noInflowButton.isSelected());
 		if (source==noOutflowButton) setNoOutflowList(noOutflowButton.isSelected());
+		if (source==createReactionButton) fireEvent(new ActionEvent(this, 0, "createReaction"));
   }
 
 }

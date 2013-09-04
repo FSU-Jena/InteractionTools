@@ -52,7 +52,7 @@ public class ResultPanel extends VerticalPanel implements ActionListener, TreeSe
 	private TreeSet<ActionListener> listeners;
 
 	public ResultPanel() {
-		resultTreeRoot = new ResultTreeRoot(this);
+		resultTreeRoot = new ResultTreeRoot(this,"Results");
 		resultTree = new ResultTree(resultTreeRoot);
 		resultTree.addTreeSelectionListener(this);
 		resultTree.addMouseListener(this);

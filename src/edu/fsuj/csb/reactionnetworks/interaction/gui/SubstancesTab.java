@@ -264,7 +264,11 @@ public class SubstancesTab extends HorizontalPanel implements ActionListener, Co
 				if (arg0.getActionCommand().equals("activate")){
 					selectedSubstancesTabs.setSelectedComponent((Component) source);
 					fireEvent(new ActionEvent(this, 0, "activate"));
-				} else removeSubstancesFromUserList();
+				} else if (arg0.getActionCommand().equals("createReaction")){
+					fireEvent(arg0);
+				} else {
+					removeSubstancesFromUserList();
+				}
 			} else if (source == clearButton) {
 				choosableSubstances.clear();
 			} else {

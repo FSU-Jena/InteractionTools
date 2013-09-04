@@ -32,6 +32,7 @@ import edu.fsuj.csb.gui.StatusPanel;
 import edu.fsuj.csb.gui.VerticalPanel;
 import edu.fsuj.csb.reactionnetworks.interaction.ActionHandler;
 import edu.fsuj.csb.reactionnetworks.interaction.CalculationClient;
+import edu.fsuj.csb.reactionnetworks.interaction.SubstanceList;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.SubstanceSet;
 import edu.fsuj.csb.tools.configuration.Configuration;
 import edu.fsuj.csb.tools.newtork.pagefetcher.PageFetcher;
@@ -497,6 +498,13 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 				if (source == networkPanel) taskResultPane.setSelectedComponent(networkPanel);
 				if (source == substancesTab) taskTabs.setSelectedComponent(substancesTab);
 				if (source == resultPane) taskResultPane.setSelectedComponent(resultPane);
+			}
+			
+			if (source instanceof SubstanceList){
+				if (event.getActionCommand().equals("createReaction")){
+					reactionTab.edit((SubstanceList)source);
+					taskTabs.setSelectedComponent(reactionTab);
+				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

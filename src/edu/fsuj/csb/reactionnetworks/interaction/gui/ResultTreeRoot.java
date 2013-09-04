@@ -1,16 +1,17 @@
 package edu.fsuj.csb.reactionnetworks.interaction.gui;
 
+import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 
 public class ResultTreeRoot extends DefaultMutableTreeNode {
   private static final long serialVersionUID = -7735797332731779635L;
-  private ResultPanel ownerPanel;
+  private JComponent ownerPanel;
   
-	public ResultTreeRoot(ResultPanel resultPanel) {
-		super("Results");
-		ownerPanel=resultPanel;
+	public ResultTreeRoot(JComponent owner, String title) {
+		super(title);
+		ownerPanel=owner;
 	}
 	
 	private class upThread implements Runnable{
@@ -31,5 +32,9 @@ public class ResultTreeRoot extends DefaultMutableTreeNode {
 	public void add(MutableTreeNode newChild) {
 	  super.add(newChild);
 	  update();
+	}
+	
+	public void addWithoutUpdate(MutableTreeNode newChild){
+		super.add(newChild);
 	}
 }
