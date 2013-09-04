@@ -489,7 +489,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 			if (source == disconnectClients) actionHandler.disconnect(onlyOdle.isSelected());
 			if (source == calcPotentialAdditionals) actionHandler.calcPotentialAdditionals(compartmentTab.getUserList().getListed(), substancesTab.degradeList(), substancesTab.ignoreList());
 			if (source == searchProcessors) actionHandler.searchProcessors(substancesTab.degradeList());
-			if (source == fluxBalanceAnalysis) actionHandler.startFBA(compartmentTab.getUserSpecies(), getSubstanceSet(), parametersTab.optimizationParameterSet());
+			if (source == fluxBalanceAnalysis) actionHandler.startFBA(compartmentTab.getUserSpecies(), getSubstanceSet(), reactionTab.selectedReactions(), parametersTab.optimizationParameterSet());
 
 			if (source==storeButton) storeTaskSettings();
 			if (source==loadButton) loadTaskSettings();

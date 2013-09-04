@@ -3,6 +3,7 @@ package edu.fsuj.csb.reactionnetworks.interaction.tasks.lp;
 import java.io.IOException;
 import java.rmi.AlreadyBoundException;
 import java.sql.SQLException;
+import java.util.TreeSet;
 import java.util.zip.DataFormatException;
 
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -14,6 +15,7 @@ import edu.fsuj.csb.reactionnetworks.interaction.results.lp.FBAResult;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.ParameterSet;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.SubstanceSet;
 import edu.fsuj.csb.reactionnetworks.organismtools.DbCompartment;
+import edu.fsuj.csb.tools.organisms.ReactionSet;
 import edu.fsuj.csb.tools.organisms.gui.CompartmentNode;
 import edu.fsuj.csb.tools.xml.NoTokenException;
 import edu.fsuj.csb.tools.xml.Tools;
@@ -22,8 +24,8 @@ public class FBATask extends LinearProgrammingTask {
 
   private static final long serialVersionUID = 2619391610630359556L;
 
-	public FBATask(Integer compartmentId, SubstanceSet substanceSet, ParameterSet parameterSet) {
-		super(compartmentId,substanceSet,parameterSet);
+	public FBATask(Integer compartmentId, SubstanceSet substanceSet, ReactionSet additionalReactions, ParameterSet parameterSet) {
+		super(compartmentId,substanceSet,additionalReactions,parameterSet);
   }
 
 	public boolean addNewSolution(OptimizationSolution solution) {

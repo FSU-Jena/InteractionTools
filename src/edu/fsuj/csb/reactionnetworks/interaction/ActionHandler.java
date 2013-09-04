@@ -25,6 +25,7 @@ import edu.fsuj.csb.reactionnetworks.interaction.tasks.graph.AdditionsCalculatio
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.graph.ProcessorSearchTask;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.graph.ProductCalculationTask;
 import edu.fsuj.csb.reactionnetworks.interaction.tasks.lp.FBATask;
+import edu.fsuj.csb.tools.organisms.ReactionSet;
 import edu.fsuj.csb.tools.organisms.gui.CompartmentNode;
 import edu.fsuj.csb.tools.xml.NoTokenException;
 import edu.fsuj.csb.tools.xml.ObjectComparator;
@@ -204,16 +205,16 @@ public class ActionHandler extends Master {
 		return false;
   }
 
-	public void startFBA(TreeSet<Integer> compartmentIds, SubstanceSet substanceSet, ParameterSet parameterSet) throws IOException {
+	public void startFBA(TreeSet<Integer> compartmentIds, SubstanceSet substanceSet, ReactionSet additionalReactions, ParameterSet parameterSet) throws IOException {
 		if (warnforEmptyList(compartmentIds,"Organisms/Compartments")) return;
 		if (warnforEmptyList(substanceSet.desiredInflows(),"Substances to consume") || warnforEmptyList(substanceSet.desiredOutFlows(),"Substances to produce")) return;
-		for (Integer compartmentId:compartmentIds) startFBA(compartmentId, substanceSet, parameterSet);
+		for (Integer compartmentId:compartmentIds) startFBA(compartmentId, substanceSet, additionalReactions, parameterSet);
   }
 
-	private void startFBA(Integer compartmentId, SubstanceSet substanceSet, ParameterSet parameterSet) throws IOException{
+	private void startFBA(Integer compartmentId, SubstanceSet substanceSet, ReactionSet additionalReactions, ParameterSet parameterSet) throws IOException{
 		if (compartmentId==null) System.out.println("NOTE: No compartment selected!");
 		if (warnforEmptyList(substanceSet.desiredInflows(),"Substances to consume") || warnforEmptyList(substanceSet.desiredOutFlows(),"Substances to produce")) return;
-		FBATask fba=new FBATask(compartmentId, substanceSet, parameterSet);		
+		FBATask fba=new FBATask(compartmentId, substanceSet,additionalReactions, parameterSet);		
 		sendTask(fba);
   }
 }

@@ -30,6 +30,7 @@ import edu.fsuj.csb.tools.LPSolverWrapper.LPTerm;
 import edu.fsuj.csb.tools.LPSolverWrapper.LPVariable;
 import edu.fsuj.csb.tools.organisms.Compartment;
 import edu.fsuj.csb.tools.organisms.Reaction;
+import edu.fsuj.csb.tools.organisms.ReactionSet;
 import edu.fsuj.csb.tools.xml.NoTokenException;
 import edu.fsuj.csb.tools.xml.ObjectComparator;
 import edu.fsuj.csb.tools.xml.Tools;
@@ -46,12 +47,14 @@ public class LinearProgrammingTask extends CalculationTask {
 	private ParameterSet parameters;
 	TreeSet<OptimizationSolution> solutions = null; // set of (set of substances, that must be supplied)
 	Integer solutionSize = null; // for monitoring the size of the solutions
+	private ReactionSet additionalReactions;
 
-	public LinearProgrammingTask(Integer compartmentId, SubstanceSet substanceSet, ParameterSet parameterSet) {
+	public LinearProgrammingTask(Integer compartmentId, SubstanceSet substanceSet, ReactionSet additionalReactions, ParameterSet parameterSet) {
 		Tools.startMethod("new LinearProgramminTask("+compartmentId+","+substanceSet+", "+parameterSet+")");
 		this.compartmentId = compartmentId;
 		this.substances = substanceSet;
 		this.parameters = parameterSet;
+		this.additionalReactions=additionalReactions;
 		Tools.endMethod();
 	}
 
@@ -98,7 +101,7 @@ public class LinearProgrammingTask extends CalculationTask {
 		if (parameters.useMILP()) {
 
 			// bind internal reaction velocities to switches and create sum of internal reaction switches //
-			internalReactionSum = buildInternalReactionSwitchSum(solver, compartment);
+			internalReactionSum = buildInternalReactionSwitchSum(solver, compartment,additionalReactions);
 
 			// add inflows //
 			desiredInflowSum = buildInflowSwitchSum(solver, balances, substances.desiredInflows(), true);
@@ -110,7 +113,7 @@ public class LinearProgrammingTask extends CalculationTask {
 		} else { // not using MILP:
 
 			// create sum of internal reactions //
-			internalReactionSum = buildInternalReactionSum(compartment);
+			internalReactionSum = buildInternalReactionSum(compartment,additionalReactions);
 
 			// add inflows //
 			desiredInflowSum = buildInflowSum(solver, balances, substances.desiredInflows(), true);
@@ -275,10 +278,12 @@ public class LinearProgrammingTask extends CalculationTask {
 		return substanceBalances;
 	}
 
-	private LPTerm buildInternalReactionSum(DbCompartment compartment) throws DataFormatException, SQLException {
+	private LPTerm buildInternalReactionSum(DbCompartment compartment,ReactionSet additionalReactions) throws DataFormatException, SQLException {
 		Tools.startMethod("LinearProgrammingTask.buildInternalReactionSum("+compartment+")");
 		LPTerm reactionSum = null;
-		for (Integer rid : compartment.reactions()) { /* create terms for substances according to reactions */
+		ReactionSet reactions = compartment.reactions().clone();
+		reactions.addAll(additionalReactions);
+		for (Integer rid : reactions) { /* create terms for substances according to reactions */
 			DbReaction reaction = DbReaction.load(rid);
 			if (parameters.ignoreUnbalanced() && !reaction.isBalanced()) continue;
 			if (reaction.firesForwardIn(compartment)) reactionSum = simpleSum(reactionSum, forward(rid));
@@ -288,11 +293,13 @@ public class LinearProgrammingTask extends CalculationTask {
 		return reactionSum;
 	}
 
-	private LPTerm buildInternalReactionSwitchSum(LPSolveWrapper solver, Compartment compartment) throws SQLException, DataFormatException {
+	private LPTerm buildInternalReactionSwitchSum(LPSolveWrapper solver, Compartment compartment, ReactionSet additionalReactions) throws SQLException, DataFormatException {
 		Tools.startMethod("LinearProgrammingTask.buildInternalReactionSwitchSum("+solver+", "+compartment+")");
 		LPTerm result = null;
-
-		for (int rid : compartment.reactions()) {
+		
+		ReactionSet reactions = compartment.reactions().clone();
+		reactions.addAll(additionalReactions.get());
+		for (int rid : reactions.get()) {
 			DbReaction reaction = DbReaction.load(rid);
 			if (parameters.ignoreUnbalanced() && !reaction.isBalanced()) continue;
 			if (reaction.firesForwardIn(compartment)) {
