@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.TreeSet;
 import java.util.zip.DataFormatException;
 
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
@@ -49,6 +50,7 @@ public class SubstanceList extends VerticalPanel implements ChangeListener,TreeS
 	private JScrollPane scp;
 	private HorizontalPanel buttonPane1,buttonPane2;
 	private VerticalPanel buttonPane;
+	private JButton createReactionButton;
 	private static SubstanceList degradeList;
 	private static SubstanceList produceList;
 	private static SubstanceList ignoreList;
@@ -72,18 +74,22 @@ public class SubstanceList extends VerticalPanel implements ChangeListener,TreeS
 		scp.setSize(scp.getPreferredSize());
 		if (showBoxes){			
 			buttonPane1=new HorizontalPanel();
-			buttonPane2=new HorizontalPanel();
-			buttonPane=new VerticalPanel();
 			buttonPane1.add(degradeButton=new JCheckBox("<html>substances&nbsp;&nbsp;&nbsp;&nbsp;<br>to degrade"));
 			degradeButton.addActionListener(this);
 			buttonPane1.add(produceButton=new JCheckBox("<html>substances&nbsp;&nbsp;&nbsp;&nbsp;<br>to produce"));
 			produceButton.addActionListener(this);
 			buttonPane1.add(ignoreButton=new JCheckBox("<html>substances&nbsp;&nbsp;&nbsp;&nbsp;<br>to ignore"));
 			ignoreButton.addActionListener(this);
+			
+			buttonPane2=new HorizontalPanel();
 			buttonPane2.add(noInflowButton=new JCheckBox("<html>forbid inflow"));
 			noInflowButton.addActionListener(this);
-			buttonPane2.add(noOutflowButton=new JCheckBox("<html>forbid outflow"));
+			buttonPane2.add(noOutflowButton=new JCheckBox("<html>forbid outflow&nbsp;"));
 			noOutflowButton.addActionListener(this);
+			buttonPane2.add(createReactionButton=new JButton("create reaction"));
+			createReactionButton.addActionListener(this);
+			
+			buttonPane=new VerticalPanel();			
 			buttonPane.add(buttonPane1);
 			buttonPane.add(buttonPane2);
 			
@@ -305,15 +311,6 @@ public class SubstanceList extends VerticalPanel implements ChangeListener,TreeS
 	  
   }
 
-	public void actionPerformed(ActionEvent arg0) {
-		Object source=arg0.getSource();
-		if (source==degradeButton) setDegradeList(degradeButton.isSelected());
-		if (source==produceButton) setProduceList(produceButton.isSelected());
-		if (source==ignoreButton) setIgnoreList(ignoreButton.isSelected());
-		if (source==noInflowButton) setNoInflowList(noInflowButton.isSelected());
-		if (source==noOutflowButton) setNoOutflowList(noOutflowButton.isSelected());
-  }
-	
 	private void setNoInflowList(boolean on) {
 		if (on){
 			noInflowButton.setSelected(true);
@@ -445,4 +442,14 @@ public class SubstanceList extends VerticalPanel implements ChangeListener,TreeS
 			addSubstanceSilently(s);
 		}
   }
+	
+	public void actionPerformed(ActionEvent arg0) {
+		Object source=arg0.getSource();
+		if (source==degradeButton) setDegradeList(degradeButton.isSelected());
+		if (source==produceButton) setProduceList(produceButton.isSelected());
+		if (source==ignoreButton) setIgnoreList(ignoreButton.isSelected());
+		if (source==noInflowButton) setNoInflowList(noInflowButton.isSelected());
+		if (source==noOutflowButton) setNoOutflowList(noOutflowButton.isSelected());
+  }
+
 }

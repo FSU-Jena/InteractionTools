@@ -70,6 +70,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 	private MetabolicNetworkPanel networkPanel;
 	private JButton storeButton;
 	private JButton loadButton;
+	private ReactionTab reactionTab;
 	/**
 	 * create a new window instance
 	 * 
@@ -296,12 +297,19 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		System.out.println("    |`- creating substances panel");
 		substancesTab = new SubstancesTab();
 		substancesTab.addActionListener(this);
+		
+		System.out.println("    |`- creating reaction panel");
+		reactionTab = new ReactionTab();
+		reactionTab.addActionListener(this);
+		
+		
 		System.out.println("    `-- creating parameters panel");
 		parametersTab = new OptimizationParametersTab();
 		compartmentTab.getUserList().addChangeListener(substancesTab);
 		compartmentTab.getUserList().addChangeListener(this);
 		taskTabs.add(compartmentTab, "selectable Species");
 		taskTabs.add(substancesTab, "selectable Substances");
+		taskTabs.add(reactionTab, "Reaction Editing");
 		taskTabs.add(parametersTab, "Optimization parameters");
 		return taskTabs;
 	}
