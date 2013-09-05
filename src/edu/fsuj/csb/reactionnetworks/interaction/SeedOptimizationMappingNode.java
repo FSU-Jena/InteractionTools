@@ -30,41 +30,38 @@ public class SeedOptimizationMappingNode extends DefaultMutableTreeNode implemen
 
 	private class SBMLModel implements XmlObject {
 
-		public StringBuffer getCode() {
-			StringBuffer buffer = new StringBuffer("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+		public void getCode(StringBuffer buffer) {
+			buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 			try {
 				buffer.append("<sbml xmlns=\"http://www.sbml.org/sbml/level2\" level=\"2\" version=\"1\">");
 				buffer.append("\n\t<model id=\"Result\" name=\"Result\">");
-				buffer.append(XMLWriter.shift(notes(), 2));
-				buffer.append(XMLWriter.shift(compartmentList(), 2));
-				buffer.append(XMLWriter.shift(speciesList(), 2));
-				buffer.append(XMLWriter.shift(reactionList(), 2));
+				notes(buffer);
+				compartmentList(buffer);
+				speciesList(buffer);
+				reactionList(buffer);
 				buffer.append("\n\t</model>\n</sbml>");
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
-			return buffer;
 		}
 
-		private StringBuffer reactionList() throws SQLException {
-			StringBuffer buffer = new StringBuffer();
+		private void reactionList(StringBuffer buffer) throws SQLException {
 			buffer.append("\n<listOfReactions>");
 
 			for (Integer reactionId : solution.forwardReactions().keySet()) {
 				Reaction react = Reaction.get(reactionId);
-				buffer.append(XMLWriter.shift(react.getCode(false), 1));
+				react.getCode(buffer,false);
 			}
 
 			for (Integer reactionId : solution.backwardReactions().keySet()) {
 				Reaction react = Reaction.get(reactionId);
-				buffer.append(XMLWriter.shift(react.getCode(true), 1));
+				react.getCode(buffer,true);
 			}
 
 			buffer.append("\n</listOfReactions>");
-			return buffer;
 		}
 
-		private StringBuffer speciesList() throws SQLException {
+		private void speciesList(StringBuffer sb) throws SQLException {
 			XmlToken result=new XmlToken("listOfSpecies");
 			TreeSet<Integer> ignored = task.ignoredSubstances();
 			for (Integer speciesId : getAllSpecies()) {
@@ -74,7 +71,7 @@ public class SeedOptimizationMappingNode extends DefaultMutableTreeNode implemen
 				subs.setValue("compartment", "c" + task.getCompartmentId());
 				result.add(subs);
 			}
-			return result.getCode();
+			result.getCode(sb);
 		}
 
 		private TreeSet<Integer> getAllSpecies() {
@@ -93,14 +90,12 @@ public class SeedOptimizationMappingNode extends DefaultMutableTreeNode implemen
 			return result;
 		}
 
-		private StringBuffer compartmentList() {
-			StringBuffer buffer = new StringBuffer();
+		private void compartmentList(StringBuffer buffer) {
 			buffer.append("\n<listOfCompartments>\n\t<compartment id=\"c" + task.getCompartmentId() + "\" name=\"Compartment 1\" size=\"1\"></compartment>\n</listOfCompartments>");
-			return buffer;
 		}
 
-		private StringBuffer notes() {
-			return new StringBuffer();
+		private void notes(StringBuffer buffer) {
+
 		}
 
 	}
@@ -130,8 +125,8 @@ public class SeedOptimizationMappingNode extends DefaultMutableTreeNode implemen
 		add(outputs);
 	}
 
-	public StringBuffer getCode() {
-		return (new SBMLModel()).getCode();
+	public void getCode(StringBuffer sb) {
+		(new SBMLModel()).getCode(sb);
 	}
 
 	public void writeDotFile(String filename) throws IOException, URISyntaxException, SQLException {

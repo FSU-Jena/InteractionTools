@@ -132,8 +132,6 @@ public class PopupMenu extends JPopupMenu implements ActionListener {
 					JFrame frame = (JFrame) SwingUtilities.getRoot(owner);
 					frame.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 
-					
-
 					System.out.println("Starting SBML export. This may take a while.");
 
 					((ExportXmlItem) option).export(filename);

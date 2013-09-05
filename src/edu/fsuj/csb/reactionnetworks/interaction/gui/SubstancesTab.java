@@ -234,13 +234,12 @@ public class SubstancesTab extends HorizontalPanel implements ActionListener, Co
 		}
   }
 
-	public StringBuffer getCode() {
-		StringBuffer result = list1.getCode();
-		result.append(list2.getCode());
-		result.append(list3.getCode());
-		result.append(list4.getCode());
-		//TODO: enable result.append(list5.getCode());
-	  return result;
+	public void getCode(StringBuffer result) {
+		list1.getCode(result);
+		list2.getCode(result);
+		list3.getCode(result);
+		list4.getCode(result);
+		//TODO: enable list5.getCode(result);
   }
 
 	public void actionPerformed(ActionEvent arg0) {

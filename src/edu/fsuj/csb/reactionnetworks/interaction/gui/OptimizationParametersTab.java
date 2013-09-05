@@ -60,7 +60,7 @@ public class OptimizationParametersTab extends VerticalPanel implements XmlObjec
 			return skipUnbalancedReactions;
 		}
 
-		public StringBuffer getCode() {
+		public void getCode(StringBuffer sb) {
 			XmlToken result = new XmlToken("OptimizationParameters");
 	
 			result.setValue("min_in", numberOfInflows);
@@ -69,7 +69,7 @@ public class OptimizationParametersTab extends VerticalPanel implements XmlObjec
 			result.setValue("rate_in", rateOfInflows);
 			result.setValue("rate_out", rateOfOutflows);
 			result.setValue("skip_unbalanced", ""+skipUnbalancedReactions);
-	    return result.getCode();
+	    result.getCode(sb);
     }
 	}
 
@@ -119,8 +119,8 @@ public class OptimizationParametersTab extends VerticalPanel implements XmlObjec
 //	private int numberOfAllReactions,numberOfInflows,rateOfInflows,numberOfOutflows,rateOfOutflows;
 //	private boolean skipUnbalancedReactions;
 
-	public StringBuffer getCode() {
-		return optimizationParameterSet().getCode();
+	public void getCode(StringBuffer sb) {
+		optimizationParameterSet().getCode(sb);
 	}
 
 	public void loadState(XmlToken token) {

@@ -245,12 +245,12 @@ public class CompartmentsTab extends HorizontalPanel implements ActionListener,X
 	  userSelection.scale();
 	}
 	
-	public StringBuffer getCode() {
+	public void getCode(StringBuffer sb) {
 		TreeSet<Integer> userSpec = getUserSpecies();
-		if (userSpec==null || userSpec.isEmpty()) return new StringBuffer();
+		if (userSpec==null || userSpec.isEmpty()) return;
 		XmlToken result=new XmlToken("Compartments");
 		result.setContent(userSpec);
-	  return result.getCode();
+	  result.getCode(sb);
   }
 
 	/* (non-Javadoc)
