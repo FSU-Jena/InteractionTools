@@ -291,12 +291,12 @@ public class dbtool {
 		Integer lastKeggId = InteractionDB.getLastID();
 		InteractionDB.storeIDrange(Commons.KEGG_IDS,firstKeggId,lastKeggId);
 
-		Integer firstBiomodelsId=InteractionDB.getLastID();
+		Integer firstBiomodelsId=InteractionDB.getLastID()+1;
 		if (!skipBiomodels) Biomodels.parse();
 		Integer lastBiomodelsId = InteractionDB.getLastID();
 		InteractionDB.storeIDrange(Commons.BIOMODELS_IDS, firstBiomodelsId, lastBiomodelsId);
 
-		Integer firstSbmlId=InteractionDB.getLastID();
+		Integer firstSbmlId=InteractionDB.getLastID()+1;
 		if (!skipFiles) parseSbmlFiles(getSbmlFileList(sbmlDirectory));
 		Integer lastSbmlId = InteractionDB.getLastID();
 		InteractionDB.storeIDrange(Commons.SBML_IDS, firstSbmlId, lastSbmlId);
