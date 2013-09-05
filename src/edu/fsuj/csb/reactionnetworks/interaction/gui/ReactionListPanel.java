@@ -34,7 +34,7 @@ public class ReactionListPanel extends HorizontalPanel implements TreeSelectionL
 
 	public ReactionListPanel(String string) {
 	  super(string);
-	  
+	  reactionIds=new ReactionSet();
 	  rTreeRoot = new ResultTreeRoot(this,"Reactions");
 	  tree=new JTree(rTreeRoot);
 	  tree.addTreeSelectionListener(this);
