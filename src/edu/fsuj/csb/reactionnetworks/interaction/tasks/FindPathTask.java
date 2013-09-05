@@ -93,11 +93,7 @@ public class FindPathTask extends CalculationTask {
 			Level newLevel=new Level();
 			levels.add(newLevel);
 			ReactionSet possibleReactions=null;
-      try {
-	      possibleReactions = reactions.clone();
-      } catch (CloneNotSupportedException e) {
-	      e.printStackTrace();
-      }
+      possibleReactions = reactions.clone();
 			possibleReactions.removeAll(reachedReactions);
 			boolean newReactionExplored=false;
 			TreeSet<Integer> newSubstancesAtThisLevel=new TreeSet<Integer>();

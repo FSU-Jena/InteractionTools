@@ -22,6 +22,7 @@ import edu.fsuj.csb.tools.organisms.Substance;
 import edu.fsuj.csb.tools.xml.ObjectComparator;
 import edu.fsuj.csb.tools.xml.XMLWriter;
 import edu.fsuj.csb.tools.xml.XmlObject;
+import edu.fsuj.csb.tools.xml.XmlToken;
 
 public class SeedOptimizationMappingNode extends DefaultMutableTreeNode implements XmlObject {
 
@@ -64,17 +65,16 @@ public class SeedOptimizationMappingNode extends DefaultMutableTreeNode implemen
 		}
 
 		private StringBuffer speciesList() throws SQLException {
-			StringBuffer buffer = new StringBuffer();
-			buffer.append("\n<listOfSpecies>");
+			XmlToken result=new XmlToken("listOfSpecies");
 			TreeSet<Integer> ignored = task.ignoredSubstances();
 			for (Integer speciesId : getAllSpecies()) {
 				Substance subs = Substance.get(speciesId);
 				boolean boundary=ignored.contains(subs.id());
-				buffer.append(XMLWriter.shift(subs.getCode("c" + task.getCompartmentId(),boundary), 1));
+				subs.setValue("boundary", boundary);
+				subs.setValue("compartment", "c" + task.getCompartmentId());
+				result.add(subs);
 			}
-
-			buffer.append("\n</listOfSpecies>");
-			return buffer;
+			return result.getCode();
 		}
 
 		private TreeSet<Integer> getAllSpecies() {

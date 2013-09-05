@@ -24,8 +24,6 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.apache.batik.util.gui.xmleditor.XMLToken;
-
 import edu.fsuj.csb.distributedcomputing.tools.Ports;
 import edu.fsuj.csb.gui.HorizontalPanel;
 import edu.fsuj.csb.gui.StatusPanel;

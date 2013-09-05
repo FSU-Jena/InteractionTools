@@ -2,6 +2,7 @@ package edu.fsuj.csb.reactionnetworks.interaction.gui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
@@ -15,8 +16,10 @@ import java.util.TreeSet;
 import java.util.zip.DataFormatException;
 
 import javax.swing.BorderFactory;
+import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 
 import edu.fsuj.csb.gui.GenericFileFilter;
 import edu.fsuj.csb.gui.PanelTools;
@@ -27,6 +30,7 @@ import edu.fsuj.csb.tools.organisms.gui.SubstanceNode;
 import edu.fsuj.csb.tools.organisms.gui.URLNode;
 import edu.fsuj.csb.tools.organisms.gui.UrnNode;
 import edu.fsuj.csb.tools.xml.ObjectComparator;
+import edu.fsuj.csb.tools.xml.Tools;
 import edu.fsuj.csb.tools.xml.XmlObject;
 
 public class PopupMenu extends JPopupMenu implements ActionListener {
@@ -36,13 +40,15 @@ public class PopupMenu extends JPopupMenu implements ActionListener {
 	private String objectText;
 	private JMenuItem search;
 	private JMenuItem clip;
-	private JMenuItem cListItem,netViewItem;	
+	private JMenuItem cListItem,netViewItem;
+	private Component owner;	
 	private static CompartmentList compartmentList=null;
 	private static TreeSet<SubstanceList> substanceLists=new TreeSet<SubstanceList>(ObjectComparator.get());
 
-	public PopupMenu(Object targetObject, Point pos,Object parent) throws SQLException, DataFormatException, IOException {
+	public PopupMenu(Object targetObject, Point pos,Component owner) throws SQLException, DataFormatException, IOException {
 		super();
 		setLocation(pos);
+		this.owner=owner;
 		
 		objectText=targetObject.toString();
 //		System.out.println(targetObject.getClass());
@@ -122,9 +128,17 @@ public class PopupMenu extends JPopupMenu implements ActionListener {
 			try {
 				URL filename = PanelTools.showSelectFileDialog("State output file", "network.sbml.xml", new GenericFileFilter("SBML file", "*.xml"), this);
 				if (filename!=null){
+					if (!filename.toString().contains(".")) filename=new URL(filename+".sbml.xml");
+					JFrame frame = (JFrame) SwingUtilities.getRoot(owner);
+					frame.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+
+					
+
 					System.out.println("Starting SBML export. This may take a while.");
+
 					((ExportXmlItem) option).export(filename);
 					System.out.println("Exported to "+filename);
+					frame.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));		
 				}
       } catch (URISyntaxException e) {
 	      e.printStackTrace();
