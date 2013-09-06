@@ -7,7 +7,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import edu.fsuj.csb.tools.xml.XmlToken;
 
 
-	public class ParameterSet implements Serializable{
+	public class ParameterSet extends XmlToken implements Serializable{
     private static final long serialVersionUID = -868195336437264452L;
 		private int reactionWeight,auxiliaryInflowWeight,desiredInflowWeight,auxiliaryOutflowWeight,desiredOutflowWeight;
 		private boolean ignoreUnbalancedReactions,useMilp;
@@ -68,15 +68,14 @@ import edu.fsuj.csb.tools.xml.XmlToken;
 		  return "Parameters:\n - importance of desired inflows: "+desiredInflowWeight+"\n - importance of desired outflows: "+desiredOutflowWeight+"\n - importance of reduction of auxiliary inflows: "+auxiliaryInflowWeight+"\n - importance of reduction of auxiliary outflows: "+auxiliaryOutflowWeight+"\n - importance of reduction of internal reactions: "+reactionWeight;
 		}
 
-		public StringBuffer getCode() {
-			XmlToken result = new XmlToken("OptimizationParameters");
-	
-			result.setValue("min_in", auxiliaryInflowWeight);
-			result.setValue("min_out", auxiliaryOutflowWeight);
-			result.setValue("min_all", reactionWeight);
-			result.setValue("rate_in", desiredInflowWeight);
-			result.setValue("rate_out", desiredOutflowWeight);
-			result.setValue("skip_unbalanced", ""+ignoreUnbalancedReactions);
-	    return result.getCode();
+		public void getCode(StringBuffer sb) {
+			tokenClass="OptimizationParameters";	
+			setValue("min_in", auxiliaryInflowWeight);
+			setValue("min_out", auxiliaryOutflowWeight);
+			setValue("min_all", reactionWeight);
+			setValue("rate_in", desiredInflowWeight);
+			setValue("rate_out", desiredOutflowWeight);
+			setValue("skip_unbalanced", ""+ignoreUnbalancedReactions);
+	    super.getCode(sb);
     }
 	}

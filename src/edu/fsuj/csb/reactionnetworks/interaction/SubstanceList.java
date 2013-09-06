@@ -406,9 +406,9 @@ public class SubstanceList extends VerticalPanel implements ChangeListener,TreeS
 		scp.setPreferredSize(d);
 	}
 	
-	public StringBuffer getCode() {
+	public void getCode(StringBuffer sb) {
 		TreeSet<Integer> listed = getListed();
-		if (listed==null||listed.isEmpty()) return new StringBuffer();
+		if (listed==null||listed.isEmpty()) return;
 		XmlToken result=new XmlToken(name);
 
 		if (this==degradeList) result.setValue("role",DEGRADE);
@@ -417,7 +417,7 @@ public class SubstanceList extends VerticalPanel implements ChangeListener,TreeS
 		if (this==noOutflowList) result.setValue("role",NOOUTFLOW);
 		// TODO: activate if (this==noInflowList) result.setValue("role",NOINFLOW);
 		result.setContent(listed);
-		return result.getCode();
+		result.getCode(sb);
   }
 
 	public static SubstanceList getNoOutflowList() {

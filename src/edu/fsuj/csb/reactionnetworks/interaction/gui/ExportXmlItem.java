@@ -29,7 +29,9 @@ public class ExportXmlItem extends JMenuItem {
 		if (url==null) return;
 		File outputFile=new File(url.toString().replace("file:", ""));
 		BufferedWriter br=new BufferedWriter(new FileWriter(outputFile));
-		br.write(xmlobject.getCode().toString());
+		StringBuffer sb=new StringBuffer();
+		xmlobject.getCode(sb);
+		br.write(sb.toString());
 		br.close();
   }
 }

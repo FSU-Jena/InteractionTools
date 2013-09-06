@@ -56,8 +56,8 @@ public class OptimizationParametersTab extends VerticalPanel implements XmlObjec
 //	private int numberOfAllReactions,numberOfInflows,rateOfInflows,numberOfOutflows,rateOfOutflows;
 //	private boolean skipUnbalancedReactions;
 
-	public StringBuffer getCode() {
-		return optimizationParameterSet().getCode();
+	public void getCode(StringBuffer sb) {
+		optimizationParameterSet().getCode(sb);
 	}
 
 	public void loadState(XmlToken token) {
