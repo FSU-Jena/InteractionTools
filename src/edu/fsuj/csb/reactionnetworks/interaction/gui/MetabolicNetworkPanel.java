@@ -92,4 +92,9 @@ public class MetabolicNetworkPanel extends TreePanel {
 		}
 		super.setTreeTo(node);
 	}
+
+	@Override
+  public void toogleFold() {
+	  // TODO Auto-generated method stub
+  }
 }
