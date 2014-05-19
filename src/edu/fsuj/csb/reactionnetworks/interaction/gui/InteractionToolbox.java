@@ -225,7 +225,7 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		VerticalPanel optimizationButtonPanel = new VerticalPanel("Optimizations");
 
 		fluxBalanceAnalysis = new JButton("<html>perform FBA");
-		Tools.notImplemented("fluxBalanceAnalysis.setToolTipText()");
+		fluxBalanceAnalysis.setToolTipText("<html>Starts FBA for the selected organisms.<br/>Uses the <i>substances to degrade</i> and <i>substances to produce</i> for fitness functions,<br/>respects <i>forbiden inflows/outflows</i> and does not balance the <i>substances to ignore</i>.");
 		fluxBalanceAnalysis.addActionListener(this);
 		optimizationButtonPanel.add(fluxBalanceAnalysis);
 
