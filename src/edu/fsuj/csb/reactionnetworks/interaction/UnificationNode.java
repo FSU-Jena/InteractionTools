@@ -474,6 +474,8 @@ public class UnificationNode extends DefaultMutableTreeNode implements MutableTr
 			result=getJCSDNames(url);
 		} else if (url.toString().contains("purl.uniprot.org/uniprot")){
 			result=getUniprotNames(url);
+		} else if (url.toString().contains("purl.bioontology.org/ontology")){
+			result=getBioOntologyNames(url);
 		} else {
 			String code=PageFetcher.fetch(url).toString();
 			code=Tools.removeHtml(code).toUpperCase();
@@ -482,6 +484,51 @@ public class UnificationNode extends DefaultMutableTreeNode implements MutableTr
 		nameMap.put(url, result);
 		Tools.endMethod(result);
 	  return result;
+  }
+	
+	private TreeSet<String> getBioOntologyNames(URL url) throws IOException {
+		Tools.startMethod("getBioOntologyNames("+url+")");
+		System.err.println(url);
+	  String data= PageFetcher.fetch(url).toString().replace("</p>", "</p>\n");
+	  String[] lines = Tools.removeHtml(data.replace("<td class='label' nowrap=''>\n", "Label: ")).split("\n");
+	  boolean active=false;
+	  TreeSet<String> names = null;
+	  for (String line:lines){
+	  	line=line.trim();
+	  	String code=line.toUpperCase();
+			if (code.startsWith("LABEL:")){
+				active=false; // set inactive if next label reached
+			}
+	  	if (code.startsWith("LABEL: SYNONYMS")||code.startsWith("LABEL: HASEXACTSYNONYM")||code.startsWith("LABEL: PREFFERED NAME")){
+	  		active=true;
+	  	} else if (code.startsWith("VAR") || code.startsWith("SYNONYM = SYNONYM.SPLIT") || code.startsWith("IF ") || code.startsWith("ROW[0] =")){
+	  		// ignore JavaScript
+	  	} else if (code.contains("SYNONYM")){
+	  		if (code.startsWith("LABEL: HASRELATEDSYNONYM")) {
+	  			// ignore related synonyms
+	  		} else throw new UnknownFormatConversionException(url+" contains string SYNONYM:"+line);
+  		} else {
+  			if (active){
+					if (!line.isEmpty()){
+ 						if (names==null) names=Tools.StringSet();
+ 						names.add(line.toUpperCase());
+  				}
+  			}
+  		}
+	  }
+	  
+		Tools.warn("getBioOntologyNames lists the following names (which may be wrong):");
+		System.err.println("Names: "+names);
+
+		if (names==null) System.exit(-2);
+//		try {
+//	    Thread.sleep(20000);
+//    } catch (InterruptedException e) {
+//	    e.printStackTrace();
+//    }
+		Tools.endMethod(names);
+	  return names;
+	  
   }
 
 	private TreeSet<String> getUniprotNames(URL url) throws IOException {
@@ -524,11 +571,11 @@ public class UnificationNode extends DefaultMutableTreeNode implements MutableTr
 		Tools.warn("getUniprotNames lists the following names (which may be wrong):");
 		System.out.println("Names: "+names);
 		if (names==null) System.exit(-2);
-		try {
-	    Thread.sleep(20000);
-    } catch (InterruptedException e) {
-	    e.printStackTrace();
-    }
+//		try {
+//	    Thread.sleep(20000);
+//    } catch (InterruptedException e) {
+//	    e.printStackTrace();
+//    }
 		Tools.endMethod(names);
 	  return names;
 	  
@@ -798,21 +845,22 @@ public class UnificationNode extends DefaultMutableTreeNode implements MutableTr
   }
 
 	private TreeSet<String> getLipidMapsNames(URL url) throws IOException {
+		System.err.println(url);
 		Tools.startMethod("getLipidMapsNames("+url+")");
 	  String[] lines= PageFetcher.fetchLines(url);
 	  TreeSet<String> names=null;
 		for (int i=0; i<lines.length; i++){
-			if (lines[i].toUpperCase().contains("COMMON NAME")){
+			if (lines[i].toUpperCase().contains(">COMMON NAME<")){
 				String name=Tools.removeHtml(lines[i]).trim().substring(11).trim().toUpperCase();
 				if (names==null) names=Tools.StringSet();
 				names.add(name);
 			}
-			if (lines[i].toUpperCase().contains("SYSTEMATIC NAME")){
+			if (lines[i].toUpperCase().contains(">SYSTEMATIC NAME<")){
 				String name=Tools.removeHtml(lines[i]).trim().substring(15).trim().toUpperCase();
 				if (names==null) names=Tools.StringSet();
 				names.add(name);
 			}
-			if (lines[i].toUpperCase().contains("SYNONYMS")){
+			if (lines[i].toUpperCase().contains(">SYNONYMS<")){
 				String[] nameArray=Tools.removeHtml(lines[i]).trim().substring(8).split(";");
 				for (int ai=0; ai<nameArray.length; ai++){
 					if (names==null) names=Tools.StringSet();
@@ -835,7 +883,7 @@ public class UnificationNode extends DefaultMutableTreeNode implements MutableTr
 				while (!lines[++i].contains("</div>")) {
 					String name = Tools.removeHtml(lines[i]);
 					if (names==null) names=Tools.StringSet();
-					names.add(name.endsWith(";") ? (name.substring(0, name.length() - 1).toUpperCase()) : name.toUpperCase()); // only remove endo-of-line semicolons, preserve in-string semicolons
+					names.add(name.endsWith(";") ? (name.substring(0, name.length() - 1).toUpperCase()) : name.toUpperCase()); // only remove end-of-line semicolons, preserve in-string semicolons
 				}
 			}
 	  }
@@ -873,6 +921,8 @@ public class UnificationNode extends DefaultMutableTreeNode implements MutableTr
 		if (url.toString().contains("genome.jp/dbget-bin/www_bget")) {
 			result=getKeggMass(url);
 			throw new UnexpectedException("UnificationNode.getMass called with "+url);
+		} else 	if (url.toString().contains("kegg.jp/entry/")) {
+			result=getKeggMass(url);
 		} else if (url.toString().contains("nikkajiweb.jst.go.jp/nikkaji_web/pages/top_e.js")){
 			result=getJCSDMass(url);
 		} else if (url.toString().contains("ebi.ac.uk/chebi/searchId.do")){
@@ -1143,7 +1193,10 @@ public class UnificationNode extends DefaultMutableTreeNode implements MutableTr
 		} else {
 			String code=PageFetcher.fetch(url).toString();
 			code=code.toUpperCase();
-		 	if (code.contains("SMILE")) throw  new UnknownFormatConversionException(url+" contains string SMILE");
+		 	if (code.contains("SMILE")) {
+		 		code=code.replace("SMILES.JS", "");
+		 		if (code.contains("SMILE")) throw new UnknownFormatConversionException(url+" contains string SMILE");
+		 	}
 		}
 		smilesMap.put(url,result);
 		Tools.endMethod(result);
