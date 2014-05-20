@@ -118,13 +118,18 @@ public class UnificationNode extends DefaultMutableTreeNode implements MutableTr
 				text.setContent(""+(index1+1));
 				text.setValue("x", ""+x1);
 				text.setValue("y", ""+y1);
-				svg.add(text);			
-
+				svg.add(text);
+				
+				XmlToken link=new XmlToken("a");
+				link.setValue("xlink:href", "http://www.ebi.ac.uk/miriamws/main/rest/resolve/"+urn1);
+				link.setValue("target", "_blank");
+				
 				XmlToken urn=new XmlToken("text");
 				urn.setContent((index1+1)+": "+urn1);
 				urn.setValue("x", "10");
 				urn.setValue("y", ""+(radius+radius+20+15*index1));
-				svg.add(urn);
+				link.add(urn);
+				svg.add(link);
 			}
 			
 			/* ...insert text into svg */
