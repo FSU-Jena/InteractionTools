@@ -226,12 +226,12 @@ public class InteractionToolbox extends JFrame implements ActionListener, Change
 		taskButtons.add(graphTasks);
 		
 		VerticalPanel milpPanel=new VerticalPanel("Optimizations");
-		calculateSeedsButton = new JButton("<html>Calculate Seeds<br/>with MILP (buggy)");
+		calculateSeedsButton = new JButton("<html>Calculate Seeds<br/>(buggy)");
 		calculateSeedsButton.setToolTipText("<html>This method should calculate the minimum sets of substances which can be supplied to form<ul><li>all Substances in the compartment (organism) <i>if no target substances are specified</i></li><li>for the specified target substances <i>otherwise</i></li></ul><font color=\"red\">not implemented, yet.</font></html>");
 		calculateSeedsButton.addActionListener(this);
 		milpPanel.add(calculateSeedsButton);
 		
-		optimizeSeeds=new JButton("<html>Calculate Flow<br/>Distributions for given<br/>Input/Output<br/>using linear programming");
+		optimizeSeeds=new JButton("<html>Calculate Flow<br/>Distributions for given<br/>Input/Output");
 		optimizeSeeds.setToolTipText("<html>Takes one substance list as targets<br/>and the other as \"desired nutrients\"<br/>and tries to optimize (maximize) flow<br/>towards targets and decomposition<br/>of the <i>desired nutrients</i> while keeping<br/>all other inflow reactions low.</html>");
 		optimizeSeeds.addActionListener(this);
 		milpPanel.add(optimizeSeeds);
