@@ -93,7 +93,7 @@ public class EvolveSeedsTask extends TaskContainingCompartmentAndSubtances {
 			Configuration.reset();
 			Configuration configuration = new MyConfig(speciesCount);
 
-			FitnessFunction degradationFitness = new DegradationFitness(substanceIds, build,ignore);
+			FitnessFunction degradationFitness = new DegradationFitness(substanceIds, build,ignore); // this actually describes the evolution goal
 			configuration.setFitnessFunction(degradationFitness);
 			
 			
