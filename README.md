@@ -24,4 +24,4 @@ https://github.com/StephanRichter/TreePanel<br>
 
 JGAP (http://jgap.sourceforge.net/)<br>
 
-Can be built and run using Eclipse.
+Can be built and run using Eclipse. To do so, check out the compile0.4 tag of each of the referenced projects.
